@@ -7,12 +7,12 @@ import { useGSAP } from "@gsap/react";
 gsap.registerPlugin(useGSAP);
 
 /**
- * The hero's one authored moment, layered over the locker plate: on load the
- * lit locker's lamp flares and settles while a band of light crosses the glass;
- * afterwards that light follows a mouse pointer across the lockers. Both layers
+ * The hero's one authored moment, layered over the vitrine plate: on load the
+ * geode's glow swells and settles while a band of light crosses the case glass;
+ * afterwards that light follows a mouse pointer across the case. Both layers
  * rest invisible, so the page is complete before (and without) this script.
  */
-export function LockerLight() {
+export function VitrineLight() {
   const root = useRef<HTMLDivElement>(null);
 
   useGSAP(

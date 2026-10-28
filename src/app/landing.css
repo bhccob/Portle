@@ -1,62 +1,68 @@
 /*
- * Landing page (/) — Glass lockers. The first viewport is the measured comp
+ * Landing page (/) — the Specimen Vitrine, from the approved comp
+ * .impeccable/mocks/blend/blend-a.png. The first viewport is the measured comp
  * layout (.impeccable/build/scaffold/layout.css): region boxes are % of a
  * 2688×1520 frame and sizes are cqw of that frame (1cqw = 26.88 comp px), so it
- * scales as one piece on desktop. Below 1024px it reflows to a single column.
+ * scales as one piece on desktop. Below 1180px it reflows to one column.
+ * Section styles live in landing-sections.css.
  */
 .landing {
-  --l-ground: #100e1e;
-  --l-ink: #efedf7;
+  --l-ground: #120c20;
+  --l-ink: #f4f1f7;
   --l-body: #b3adcf;
   --l-muted: #8a84b7;
   --l-subtle: #6e688f;
   --l-lilac: #9b82d7;
   --l-lavender: #d5c6f2;
-  --l-cta: #7f62d2; /* deepest lilac that still keeps white label text at 4.5:1 */
-  --l-cta-hover: #7154c6;
-  --l-field: #171428;
-  --l-field-line: #554e82;
+  --l-glass-text: #d7cef6;
+  --l-annotation: #c3b7ea;
+  --l-cta: #bca6fa;
+  --l-cta-hover: #cdbbfd;
+  --l-cta-ink: #24163d;
+  --l-field: #241d42;
+  --l-field-line: #a79dd5;
   --l-label-ink: #2f2258;
   --l-line: rgb(213 198 242 / 0.12);
   --l-line-soft: rgb(213 198 242 / 0.07);
   --ease: cubic-bezier(0.22, 1, 0.36, 1);
 
-  --r-lockers-x: 0%;
-  --r-lockers-y: 37.5%;
-  --r-lockers-w: 100%;
-  --r-lockers-h: 48.68%;
-  --r-brand-x: 3.91%;
-  --r-brand-y: 2.3%;
-  --r-brand-h: 5.79%;
-  --r-nav-x: 35.49%;
-  --r-nav-y: 4.14%;
-  --r-nav-w: 27.79%;
-  --r-nav-h: 2.5%;
-  --r-signin-x: 92.45%;
-  --r-signin-y: 4.28%;
-  --r-signin-w: 3.65%;
-  --r-signin-h: 2.3%;
-  --r-headline-x: 29.5%;
-  --r-headline-y: 14.74%;
-  --r-headline-w: 41.48%;
-  --r-headline-h: 13.68%;
-  --r-subline-x: 34.71%;
-  --r-subline-y: 31.64%;
-  --r-subline-w: 29.43%;
-  --r-subline-h: 2.63%;
-  /* The label sits in the plate's own blank label slot: % of the plate box. */
-  --r-label-x: 48.14%;
-  --r-label-y: 58.45%;
-  --r-label-w: 6.19%;
-  --r-label-h: 6.83%;
-  --r-email-x: 32.92%;
-  --r-email-y: 87.37%;
-  --r-email-w: 22.14%;
-  --r-email-h: 5.39%;
-  --r-cta-x: 55.65%;
-  --r-cta-y: 87.37%;
-  --r-cta-w: 11.46%;
-  --r-cta-h: 5.39%;
+  --r-vitrine-y: 7.37%;
+  --r-vitrine-h: 74.47%;
+  --r-drawers-x: 8.56%;
+  --r-drawers-y: 81.84%;
+  --r-drawers-w: 82.96%;
+  --r-drawers-h: 18.16%;
+  --r-brand-x: 4.39%;
+  --r-brand-y: 1.45%;
+  --r-brand-h: 6.05%;
+  --r-nav-x: 35.53%;
+  --r-nav-y: 2.63%;
+  --r-nav-w: 27.9%;
+  --r-nav-h: 3.03%;
+  --r-signin-x: 91.82%;
+  --r-signin-y: 2.76%;
+  --r-signin-w: 3.79%;
+  --r-signin-h: 2.76%;
+  --r-headline-x: 28.65%;
+  --r-headline-y: 13.16%;
+  --r-headline-w: 42.97%;
+  --r-headline-h: 12.89%;
+  --r-card-x: 56.25%;
+  --r-card-y: 28.95%;
+  --r-card-w: 17.71%;
+  --r-card-h: 31.71%;
+  --r-subline-x: 29.24%;
+  --r-subline-y: 68.03%;
+  --r-subline-w: 41.52%;
+  --r-subline-h: 2.5%;
+  --r-email-x: 33.44%;
+  --r-email-y: 72.76%;
+  --r-email-w: 21.5%;
+  --r-email-h: 5.2%;
+  --r-cta-x: 55.39%;
+  --r-cta-y: 72.76%;
+  --r-cta-w: 11.16%;
+  --r-cta-h: 5.2%;
 
   background: var(--l-ground);
   color: var(--l-ink);
@@ -93,18 +99,18 @@
   white-space: nowrap;
 }
 
-/* ---------- Shared controls ---------- */
+/* ---------- Shared controls (also used by the sections) ---------- */
 
 .l-field {
   display: flex;
   align-items: center;
-  border: 1px solid var(--l-field-line);
-  border-radius: 999px;
+  border: 1px solid rgb(167 157 213 / 0.55);
+  border-radius: 10px;
   background: var(--l-field);
   transition: border-color 160ms var(--ease);
 }
 .l-field:focus-within {
-  border-color: var(--l-lilac);
+  border-color: var(--l-lavender);
 }
 .l-field svg {
   flex: none;
@@ -122,7 +128,7 @@
   outline: none;
 }
 .l-field input::placeholder {
-  color: var(--l-muted);
+  color: #a99fd6;
 }
 .landing .l-field:has(input:focus-visible) {
   outline: 2px solid var(--l-lavender);
@@ -131,9 +137,9 @@
 
 .l-btn {
   border: 0;
-  border-radius: 999px;
+  border-radius: 10px;
   background: var(--l-cta);
-  color: #fff;
+  color: var(--l-cta-ink);
   font: inherit;
   font-weight: 500;
   white-space: nowrap;
@@ -184,41 +190,25 @@
   margin-inline: auto;
   aspect-ratio: 2688 / 1520;
   container-type: inline-size;
+  background: radial-gradient(48% 30% at 50% 0%, #241a40, rgb(36 26 64 / 0));
 }
 
+/* The vitrine plate. Its geode and leader lines sit 23px higher than the comp's,
+   so the art drops 23px (2.03% of the box) to put each line under its label. */
 .l-plate {
   position: absolute;
-  left: var(--r-lockers-x);
-  top: var(--r-lockers-y);
-  width: var(--r-lockers-w);
-  height: var(--r-lockers-h);
-  /* Edge fade into the ground so the plate has no seam with the page. */
-  -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 1.4%, #000 87%, transparent 100%);
-  mask-image: linear-gradient(to bottom, transparent 0, #000 1.4%, #000 87%, transparent 100%);
+  left: 0;
+  top: var(--r-vitrine-y);
+  width: 100%;
+  height: var(--r-vitrine-h);
 }
-/* Wide, short windows cap the frame; fade the band's cut ends there. */
-@media (min-aspect-ratio: 186/100) {
-  .l-plate {
-    -webkit-mask-image:
-      linear-gradient(to bottom, transparent 0, #000 1.4%, #000 87%, transparent 100%),
-      linear-gradient(to right, transparent 0, #000 6%, #000 94%, transparent 100%);
-    -webkit-mask-composite: source-in;
-    mask-image:
-      linear-gradient(to bottom, transparent 0, #000 1.4%, #000 87%, transparent 100%),
-      linear-gradient(to right, transparent 0, #000 6%, #000 94%, transparent 100%);
-    mask-composite: intersect;
-  }
-}
-
-/* The plate's lit locker sits 26px right of the comp's; a 2% scale anchored
-   past the bottom-right corner brings it (and the label riding on it) back to
-   the composition's centre line while the plate still covers the band. */
 .l-plate-art {
   position: absolute;
   inset: 0;
-  transform: scale(1.02);
-  transform-origin: 99.74% 107.84%;
+  transform: translateY(2.03%);
   container-type: inline-size;
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 2.5%, #000 95%, transparent 100%);
+  mask-image: linear-gradient(to bottom, transparent 0, #000 2.5%, #000 95%, transparent 100%);
 }
 .l-plate img {
   object-fit: cover;
@@ -230,56 +220,35 @@
   inset: 0;
   pointer-events: none;
 }
-/* The lit locker's lamp, flaring once on load. */
+/* The geode's glow, swelling once on load. */
 .l-lamp {
   position: absolute;
-  left: 43.2%;
-  top: 4%;
-  width: 16%;
-  height: 92%;
+  left: 28%;
+  top: 22%;
+  width: 28%;
+  height: 62%;
   border-radius: 50%;
-  background: radial-gradient(closest-side, rgb(206 186 255 / 0.55), rgb(160 128 240 / 0.18) 55%, rgb(160 128 240 / 0));
+  background: radial-gradient(closest-side, rgb(206 186 255 / 0.5), rgb(160 128 240 / 0.16) 55%, rgb(160 128 240 / 0));
   mix-blend-mode: screen;
   opacity: 0;
 }
-/* Specular sweep: a soft band of light that crosses the locker glass once on
-   load, then follows a mouse pointer. */
+/* Specular sweep: a band of light that crosses the case glass once on load,
+   then follows a mouse pointer. */
 .l-sheen {
   position: absolute;
   inset: 0;
   background: linear-gradient(
     100deg,
     transparent calc(var(--sheen-x, -30%) - 14%),
-    rgb(232 222 255 / 0.1) calc(var(--sheen-x, -30%) - 5%),
-    rgb(244 238 255 / 0.2) var(--sheen-x, -30%),
-    rgb(232 222 255 / 0.1) calc(var(--sheen-x, -30%) + 5%),
+    rgb(232 222 255 / 0.08) calc(var(--sheen-x, -30%) - 5%),
+    rgb(244 238 255 / 0.16) var(--sheen-x, -30%),
+    rgb(232 222 255 / 0.08) calc(var(--sheen-x, -30%) + 5%),
     transparent calc(var(--sheen-x, -30%) + 14%)
   );
   mix-blend-mode: screen;
   opacity: var(--sheen-o, 0);
-}
-
-.l-label {
-  position: absolute;
-  left: var(--r-label-x);
-  top: var(--r-label-y);
-  width: var(--r-label-w);
-  height: var(--r-label-h);
-  display: grid;
-  place-items: center;
-  border-radius: 0.15cqw;
-  /* Frosted card, lit from above by the locker's lamp. */
-  background: linear-gradient(172deg, #dccafb 0%, #c9b3f5 48%, #ad93e5 100%);
-  box-shadow:
-    inset 0 1px 0 rgb(255 255 255 / 0.55),
-    inset 0 0 0 1px rgb(255 255 255 / 0.18);
-  color: var(--l-label-ink);
-  /* 14.3px at 2688 (cap height 10px); 9px floor while the slot is wide enough. */
-  font-size: max(0.532cqw, min(9px, 0.7cqw));
-  font-weight: 400;
-  line-height: 1.2;
-  text-align: center;
-  white-space: nowrap;
+  /* Only the glass case catches the light, not the room around it. */
+  clip-path: inset(1.5% 11.6% 26% 11.6%);
 }
 
 .l-brand {
@@ -289,19 +258,19 @@
   height: var(--r-brand-h);
   display: flex;
   align-items: center;
-  gap: 0.62cqw;
+  gap: 0.93cqw;
   color: var(--l-ink);
   text-decoration: none;
-  font-size: 2.3cqw;
+  font-size: 2.31cqw; /* 62px at 2688: cap height 42px */
   font-weight: 500;
-  letter-spacing: -0.02em;
+  letter-spacing: -0.01em;
 }
-/* The mark's P fills 26.2 of its 32 viewBox units; size it so the P itself
-   spans the brand box height, then pull the empty viewBox margin back out. */
+/* The mark's P fills 26.2 of its 32 viewBox units; size it so the P spans the
+   comp's 86px mark, then pull the empty viewBox margin back out. */
 .l-brand svg {
-  height: 3.94cqw;
-  width: 3.94cqw;
-  margin: -0.335cqw 0 -0.335cqw -0.63cqw;
+  width: 3.906cqw;
+  height: 3.906cqw;
+  margin: -0.25cqw 0 -0.25cqw -0.47cqw;
 }
 
 .l-nav {
@@ -321,7 +290,7 @@
 .l-signin {
   color: var(--l-ink);
   text-decoration: none;
-  font-size: max(13px, 1.19cqw);
+  font-size: max(13px, 1.116cqw); /* 30px at 2688 */
   line-height: 1;
   white-space: nowrap;
   transition: color 160ms var(--ease);
@@ -330,7 +299,6 @@
 .l-signin:hover {
   color: var(--l-lavender);
 }
-
 .l-signin {
   position: absolute;
   left: var(--r-signin-x);
@@ -339,25 +307,155 @@
   height: var(--r-signin-h);
   display: flex;
   align-items: center;
-  justify-content: flex-end;
-  margin-top: -0.13cqw;
-  font-size: max(13px, 1.155cqw);
+  justify-content: flex-start;
+  padding-left: 0.22cqw;
+  font-size: max(13px, 1.116cqw); /* 30px at 2688 */
 }
 
+/* Etched in the front glass of the case. */
 .l-headline {
   position: absolute;
   left: var(--r-headline-x);
   top: var(--r-headline-y);
   width: var(--r-headline-w);
   height: var(--r-headline-h);
-  margin: -0.524cqw 0 0;
-  font-size: 3.832cqw; /* 103px at 2688: cap height 72.6px */
+  margin: -0.15cqw 0 0;
+  font-size: 3.646cqw; /* 98px at 2688: cap height 66.5px */
   font-weight: 400;
-  line-height: 1.1165; /* 115px line pitch in the comp */
-  letter-spacing: -0.012em;
+  line-height: 1;
+  letter-spacing: 0.012em;
   text-align: center;
   white-space: nowrap;
+  color: var(--l-glass-text);
+}
+
+/* Leader-line labels, placed in the plate's own coordinates so they stay on
+   their lines however the plate is cropped; the lines are part of the plate. */
+.l-revs {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.l-rev {
+  position: absolute;
+  left: 25.86%;
+  height: 2.65%;
+  display: flex;
+  align-items: center;
+  font-size: 0.83cqw; /* 22px at 2688 */
+  font-weight: 500;
+  line-height: 1;
+  white-space: nowrap;
+  color: var(--l-annotation);
+  font-variant-numeric: tabular-nums;
+}
+.l-rev-4 {
+  top: 28.27%;
+}
+.l-rev-3 {
+  top: 36.48%;
+}
+.l-rev-2 {
+  top: 44.7%;
+}
+.l-rev-1 {
+  top: 53.45%;
+}
+
+/* The thesis card standing in the case, laid over the plate's own placard. */
+.l-card {
+  position: absolute;
+  left: var(--r-card-x);
+  top: var(--r-card-y);
+  width: var(--r-card-w);
+  height: var(--r-card-h);
+  margin: 0;
+  border: 1px solid rgb(225 215 255 / 0.42);
+  border-radius: 0.22cqw;
+  background: linear-gradient(180deg, rgb(150 138 205 / 0.3), rgb(120 108 180 / 0.24));
+  -webkit-backdrop-filter: blur(6px) saturate(1.1);
+  backdrop-filter: blur(6px) saturate(1.1);
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.22);
   color: var(--l-ink);
+  font-variant-numeric: tabular-nums;
+}
+/* The card's small text is set in Onest, the closer match at this size. */
+.l-card > *,
+.l-card-cases > div {
+  position: absolute;
+  left: 1.414cqw;
+  font-family: var(--font-ui), ui-sans-serif, system-ui, sans-serif;
+  margin: 0;
+}
+.l-card-title {
+  top: 1.36cqw;
+  font-family: inherit !important;
+  font-size: 1.004cqw; /* 27px: cap height 18.8px */
+  font-weight: 400;
+  line-height: 1.2;
+  letter-spacing: 0.034em;
+  white-space: nowrap;
+  color: #efeef8;
+}
+.l-card-status {
+  top: 3.274cqw;
+  width: 3.943cqw;
+  height: 1.488cqw;
+  display: grid;
+  place-items: center;
+  border-radius: 999px;
+  background: #c8b1f8;
+  color: #3f2f6f;
+  font-size: 0.82cqw;
+  font-weight: 500;
+  line-height: 1;
+}
+.l-card-cases {
+  inset: 0 auto auto 0 !important;
+  left: 0 !important;
+}
+.l-card-cases dt,
+.l-card-cases dd,
+.l-card-rows dt,
+.l-card-rows dd {
+  margin: 0;
+  font-size: 0.818cqw; /* 22px in Onest: cap height 16px */
+  line-height: 1.36;
+  white-space: nowrap;
+}
+.l-card-cases dt {
+  font-weight: 500;
+  color: #ebe7fa;
+}
+.l-card-cases dd {
+  color: #c6bfe9;
+}
+.l-card-bull {
+  top: 5.35cqw;
+}
+.l-card-invalidation {
+  top: 9.24cqw;
+}
+.l-card-rows {
+  top: 13.281cqw;
+  right: 1.42cqw;
+  padding-top: 0.42cqw;
+  border-top: 1px solid rgb(225 215 255 / 0.4);
+}
+.l-card-rows div {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 0.36cqw;
+}
+.l-card-rows dt,
+.l-card-rows dd {
+  font-size: 0.796cqw; /* 21.4px in Onest: cap height 15.6px */
+}
+.l-card-rows dt {
+  color: #e6e3f2;
+}
+.l-card-rows dd {
+  color: #f1f0f5;
 }
 
 .l-subline {
@@ -366,14 +464,14 @@
   top: var(--r-subline-y);
   width: var(--r-subline-w);
   height: var(--r-subline-h);
-  margin: -0.11cqw 0 0;
+  margin: 0;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.451cqw; /* 39px at 2688: cap height 27.6px */
+  font-size: 1.116cqw; /* 30px at 2688: cap height 21px */
   line-height: 1;
   white-space: nowrap;
-  color: var(--l-muted);
+  color: #c1b5ef;
 }
 
 .l-signup {
@@ -385,14 +483,34 @@
   top: var(--r-email-y);
   width: var(--r-email-w);
   height: var(--r-email-h);
-  gap: 1cqw;
-  padding: 0 1.3cqw;
+  display: flex;
+  align-items: center;
+  padding: 0 1.265cqw;
+  border: 1px solid rgb(167 157 213 / 0.7);
+  border-radius: 0.3cqw;
+  background: var(--l-field);
+  transition: border-color 160ms var(--ease);
 }
-.l-email svg {
-  width: 1.05cqw;
+.l-email:focus-within {
+  border-color: var(--l-lavender);
+}
+.landing .l-email:has(input:focus-visible) {
+  outline: 2px solid var(--l-lavender);
+  outline-offset: 3px;
 }
 .l-email input {
-  font-size: max(14px, 0.86cqw);
+  min-width: 0;
+  flex: 1;
+  border: 0;
+  background: transparent;
+  color: var(--l-ink);
+  font: inherit;
+  font-size: max(14px, 0.85cqw);
+  caret-color: var(--l-lilac);
+  outline: none;
+}
+.l-email input::placeholder {
+  color: #a99fd6;
 }
 .l-cta {
   position: absolute;
@@ -401,559 +519,86 @@
   width: var(--r-cta-w);
   height: var(--r-cta-h);
   padding: 0;
-  font-size: max(12.5px, 1.01cqw);
-  font-weight: 400;
-}
-
-/* ---------- Sections ---------- */
-
-.l-section {
-  position: relative;
-  isolation: isolate;
-  max-width: 1180px;
-  margin-inline: auto;
-  padding: clamp(96px, 11vw, 168px) clamp(16px, 5vw, 56px) 0;
-  scroll-margin-top: 24px;
-}
-.l-frame + .l-section {
-  padding-top: clamp(64px, 7vw, 112px);
-}
-.l-head {
-  display: grid;
-  grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
-  gap: 20px 64px;
-  align-items: end;
-  margin-bottom: clamp(32px, 4vw, 56px);
-}
-.l-h2 {
-  margin: 0;
-  font-size: clamp(30px, 3.3vw, 46px);
-  font-weight: 400;
-  line-height: 1.12;
-  letter-spacing: -0.022em;
-  text-wrap: balance;
-  color: var(--l-ink);
-}
-.l-lede {
-  margin: 0;
-  max-width: 46ch;
-  font-size: clamp(16px, 1.2vw, 17.5px);
-  line-height: 1.62;
-  color: var(--l-body);
-  text-wrap: pretty;
-}
-.l-note {
-  margin: 0;
-  font-size: 13.5px;
-  line-height: 1.5;
-  color: var(--l-muted);
-}
-
-/* Vitrine glass. Depth comes only from overlapping panes: --depth 1 is the
-   front pane, 2 sits behind it with more blur and less light. */
-.l-pane {
-  --depth: 1;
-  position: relative;
-  border-radius: 14px;
-  border: 1px solid rgb(213 198 242 / calc(0.17 - var(--depth) * 0.04));
-  background: linear-gradient(180deg, rgb(213 198 242 / calc(0.1 - var(--depth) * 0.025)), rgb(213 198 242 / 0.02));
-  -webkit-backdrop-filter: blur(calc(var(--depth) * 10px)) saturate(1.15);
-  backdrop-filter: blur(calc(var(--depth) * 10px)) saturate(1.15);
-  box-shadow: inset 0 1px 0 rgb(239 237 247 / calc(0.2 - var(--depth) * 0.06));
-}
-.l-pane-head {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: space-between;
-  gap: 6px 12px;
-  padding: 16px 20px;
-  border-bottom: 1px solid var(--l-line-soft);
-}
-.l-pane-head p {
-  margin: 0;
-  font-size: 13px;
-  color: var(--l-muted);
-}
-.l-pane-title {
-  font-size: 14px;
+  border: 0;
+  border-radius: 0.3cqw;
+  background: var(--l-cta);
+  color: var(--l-cta-ink);
+  font: inherit;
+  font-size: max(13px, 1.004cqw); /* 27px at 2688 */
   font-weight: 500;
-  color: var(--l-ink);
-}
-
-/* Ambient light behind a pane, so the glass has something to frost. */
-.l-glow {
-  position: absolute;
-  z-index: -1;
-  pointer-events: none;
-  border-radius: 50%;
-  background: radial-gradient(closest-side, rgb(124 92 214 / 0.32), rgb(124 92 214 / 0));
-}
-
-/* Portfolio register */
-.l-register {
-  overflow: hidden;
-}
-.l-register table {
-  width: 100%;
-  border-collapse: collapse;
-  font-variant-numeric: tabular-nums;
-}
-.l-register th {
-  padding: 12px 20px;
-  border-bottom: 1px solid var(--l-line-soft);
-  color: var(--l-muted);
-  font-size: 12.5px;
-  font-weight: 500;
-  text-align: left;
   white-space: nowrap;
+  cursor: pointer;
+  transition:
+    background-color 160ms var(--ease),
+    transform 160ms var(--ease);
 }
-.l-register td {
-  padding: 15px 20px;
-  border-bottom: 1px solid var(--l-line-soft);
-  font-size: 15px;
-  color: var(--l-ink);
-  vertical-align: middle;
+.l-cta:hover {
+  background: var(--l-cta-hover);
 }
-.l-register tbody tr:last-child td {
-  border-bottom: 0;
-}
-.l-register .num {
-  text-align: right;
-}
-.l-register tr.is-lit td {
-  background: rgb(155 130 215 / 0.1);
-}
-.l-holding {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-}
-.l-holding .l-tag {
-  min-width: 128px;
-}
-.l-dim {
-  color: var(--l-muted);
-}
-.l-weight {
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  gap: 12px;
-}
-.l-weight > span:last-child {
-  min-width: 3.4em;
-  text-align: right;
-}
-.l-bar {
-  width: 72px;
-  height: 4px;
-  border-radius: 2px;
-  background: rgb(213 198 242 / 0.1);
-  overflow: hidden;
-}
-.l-bar i {
-  display: block;
-  height: 100%;
-  width: var(--w);
-  border-radius: inherit;
-  background: var(--l-lilac);
-}
-.l-status {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 14px;
-  white-space: nowrap;
-}
-.l-status::before {
-  content: "";
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  background: var(--l-lilac);
-}
-.l-status.is-revised::before {
-  background: transparent;
-  box-shadow: inset 0 0 0 1.5px var(--l-lavender);
-}
-.l-status.is-closed {
-  color: var(--l-muted);
-}
-.l-status.is-closed::before {
-  background: var(--l-subtle);
-}
-.l-register-foot {
-  display: flex;
-  justify-content: space-between;
-  gap: 8px 24px;
-  flex-wrap: wrap;
-  padding: 14px 20px;
-  border-top: 1px solid var(--l-line-soft);
+.l-cta:active {
+  transform: scale(0.98);
 }
 
-/* Thesis specimen */
-.l-thesis-grid {
-  display: grid;
-  grid-template-columns: minmax(0, 4fr) minmax(0, 8fr);
-  gap: 48px 64px;
-  align-items: start;
-}
-.l-thesis-copy {
-  position: sticky;
-  top: 48px;
-  display: grid;
-  gap: 20px;
-}
-.l-thesis-col {
-  display: grid;
-  gap: 16px;
-}
-.l-thesis {
-  border-color: rgb(213 198 242 / 0.22);
-  box-shadow: inset 0 1px 0 rgb(239 237 247 / 0.3);
-}
-.l-thesis-body {
-  padding: 28px 28px 8px;
-}
-.l-thesis h3 {
-  margin: 0 0 24px;
-  font-size: clamp(22px, 2vw, 28px);
-  font-weight: 400;
-  line-height: 1.25;
-  letter-spacing: -0.015em;
-  text-wrap: balance;
-}
-.l-cases {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  margin: 0;
-  border-top: 1px solid var(--l-line-soft);
-}
-.l-cases > div {
-  padding: 18px 20px 22px 0;
-}
-.l-cases > div + div {
-  padding-left: 20px;
-  border-left: 1px solid var(--l-line-soft);
-}
-.l-cases dt {
-  margin-bottom: 8px;
-  font-size: 13px;
-  font-weight: 500;
-  color: var(--l-lavender);
-}
-.l-cases dd {
-  margin: 0;
-  font-size: 15px;
-  line-height: 1.55;
-  color: var(--l-body);
-}
-.l-rail {
-  position: relative;
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 16px;
-  margin: 0;
-  padding: 24px 28px 26px;
-  border-top: 1px solid var(--l-line-soft);
-  list-style: none;
-}
-.l-rail::before {
-  content: "";
+/* The drawer row: one plate, each link showing its own fifth of it. */
+.l-drawers {
   position: absolute;
-  left: 28px;
-  right: 28px;
-  top: 31px;
-  height: 1px;
-  background: linear-gradient(to right, rgb(213 198 242 / 0.28), rgb(155 130 215 / 0.7));
-  transform-origin: left;
-  transform: scaleX(var(--rail, 1));
-}
-.l-rail li {
-  position: relative;
+  left: var(--r-drawers-x);
+  top: var(--r-drawers-y);
+  width: var(--r-drawers-w);
+  height: var(--r-drawers-h);
   display: grid;
-  gap: 4px;
-  padding-top: 22px;
-  font-size: 13.5px;
-  line-height: 1.45;
-  color: var(--l-body);
+  grid-template-columns: repeat(5, minmax(0, 1fr));
 }
-.l-rail li::before {
-  content: "";
-  position: absolute;
-  top: 3px;
-  left: 0;
-  width: 9px;
-  height: 9px;
-  border-radius: 50%;
-  background: var(--l-ground);
-  box-shadow: inset 0 0 0 1.5px var(--l-lavender);
-}
-.l-rail li.is-now::before {
-  background: var(--l-lilac);
-  box-shadow:
-    0 0 0 4px rgb(155 130 215 / 0.22),
-    inset 0 0 0 1.5px var(--l-lavender);
-}
-.l-rail b {
-  font-weight: 500;
-  color: var(--l-ink);
-  font-variant-numeric: tabular-nums;
-}
-
-/* Paper Lab: two ledgers, one behind the other */
-.l-lab-stage {
-  position: relative;
-  display: grid;
-  grid-template-columns: repeat(12, minmax(0, 1fr));
-  padding-bottom: 8px;
-}
-.l-lab-back {
-  --depth: 2;
-  grid-column: 1 / span 7;
-  grid-row: 1;
-  align-self: start;
-  padding-bottom: 40px;
-}
-.l-lab-back .l-lab-rows li {
-  justify-content: flex-start;
-  gap: 16px;
-}
-.l-lab-back .l-lab-rows .l-tag {
-  min-width: 128px;
-}
-.l-lab-back .l-lab-rows {
-  opacity: 0.62;
-}
-.l-lab-front {
-  grid-column: 6 / span 7;
-  grid-row: 1;
-  margin-top: 88px;
-  z-index: 1;
-}
-.l-lab-rows {
-  margin: 0;
-  padding: 6px 20px 10px;
-  list-style: none;
-}
-.l-lab-rows li {
+.l-drawer {
+  --plate: image-set(url("/assets/plates/drawers.webp") type("image/webp"), url("/assets/plates/drawers.png") type("image/png"));
   display: flex;
+  flex-direction: column;
   align-items: center;
-  justify-content: space-between;
-  padding: 12px 0;
-  border-bottom: 1px solid var(--l-line-soft);
-  font-size: 14.5px;
-  font-variant-numeric: tabular-nums;
-}
-.l-lab-rows li:last-child {
-  border-bottom: 0;
-}
-.l-ticket {
-  display: grid;
-  grid-template-columns: max-content 1fr;
-  gap: 0 24px;
-  margin: 0;
-  padding: 8px 20px;
-}
-.l-ticket dt,
-.l-ticket dd {
-  padding: 12px 0;
-  border-bottom: 1px solid var(--l-line-soft);
-  font-size: 14.5px;
-}
-.l-ticket dt {
-  color: var(--l-muted);
-}
-.l-ticket dd {
-  margin: 0;
-  color: var(--l-ink);
-}
-.l-ticket dt:nth-last-child(2),
-.l-ticket dd:last-child {
-  border-bottom: 0;
-}
-.l-filled {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin: 0;
-  padding: 14px 20px;
-  border-top: 1px solid var(--l-line-soft);
-  font-size: 14px;
-  color: var(--l-lavender);
-}
-.l-filled svg {
-  flex: none;
-  width: 18px;
-  height: 18px;
-}
-
-/* Guild visibility */
-.l-visibility table {
-  width: 100%;
-  border-collapse: collapse;
-}
-.l-visibility th,
-.l-visibility td {
-  padding: 16px 20px;
-  border-bottom: 1px solid var(--l-line-soft);
-  text-align: left;
-  vertical-align: top;
-  font-size: 15px;
-  line-height: 1.5;
-}
-.l-visibility thead th {
-  padding-block: 12px;
-  font-size: 12.5px;
-  font-weight: 500;
-  color: var(--l-muted);
-}
-.l-visibility tbody th {
-  font-weight: 400;
-  color: var(--l-ink);
-}
-.l-visibility td {
-  color: var(--l-body);
-}
-.l-visibility tbody tr:last-child > * {
-  border-bottom: 0;
-}
-.l-only {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  white-space: nowrap;
-  color: var(--l-ink);
-}
-.l-only svg {
-  width: 14px;
-  height: 14px;
-  color: var(--l-lilac);
-}
-
-/* Relics shelf */
-.l-shelf {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-.l-shelf li {
-  display: grid;
-  gap: 10px;
-  align-content: start;
-  padding: 24px 22px 26px;
-}
-.l-shelf li + li {
-  border-left: 1px solid var(--l-line-soft);
-}
-.l-shelf h3 {
-  margin: 6px 0 0;
-  font-size: 16px;
-  font-weight: 500;
-}
-.l-shelf p {
-  margin: 0;
-  font-size: 14.5px;
-  line-height: 1.55;
-  color: var(--l-body);
-}
-.l-shelf .l-progress {
-  margin-top: 4px;
-  font-size: 13px;
-  color: var(--l-muted);
-  font-variant-numeric: tabular-nums;
-}
-.l-shelf .is-earned .l-progress {
-  color: var(--l-lavender);
-}
-
-/* Closing */
-.l-close {
-  display: grid;
-  justify-items: center;
-  gap: 18px;
-  padding-bottom: clamp(96px, 10vw, 152px);
-  text-align: center;
-}
-.l-close .l-h2 {
-  font-size: clamp(34px, 4vw, 56px);
-}
-.l-join {
-  display: flex;
-  gap: 10px;
-  width: min(100%, 520px);
-  margin-top: 14px;
-}
-.l-join .l-field {
-  flex: 1;
-  height: 52px;
-  gap: 12px;
-  padding: 0 18px;
-}
-.l-join .l-field svg {
-  width: 18px;
-}
-.l-join .l-field input {
-  font-size: 16px;
-}
-.l-join .l-btn {
-  height: 52px;
-  padding: 0 24px;
-  font-size: 15.5px;
-}
-
-.l-foot {
-  max-width: 1180px;
-  margin-inline: auto;
-  padding: 28px clamp(16px, 5vw, 56px) 40px;
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px 32px;
-  border-top: 1px solid var(--l-line-soft);
-  font-size: 14px;
-  color: var(--l-muted);
-}
-.l-foot-brand {
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-  color: var(--l-ink);
-  font-weight: 500;
-}
-.l-foot-brand svg {
-  width: 22px;
-  height: 22px;
-  color: var(--l-lilac);
-}
-.l-foot ul {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px 24px;
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-.l-foot a {
-  color: var(--l-body);
+  gap: 0.6cqw;
+  padding-top: 2.16cqw;
+  background-image: url("/assets/plates/drawers.png");
+  background-image: var(--plate);
+  background-size: 500% 100%;
+  /* The comp keeps 12px of cabinet above the drawer row. */
+  background-position: calc(var(--i) * 25%) 0.41cqw;
+  background-repeat: no-repeat;
+  color: #bdacf1;
   text-decoration: none;
-  text-underline-offset: 4px;
+  font-family: var(--font-ui), ui-sans-serif, system-ui, sans-serif;
+  font-size: 1.02cqw; /* 27.5px Onest at 2688: cap height 20px */
+  line-height: 1;
+  transition: color 160ms var(--ease);
 }
-.l-foot a:hover {
-  color: var(--l-ink);
-  text-decoration: underline;
-  text-decoration-color: rgb(213 198 242 / 0.4);
+.l-drawer svg {
+  width: 2.2cqw;
+  height: 2.2cqw;
+}
+/* Icons and labels sit where the comp puts them, within 25px of each slice centre. */
+.l-drawer > * {
+  translate: var(--dx, 0) 0;
+}
+.l-drawer:nth-child(1) {
+  --dx: 0.93cqw;
+}
+.l-drawer:nth-child(2) {
+  --dx: 0.97cqw;
+}
+.l-drawer:nth-child(4) {
+  --dx: -0.78cqw;
+}
+.l-drawer:nth-child(5) {
+  --dx: -1cqw;
+}
+.l-drawer:hover {
+  color: #ddd2fb;
 }
 
 /* ---------- Tablet and phone ---------- */
 
-@media (max-width: 1023px) {
+@media (max-width: 1179px) {
   .l-frame {
-    --art-w: 200vw;
+    --art-w: 1400px;
+    --art-h: calc(var(--art-w) * 1132 / 2688);
     width: 100%;
     aspect-ratio: auto;
     display: flex;
@@ -961,25 +606,14 @@
     align-items: center;
     padding: 76px 16px 8px;
     text-align: center;
-  }
-  .l-headline {
-    order: 1;
-  }
-  .l-subline {
-    order: 2;
-  }
-  .l-plate {
-    order: 3;
-  }
-  .l-signup {
-    order: 4;
+    background: radial-gradient(90% 30% at 50% 0%, #241a40, rgb(36 26 64 / 0));
   }
   .l-brand {
     left: 16px;
     top: 20px;
     height: 40px;
     gap: 10px;
-    font-size: 22px;
+    font-size: 24px;
   }
   .l-brand svg {
     width: 40px;
@@ -1004,88 +638,155 @@
     top: 20px;
     width: auto;
     height: 40px;
-    margin: 0;
   }
-  .l-headline {
+  .l-headline,
+  .l-subline,
+  .l-card,
+  .l-email,
+  .l-cta,
+  .l-drawers {
     position: static;
     width: auto;
     height: auto;
-    margin: 24px 0 0;
+  }
+  .l-headline {
+    order: 1;
+    margin-top: 24px;
     font-size: clamp(32px, 6.4vw, 54px);
-    line-height: 1.16;
-    letter-spacing: -0.02em;
+    line-height: 1.12;
+    letter-spacing: -0.015em;
     white-space: normal;
     text-wrap: balance;
   }
-  .l-subline {
-    position: static;
+  /* A window onto the case interior, centred on the geode: the thesis card
+     comes out of the case below it, so the blank placard stays mostly out of view. */
+  .l-plate {
+    order: 2;
+    position: relative;
+    top: auto;
+    width: calc(100% + 32px);
+    height: calc(var(--art-h) * 0.6);
+    margin: 16px -16px 0;
+    overflow: hidden;
+    -webkit-mask-image: linear-gradient(to right, #000 0, #000 58%, transparent 88%);
+    mask-image: linear-gradient(to right, #000 0, #000 58%, transparent 88%);
+  }
+  .l-plate-art {
+    inset: auto;
+    top: calc(var(--art-h) * -0.17);
+    left: 50%;
+    width: var(--art-w);
+    height: var(--art-h);
+    transform: translateX(-40%);
+  }
+  /* The action comes straight after the case; the sample card follows it. */
+  .l-card {
+    order: 5;
+    position: relative;
+    left: auto;
+    top: auto;
+    width: min(100%, 420px);
+    margin-top: 32px;
+    padding: 18px 20px;
+    border-radius: 10px;
+    text-align: left;
+  }
+  .l-card > *,
+  .l-card-cases > div,
+  .l-card-cases {
+    position: static !important;
+  }
+  .l-card-title {
+    font-size: 15px;
+  }
+  .l-card-status {
     width: auto;
     height: auto;
-    margin: 16px 0 0;
+    display: inline-block;
+    margin-top: 10px;
+    padding: 4px 10px;
+    font-size: 12px;
+  }
+  .l-card-cases {
+    display: grid;
+    gap: 10px;
+    margin-top: 12px;
+  }
+  .l-card-cases dt,
+  .l-card-cases dd,
+  .l-card-rows dt,
+  .l-card-rows dd {
+    font-size: 14px;
+    white-space: normal;
+  }
+  .l-card-cases dd br {
+    display: none;
+  }
+  .l-card-rows {
+    margin-top: 14px;
+    padding-top: 10px;
+  }
+  .l-subline {
+    order: 3;
+    margin: 20px 0 0;
     font-size: clamp(16px, 2.3vw, 19px);
     line-height: 1.45;
     white-space: normal;
     text-wrap: balance;
-    color: var(--l-body);
-  }
-  .l-plate {
-    position: relative;
-    left: auto;
-    top: auto;
-    width: calc(100% + 32px);
-    height: calc(var(--art-w) * 740 / 2688);
-    margin: 36px -16px 0;
-    overflow: hidden;
-  }
-  /* Keep the lit locker at the centre of whatever slice of the band fits. */
-  .l-plate-art {
-    inset: 0 auto 0 50%;
-    width: var(--art-w);
-    transform: translateX(-51.24%);
   }
   .l-signup {
+    order: 4;
     display: flex;
     flex-direction: column;
     gap: 10px;
     width: min(100%, 440px);
-    margin-top: 8px;
+    margin-top: 18px;
   }
   .l-email,
   .l-cta {
-    position: static;
     width: 100%;
     height: 52px;
+    border-radius: 10px;
   }
   .l-email {
-    gap: 12px;
-    padding: 0 18px;
-  }
-  .l-email svg {
-    width: 18px;
+    padding: 0 16px;
   }
   .l-email input,
   .l-cta {
     font-size: 16px;
   }
-
-  .l-head,
-  .l-thesis-grid {
-    grid-template-columns: minmax(0, 1fr);
+  .l-drawers {
+    order: 6;
+    width: 100%;
+    margin-top: 36px;
+    gap: 8px;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
   }
-  .l-thesis-copy {
-    position: static;
+  .l-drawer {
+    --dx: 0 !important;
+    aspect-ratio: 446 / 276;
+    justify-content: flex-start;
+    padding: 10% 0 0;
+    gap: 4px;
+    font-size: 12px;
+    background-position: calc(var(--i) * 25%) 0;
   }
-  .l-lab-back {
-    grid-column: 1 / span 10;
-  }
-  .l-lab-front {
-    grid-column: 3 / span 10;
+  .l-drawer svg {
+    width: 20px;
+    height: 20px;
   }
 }
 
 @media (max-width: 639px) {
   .l-frame {
-    --art-w: 330vw;
+    --art-w: 300vw;
+  }
+  .l-plate {
+    -webkit-mask-image: linear-gradient(to right, #000 0, #000 84%, transparent 100%);
+    mask-image: linear-gradient(to right, #000 0, #000 84%, transparent 100%);
+  }
+  .l-plate-art {
+    transform: translateX(-42%);
   }
   .l-nav {
     display: none;
@@ -1093,122 +794,14 @@
   .l-headline br {
     display: none;
   }
-
-  .l-register .l-col-account,
-  .l-register .l-bar,
-  .l-register .l-col-thesis {
-    display: none;
+  .l-drawers {
+    grid-template-columns: repeat(6, minmax(0, 1fr));
   }
-  .l-register th,
-  .l-register td {
-    padding-inline: 14px;
+  .l-drawer {
+    grid-column: span 2;
+    font-size: 13px;
   }
-  .l-holding {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 6px;
-  }
-  .l-holding .l-tag {
-    min-width: 0;
-  }
-  .l-cases {
-    grid-template-columns: minmax(0, 1fr);
-  }
-  .l-cases > div + div {
-    padding-left: 0;
-    border-left: 0;
-    border-top: 1px solid var(--l-line-soft);
-  }
-  .l-thesis-body {
-    padding: 22px 20px 4px;
-  }
-  .l-rail {
-    grid-template-columns: minmax(0, 1fr);
-    gap: 18px;
-    padding: 22px 20px 24px 40px;
-  }
-  .l-rail::before {
-    left: 24px;
-    right: auto;
-    top: 30px;
-    bottom: 34px;
-    width: 1px;
-    height: auto;
-    background: linear-gradient(to bottom, rgb(213 198 242 / 0.28), rgb(155 130 215 / 0.7));
-    transform-origin: top;
-    transform: scaleY(var(--rail, 1));
-  }
-  .l-rail li {
-    padding-top: 0;
-  }
-  .l-rail li::before {
-    top: 4px;
-    left: -20px;
-  }
-  .l-lab-stage {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr);
-  }
-  .l-lab-back,
-  .l-lab-front {
-    grid-column: 1;
-  }
-  .l-lab-back,
-  .l-lab-front {
-    grid-row: auto;
-  }
-  .l-lab-back {
-    margin-right: 28px;
-  }
-  /* Stacked: the ticket overlaps only the empty foot of the ledger behind. */
-  .l-lab-front {
-    margin: -36px 0 0 28px;
-  }
-  .l-visibility thead {
-    display: none;
-  }
-  .l-visibility tr {
-    display: grid;
-    gap: 4px;
-    padding: 14px 18px;
-    border-bottom: 1px solid var(--l-line-soft);
-  }
-  .l-visibility tbody tr:last-child {
-    border-bottom: 0;
-  }
-  .l-visibility th,
-  .l-visibility td {
-    padding: 0;
-    border: 0;
-  }
-  .l-visibility td::before {
-    content: attr(data-label) ": ";
-    color: var(--l-muted);
-  }
-  .l-shelf {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-  .l-shelf li:nth-child(3) {
-    border-left: 0;
-  }
-  .l-shelf li:nth-child(n + 3) {
-    border-top: 1px solid var(--l-line-soft);
-  }
-  .l-join {
-    flex-direction: column;
-  }
-  .l-join .l-field {
-    flex: none;
-  }
-  .l-join .l-btn {
-    width: 100%;
-  }
-}
-
-@media (prefers-reduced-transparency: reduce) {
-  .l-pane {
-    -webkit-backdrop-filter: none;
-    backdrop-filter: none;
-    background: #1a1630;
+  .l-drawer:nth-child(4) {
+    grid-column: 2 / span 2;
   }
 }

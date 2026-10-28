@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { PorfaelGem } from "@/components/brand/logo";
 import { RelicIcon } from "@/components/relics/relic-icon";
+import "./landing-sections.css";
 
 /* Illustrative sample content for the landing page. Every figure here is
    labelled as a sample on the page; none of it is market data. */
@@ -374,7 +375,7 @@ export function LandingSections() {
         </div>
       </section>
 
-      <section className="l-section" aria-labelledby="relics-title">
+      <section id="relics" className="l-section" aria-labelledby="relics-title">
         <div className="l-head">
           <h2 id="relics-title" className="l-h2">
             Relics reward the process, not the profit.

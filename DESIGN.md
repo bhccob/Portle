@@ -3,19 +3,22 @@ name: Porfael
 description: A private investing archive in amethyst glass, where every position is kept with the reason it was bought.
 colors:
   ink: "#171320"
-  cabinet-ground: "#100e1e"
+  vitrine-ground: "#120c20"
   amethyst: "#49366b"
   lilac: "#9b82d7"
   lilac-bright: "#ac97e0"
-  archive-violet: "#7f62d2"
-  archive-violet-deep: "#7154c6"
+  archive-lilac: "#bca6fa"
+  archive-lilac-bright: "#cdbbfd"
+  archive-ink: "#24163d"
   lavender: "#d5c6f2"
   porcelain: "#f3eff8"
-  paper-white: "#ffffff"
+  glass-text: "#d7cef6"
+  annotation: "#c3b7ea"
+  selection: "rgb(145 116 218 / 0.45)"
   muted-heather: "#b7aecb"
   dusk-heather: "#8a84b7"
-  field-ink: "#171428"
-  field-rule: "#554e82"
+  field-ink: "#241d42"
+  field-rule: "#a79dd5"
   label-ink: "#2f2258"
   glass-depth-1: "rgb(38 31 54 / 0.52)"
   glass-depth-2: "rgb(44 36 63 / 0.82)"
@@ -26,13 +29,13 @@ colors:
   info: "#8cb8ff"
 typography:
   display:
-    fontFamily: "Geom, Onest, ui-sans-serif, system-ui, sans-serif"
-    fontSize: "3.832cqw"
+    fontFamily: "Gabarito, Onest, ui-sans-serif, system-ui, sans-serif"
+    fontSize: "3.646cqw"
     fontWeight: 400
-    lineHeight: 1.1165
-    letterSpacing: "-0.012em"
+    lineHeight: 1
+    letterSpacing: "0.012em"
   headline:
-    fontFamily: "Geom, Onest, ui-sans-serif, system-ui, sans-serif"
+    fontFamily: "Gabarito, Onest, ui-sans-serif, system-ui, sans-serif"
     fontSize: "clamp(30px, 3.3vw, 46px)"
     fontWeight: 400
     lineHeight: 1.12
@@ -49,7 +52,7 @@ typography:
     fontWeight: 400
     lineHeight: 1.55
   label:
-    fontFamily: "Geom, Onest, ui-sans-serif, system-ui, sans-serif"
+    fontFamily: "Gabarito, Onest, ui-sans-serif, system-ui, sans-serif"
     fontSize: "12px"
     fontWeight: 500
     lineHeight: 1
@@ -57,9 +60,11 @@ typography:
     fontFeature: "\"tnum\" 1, \"lnum\" 1"
 rounded:
   tag: "4px"
+  card: "6px"
   sm: "8px"
+  pane: "8px"
+  field: "10px"
   md: "12px"
-  pane: "14px"
   lg: "16px"
   xl: "22px"
   pill: "999px"
@@ -77,17 +82,17 @@ components:
   button-primary-hover:
     backgroundColor: "{colors.lilac-bright}"
   button-archive:
-    backgroundColor: "{colors.archive-violet}"
-    textColor: "{colors.paper-white}"
-    rounded: "{rounded.pill}"
+    backgroundColor: "{colors.archive-lilac}"
+    textColor: "{colors.archive-ink}"
+    rounded: "{rounded.field}"
     height: "52px"
     padding: "0 24px"
   button-archive-hover:
-    backgroundColor: "{colors.archive-violet-deep}"
+    backgroundColor: "{colors.archive-lilac-bright}"
   input-archive:
     backgroundColor: "{colors.field-ink}"
     textColor: "{colors.porcelain}"
-    rounded: "{rounded.pill}"
+    rounded: "{rounded.field}"
     height: "52px"
     padding: "0 18px"
   accession-tag:
@@ -115,12 +120,12 @@ components:
 
 Every position is a specimen kept under glass with the reasoning that put it there. Porfael is a quiet collection room at night: an ink ground deepening into amethyst, frosted vitrine panes with one bright hairline along their top edge, and lilac light falling on whatever the visitor has chosen to keep. Nothing on the page shouts. The interface earns trust by being calm, legible and exact, so a beginner is not intimidated and a serious investor is not patronised.
 
-Density follows the surface. The public landing page is spacious and image-led: a wall of glass specimen lockers with one lit and pulled forward. The signed-in app is an Operate surface, with denser glass panels, tabular numerals and familiar controls. Brand lives in the details there: the faceted P, the accession label, the lilac focus ring and the glass depth steps.
+Density follows the surface. The public landing page is spacious and image-led: one lit glass vitrine holding an amethyst geode whose growth bands are a thesis's revisions, with the thesis card standing beside it and a row of glass drawers below. The signed-in app is an Operate surface, with denser glass panels, tabular numerals and familiar controls. Brand lives in the details there: the faceted P, the accession label, the lilac focus ring and the glass depth steps.
 
 **Key Characteristics:**
 - Dark by default (evening research under low light); a porcelain light theme carries the same roles.
 - Glass is a depth system with exactly three steps, never decoration.
-- One accession-label form (PF-#### · SYMBOL · status) repeats at every scale, from the hero plate to table chips.
+- One accession-label form (PF-#### · SYMBOL · status) repeats at every scale, from the hero's thesis card to table chips.
 - Lilac is the only accent; semantic colours appear only on data.
 - Numbers are tabular, and money is shown only to its owner.
 
@@ -130,7 +135,7 @@ A narrow violet family on near-black ink: one accent (lilac), one deep brand ton
 
 ### Primary
 - **Lamp Lilac** (lilac): the app's primary action fill, focus-adjacent highlights, chart series one, the earned edge of a Relic. Its brighter step (lilac-bright) is the hover state.
-- **Archive Violet** (archive-violet): the landing page's call to action. It is the deepest lilac that still holds white label text at 4.5:1; its hover goes one step deeper (archive-violet-deep), never lighter, so contrast never drops.
+- **Archive Lilac** (archive-lilac): the landing page's call to action, a pale lit lilac carrying Archive Ink (archive-ink) text at 7.9:1. Its hover brightens one step (archive-lilac-bright).
 
 ### Secondary
 - **Vault Amethyst** (amethyst): the brand plate behind the mark, selected rows and the light theme's primary action.
@@ -140,9 +145,10 @@ A narrow violet family on near-black ink: one accent (lilac), one deep brand ton
 
 ### Neutral
 - **Ink** (ink): the app ground in the dark theme.
-- **Cabinet Ground** (cabinet-ground): the landing page ground, a shade deeper and bluer than ink so the locker plate's lilac reads as lamplight.
+- **Vitrine Ground** (vitrine-ground): the landing page ground, sampled from the approved comp, with a soft amethyst glow at the top centre.
+- **Glass Text** (glass-text) and **Annotation** (annotation): the headline etched in the vitrine glass, and the leader-line labels on the geode.
 - **Porcelain** (porcelain): primary text on dark and the light theme's ground.
-- **Muted Heather** (muted-heather) and **Dusk Heather** (dusk-heather): secondary text and captions. Dusk is the floor for small text on the cabinet ground (5.5:1).
+- **Muted Heather** (muted-heather) and **Dusk Heather** (dusk-heather): secondary text and captions. Dusk is the floor for small text on the vitrine ground (5.5:1).
 - **Field Ink** (field-ink) with **Field Rule** (field-rule): input fills and their 1px border.
 - **Hairline** (hairline): every divider and pane border, always translucent lavender, never grey.
 - **Label Ink** (label-ink): text on the lit lavender accession label.
@@ -156,18 +162,18 @@ Semantic colours (positive, negative, warning, info) belong to data only: return
 
 ## Typography
 
-**Display Font:** Geom (with Onest, then the system sans)
+**Display Font:** Gabarito (with Onest, then the system sans)
 **Body Font:** Onest (with the system sans)
-**Label Font:** Geom at small sizes, with tabular figures
+**Label Font:** Gabarito at small sizes, with tabular figures
 
-**Character:** Two clean geometric sans faces. Geom is rounder and more open; it sets the landing page's display lines and the accession labels. Onest carries the app's working text. Neither face is mono; numbers are set with tabular and lining figures instead.
+**Character:** Two clean geometric sans faces. Gabarito is round and open; it sets the landing page's display lines, navigation and accession labels. Onest carries the app's working text and the landing's smallest card text, where it measured closer to the comp. Neither face is mono; numbers are set with tabular and lining figures instead.
 
 ### Hierarchy
-- **Display** (Geom 400, 3.832cqw of the hero frame (103px at 2688, about 55px at 1440), line-height 1.1165): the landing headline only, centred over two lines.
-- **Headline** (Geom 400, clamp(30px, 3.3vw, 46px), line-height 1.12): landing section headings, balanced.
+- **Display** (Gabarito 400, 3.646cqw of the hero frame (98px at 2688, about 52px at 1440), line-height 1): the landing headline only, etched over two lines in the vitrine glass.
+- **Headline** (Gabarito 400, clamp(30px, 3.3vw, 46px), line-height 1.12): landing section headings, balanced.
 - **Title** (Onest 600, 1.75rem, line-height 1.2, -0.025em): app page titles.
-- **Body** (Onest 400, 0.9375rem, line-height 1.55): app text. Long-form notes and theses use a 68ch measure at line-height 1.7. Landing ledes are Geom at 16 to 17.5px, line-height 1.62, 46ch.
-- **Label** (Geom 500, 12px, +0.01em): accession tags, table headers and pane captions.
+- **Body** (Onest 400, 0.9375rem, line-height 1.55): app text. Long-form notes and theses use a 68ch measure at line-height 1.7. Landing ledes are Gabarito at 16 to 17.5px, line-height 1.62, 46ch.
+- **Label** (Gabarito 500, 12px, +0.01em): accession tags, table headers and pane captions.
 
 ### Named Rules
 **The Weight-Not-Size Rule.** Display and headline stay at weight 400. Emphasis comes from size and from the one lilac accent, never from bold display type or gradient text.
@@ -178,12 +184,12 @@ Semantic colours (positive, negative, warning, info) belong to data only: return
 
 The app uses a sidebar shell with content in glass panels on a fixed ambient field. The landing page has two modes:
 
-- **First viewport (1024px and up).** It is one frame with the comp's 2688×1520 proportions. Every region is placed in percentages of the frame and sized in container units (cqw), so the whole composition scales as one piece.
-- **Below 1024px.** The frame reflows into one centred column: headline, subline, then a full-bleed slice of the locker plate kept centred on the lit locker, then the stacked email form.
+- **First viewport (1180px and up).** It is one frame with the comp's 2688×1520 proportions. Every region is placed in percentages of the frame and sized in container units (cqw), so the whole composition scales as one piece.
+- **Below 1180px.** The frame reflows into one centred column: headline, then a window onto the case centred on the geode (its revision labels scale with the plate), then the subline and stacked email form, then the thesis card, then the drawers as a grid of glass tiles.
 
-Wide, short windows cap the frame at 1.86 times the viewport height and fade the band's ends.
+Wide, short windows cap the frame at 1.86 times the viewport height and the ground carries on around it.
 
-Landing sections sit in a 1180px container with a fluid 16 to 56px gutter. They are separated by clamp(96px, 11vw, 168px), with more space above a heading than below it. Section heads pair the heading (7 columns) with its lede (5 columns), aligned to the baseline. Breakpoints are 640px and 1024px.
+Landing sections sit in a 1180px container with a fluid 16 to 56px gutter. They are separated by clamp(96px, 11vw, 168px), with more space above a heading than below it. Section heads pair the heading (7 columns) with its lede (5 columns), aligned to the baseline. Breakpoints are 640px, 1024px (sections) and 1180px (the hero).
 
 ## Elevation & Depth
 
@@ -206,29 +212,29 @@ App panels add a soft, offset ambient shadow beneath the glass. The landing page
 The geometry is cut stone, not soft plastic:
 
 - **Logo.** The faceted P has straight cuts, a beveled bowl and a locked counter.
-- **Corners.** Radii are modest and nested: 4px for accession tags, 8 to 12px for controls, 14px for landing panes, 16 to 22px for app panels.
-- **Pills.** Fully round pills are reserved for the landing's email field and call to action.
+- **Corners.** Radii are modest and nested: 4px for accession tags, 6px for the thesis card, 8 to 10px for landing panes, fields and buttons, 12px for app controls, 16 to 22px for app panels.
+- **Pills.** Fully round pills are reserved for status chips such as "Active".
 - **Relic frames.** Relics sit in a hexagonal specimen frame.
 - **Borders.** Lines are 1px translucent lavender hairlines; there are no thick rules or coloured side stripes.
 
 ## Components
 
 ### Buttons
-- **Shape:** gently rounded in the app (12px); a full pill on the landing page.
+- **Shape:** gently rounded: 12px in the app, 10px on the landing page.
 - **Primary (app):** lilac fill with ink text, 40px tall, 16px horizontal padding, and a faint inner top highlight.
-- **Archive (landing):** archive-violet fill with white text at weight 400 to 500, 52px tall in flow.
+- **Archive (landing):** archive-lilac fill with archive-ink text at weight 500, 52px tall in flow.
 - **Hover / Focus:** hover shifts the fill one step (160 to 220ms, ease-out cubic-bezier(0.22, 1, 0.36, 1)). Press scales to 0.98. Focus is a 2px lavender ring offset by 2 to 3px.
 - **Secondary / Ghost:** secondary is a depth-1 glass button with no shadow. Ghost is muted text that brightens onto the selected tint.
 
 ### Accession Label (signature)
-- **Form:** "PF-0042 · ASML · Sample thesis", a 4px-radius label with Geom 500 12px tabular text. One form at every scale.
+- **Form:** "PF-0042 · ASML · Sample thesis", a 4px-radius label with Gabarito 500 12px tabular text. One form at every scale.
 - **Resting:** translucent lavender fill with a hairline border and lavender text.
 - **Lit:** a frosted lavender gradient (#dccafb to #c3abf2) with label-ink text, used for the one specimen in focus.
 - **Paper:** a dashed hairline border with no fill, used for Paper Lab orders, which are a separate ledger.
-- **On the plate:** in the hero, the lit label sits inside the locker plate's own label slot and scales with the plate.
+- **In the case:** in the hero, the accession line heads the thesis card, a frosted pane (6px corners) laid over the vitrine plate's own acrylic placard.
 
 ### Cards / Containers (glass panes)
-- **Corner Style:** 22px app panels, 14px landing panes.
+- **Corner Style:** 22px app panels, 8px landing panes.
 - **Background:** the glass depth fills above, frosting the ambient field.
 - **Shadow Strategy:** see Elevation & Depth (ambient in the app, overlap only on the landing page).
 - **Border:** 1px hairline; brighter on the top edge.
@@ -250,8 +256,11 @@ A horizontal hairline with an open lavender ring for each revision and a filled 
 ### Relic
 Relics are hexagonal frames whose finish encodes the tier (common, rare, epic), with a single-stroke glyph inside. Unearned Relics are dimmed and desaturated. Each one states its rule and the visitor's progress in text.
 
-### Locker Light (motion)
-This is the landing page's one authored moment. On load, the lit locker's lamp flares to 85% and settles back over 2.2s while a soft band of light crosses the glass (2s, power2.inOut). Afterwards that light follows a mouse pointer across the band. Both layers rest invisible, so the page is complete without the script. The moment does not run under reduced motion.
+### Drawer Row
+Five glass drawers along the bottom of the first viewport, one per destination: Portfolio, Theses, Paper Lab, Guilds and Relics. One plate shows the whole row; each link shows its own fifth of it with a single-stroke icon and a label in lilac that brightens on hover. On phones the drawers become a grid of glass tiles.
+
+### Vitrine Light (motion)
+This is the landing page's one authored moment. On load, the geode's glow swells to 85% and settles back over 2.2s while a soft band of light crosses the case glass (2s, power2.inOut). Afterwards that light follows a mouse pointer across the case. Both layers rest invisible, so the page is complete without the script. The moment does not run under reduced motion.
 
 ## Do's and Don'ts
 
@@ -260,13 +269,13 @@ This is the landing page's one authored moment. On load, the lit locker's lamp f
 - **Do** repeat the accession label (PF-#### · SYMBOL · status) wherever a position, thesis or order is named.
 - **Do** set every comparable number with tabular, lining figures, and show money values only to their owner. Shared views use percentages.
 - **Do** label demonstration content as a sample, in the panel caption, wherever it appears.
-- **Do** keep white text on lilac at 4.5:1 or better: use archive-violet (#7f62d2) or deeper behind white, and ink text on the lighter lilac.
+- **Do** set dark ink on light lilac fills (archive-ink on archive-lilac, ink on lilac); keep every text pair at 4.5:1 or better.
 - **Do** place glass only where there is light behind it to frost.
 
 ### Don't:
 - **Don't** put a kicker or eyebrow label above a heading; the heading carries itself.
 - **Don't** use drop shadows on the landing page; show depth by overlapping panes.
 - **Don't** use gradient text, coloured side stripes, or neutral grey for secondary text.
-- **Don't** set display lines in bold; Geom display stays at weight 400.
+- **Don't** set display lines in bold; Gabarito display stays at weight 400.
 - **Don't** use semantic green or red outside data (returns, gains, losses, warnings).
 - **Don't** shrink the faceted gem mark (PorfaelGem) below about 24px; use the two-tone PorfaelMark there.

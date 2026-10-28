@@ -3,7 +3,7 @@ import { expect, test } from "@playwright/test";
 test.describe("landing page", () => {
   test("the hero form carries the email into sign-up", async ({ page }) => {
     await page.goto("/");
-    await expect(page.getByRole("heading", { level: 1 })).toHaveText("Every position, kept with the reason you bought it.");
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText("Keep the reasoning behind every position.");
 
     const hero = page.locator("form").first();
     await hero.getByLabel("Email address").fill("new-visitor@example.test");
@@ -24,6 +24,10 @@ test.describe("landing page", () => {
       await page.getByRole("navigation", { name: "Product" }).getByRole("link", { name: link }).click();
       await expect(page.getByRole("heading", { level: 2, name: heading })).toBeInViewport();
     }
+    await page.getByRole("navigation", { name: "Sections" }).getByRole("link", { name: "Relics" }).click();
+    await expect(page.getByRole("heading", { level: 2, name: "Relics reward the process, not the profit." })).toBeInViewport();
+
+    await expect(page.getByRole("article", { name: "Sample thesis card" })).toContainText("PF-0042 · ASML · Sample thesis");
     await expect(page.getByText("Illustrative figures, not market data")).toBeVisible();
     await expect(page.getByText("A sample written for illustration. Not investment advice.")).toBeVisible();
   });
