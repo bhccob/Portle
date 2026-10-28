@@ -1,0 +1,81 @@
+"use client";
+
+import { useId } from "react";
+import { cn } from "@/lib/cn";
+
+export const controlClass =
+  "w-full rounded-[var(--radius-md)] border border-line bg-field px-3 text-sm text-fg placeholder:text-fg-subtle " +
+  "transition-[border-color,background-color,box-shadow] duration-[var(--dur-fast)] " +
+  "hover:border-line-strong hover:bg-field-hover focus:outline-none focus:border-accent focus:ring-2 focus:ring-[color-mix(in_srgb,var(--accent)_30%,transparent)] " +
+  "aria-[invalid=true]:border-negative disabled:opacity-60";
+
+export function Label({ className, ...props }: React.LabelHTMLAttributes<HTMLLabelElement>) {
+  return <label className={cn("text-[0.8125rem] font-medium text-fg-muted", className)} {...props} />;
+}
+
+/**
+ * Label, control, hint and error wired together for assistive tech.
+ * Pass a render function to receive the generated id and describedby props.
+ */
+export function Field({
+  label,
+  hint,
+  error,
+  className,
+  children,
+  optional,
+}: {
+  label: React.ReactNode;
+  hint?: React.ReactNode;
+  error?: string;
+  className?: string;
+  optional?: boolean;
+  children: (props: { id: string; "aria-describedby"?: string; "aria-invalid"?: boolean }) => React.ReactNode;
+}) {
+  const id = useId();
+  const hintId = hint ? `${id}-hint` : undefined;
+  const errorId = error ? `${id}-error` : undefined;
+  return (
+    <div className={cn("flex flex-col gap-1.5", className)}>
+      <Label htmlFor={id}>
+        {label}
+        {optional ? <span className="font-normal text-fg-subtle"> · optional</span> : null}
+      </Label>
+      {children({ id, "aria-describedby": [hintId, errorId].filter(Boolean).join(" ") || undefined, "aria-invalid": error ? true : undefined })}
+      {hint && !error ? (
+        <p id={hintId} className="text-xs text-fg-subtle">
+          {hint}
+        </p>
+      ) : null}
+      {error ? (
+        <p id={errorId} className="text-xs text-negative" role="alert">
+          {error}
+        </p>
+      ) : null}
+    </div>
+  );
+}
+
+export function Input({ className, ...props }: React.InputHTMLAttributes<HTMLInputElement>) {
+  return <input className={cn(controlClass, "h-10", className)} {...props} />;
+}
+
+export function Textarea({ className, ...props }: React.TextareaHTMLAttributes<HTMLTextAreaElement>) {
+  return <textarea className={cn(controlClass, "min-h-24 py-2.5 leading-relaxed", className)} {...props} />;
+}
+
+export function Select({ className, children, ...props }: React.SelectHTMLAttributes<HTMLSelectElement>) {
+  return (
+    <select
+      className={cn(
+        controlClass,
+        "h-10 appearance-none bg-[length:16px] bg-[right_0.6rem_center] bg-no-repeat pr-9",
+        "bg-[url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%239188a8' stroke-width='2'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E\")]",
+        className,
+      )}
+      {...props}
+    >
+      {children}
+    </select>
+  );
+}

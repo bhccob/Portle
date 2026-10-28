@@ -1,26 +1,399 @@
 @import "tailwindcss";
 
+/*
+ * Amethyst Archive — Porfael's design tokens.
+ * Brand foundation: Ink #171320 · Amethyst #49366B · Lilac #9B82D7 · Lavender #D5C6F2 · Porcelain #F3EFF8.
+ * Glass is a depth system, not decoration: --depth-1 (content panels), --depth-2 (overlays),
+ * --depth-3 (navigation chrome). Each step raises blur and surface brightness together.
+ * Contrast pairs are verified in docs/DESIGN.md.
+ */
+
+@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
+
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --ink: #171320;
+  --amethyst: #49366b;
+  --lilac: #9b82d7;
+  --lavender: #d5c6f2;
+  --porcelain: #f3eff8;
+
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  --dur-fast: 140ms;
+  --dur: 220ms;
+  --dur-slow: 360ms;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+/* Dark is the default: evening research under low light. */
+:root,
+[data-theme="dark"] {
+  color-scheme: dark;
+  --bg: #171320;
+  --bg-elevated: #1d1828;
+  --fg: #f3eff8;
+  --fg-muted: #b7aecb;
+  --fg-subtle: #9188a8;
+  --line: rgb(213 198 242 / 0.1);
+  --line-strong: rgb(213 198 242 / 0.18);
+
+  --depth-1: rgb(38 31 54 / 0.52);
+  --depth-2: rgb(44 36 63 / 0.82);
+  --depth-3: rgb(27 22 39 / 0.7);
+  --blur-1: 18px;
+  --blur-2: 28px;
+  --blur-3: 22px;
+  --edge: inset 0 1px 0 rgb(255 255 255 / 0.06);
+  --shadow-1: 0 10px 30px -18px rgb(0 0 0 / 0.7);
+  --shadow-2: 0 24px 60px -24px rgb(0 0 0 / 0.75);
+
+  --field: rgb(23 19 32 / 0.6);
+  --field-hover: rgb(30 25 42 / 0.7);
+
+  --primary: #9b82d7;
+  --primary-hover: #ac97e0;
+  --primary-fg: #171320;
+  --brand: #49366b;
+  --brand-fg: #f3eff8;
+  --accent: #d5c6f2;
+  --selected: rgb(73 54 107 / 0.55);
+  --focus: #d5c6f2;
+
+  --positive: #5fd59d;
+  --positive-soft: rgb(95 213 157 / 0.12);
+  --negative: #ff8a97;
+  --negative-soft: rgb(255 138 151 / 0.12);
+  --warning: #f2bd62;
+  --warning-soft: rgb(242 189 98 / 0.12);
+  --info: #8cb8ff;
+  --info-soft: rgb(140 184 255 / 0.12);
+  --neutral: #a59db8;
+
+  --chart-1: #b9a3f0;
+  --chart-2: #7fd3c4;
+  --chart-3: #f0b37e;
+  --chart-4: #8cb8ff;
+  --chart-5: #e88fbf;
+  --chart-6: #c9d47c;
+  --chart-7: #8a80a3;
+
+  --glow-a: rgb(73 54 107 / 0.55);
+  --glow-b: rgb(155 130 215 / 0.16);
+  --glow-c: rgb(213 198 242 / 0.07);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+[data-theme="light"] {
+  color-scheme: light;
+  --bg: #f3eff8;
+  --bg-elevated: #ffffff;
+  --fg: #171320;
+  --fg-muted: #574e6c;
+  --fg-subtle: #6b6381;
+  --line: rgb(73 54 107 / 0.12);
+  --line-strong: rgb(73 54 107 / 0.22);
+
+  --depth-1: rgb(255 255 255 / 0.62);
+  --depth-2: rgb(255 255 255 / 0.86);
+  --depth-3: rgb(250 248 253 / 0.72);
+  --edge: inset 0 1px 0 rgb(255 255 255 / 0.9);
+  --shadow-1: 0 12px 32px -20px rgb(73 54 107 / 0.35);
+  --shadow-2: 0 28px 64px -28px rgb(73 54 107 / 0.45);
+
+  --field: rgb(255 255 255 / 0.75);
+  --field-hover: rgb(255 255 255 / 0.95);
+
+  --primary: #49366b;
+  --primary-hover: #5a4583;
+  --primary-fg: #ffffff;
+  --brand: #49366b;
+  --brand-fg: #ffffff;
+  --accent: #6f55a6;
+  --selected: rgb(155 130 215 / 0.2);
+  --focus: #49366b;
+
+  --positive: #0b7a49;
+  --positive-soft: rgb(11 122 73 / 0.1);
+  --negative: #b7283f;
+  --negative-soft: rgb(183 40 63 / 0.09);
+  --warning: #8f5400;
+  --warning-soft: rgb(196 125 10 / 0.12);
+  --info: #1d5fbf;
+  --info-soft: rgb(29 95 191 / 0.1);
+  --neutral: #6b6381;
+
+  --chart-1: #6f55a6;
+  --chart-2: #1f8f7e;
+  --chart-3: #c26a1d;
+  --chart-4: #2f6fd1;
+  --chart-5: #b4417f;
+  --chart-6: #7f8c1e;
+  --chart-7: #8a80a3;
+
+  --glow-a: rgb(155 130 215 / 0.35);
+  --glow-b: rgb(213 198 242 / 0.6);
+  --glow-c: rgb(255 255 255 / 0.7);
+}
+
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme]) {
+    color-scheme: light;
+    --bg: #f3eff8;
+    --bg-elevated: #ffffff;
+    --fg: #171320;
+    --fg-muted: #574e6c;
+    --fg-subtle: #6b6381;
+    --line: rgb(73 54 107 / 0.12);
+    --line-strong: rgb(73 54 107 / 0.22);
+    --depth-1: rgb(255 255 255 / 0.62);
+    --depth-2: rgb(255 255 255 / 0.86);
+    --depth-3: rgb(250 248 253 / 0.72);
+    --edge: inset 0 1px 0 rgb(255 255 255 / 0.9);
+    --shadow-1: 0 12px 32px -20px rgb(73 54 107 / 0.35);
+    --shadow-2: 0 28px 64px -28px rgb(73 54 107 / 0.45);
+    --field: rgb(255 255 255 / 0.75);
+    --field-hover: rgb(255 255 255 / 0.95);
+    --primary: #49366b;
+    --primary-hover: #5a4583;
+    --primary-fg: #ffffff;
+    --accent: #6f55a6;
+    --selected: rgb(155 130 215 / 0.2);
+    --focus: #49366b;
+    --positive: #0b7a49;
+    --positive-soft: rgb(11 122 73 / 0.1);
+    --negative: #b7283f;
+    --negative-soft: rgb(183 40 63 / 0.09);
+    --warning: #8f5400;
+    --warning-soft: rgb(196 125 10 / 0.12);
+    --info: #1d5fbf;
+    --info-soft: rgb(29 95 191 / 0.1);
+    --neutral: #6b6381;
+    --chart-1: #6f55a6;
+    --chart-2: #1f8f7e;
+    --chart-3: #c26a1d;
+    --chart-4: #2f6fd1;
+    --chart-5: #b4417f;
+    --chart-6: #7f8c1e;
+    --glow-a: rgb(155 130 215 / 0.35);
+    --glow-b: rgb(213 198 242 / 0.6);
+    --glow-c: rgb(255 255 255 / 0.7);
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+@theme inline {
+  --color-bg: var(--bg);
+  --color-bg-elevated: var(--bg-elevated);
+  --color-fg: var(--fg);
+  --color-fg-muted: var(--fg-muted);
+  --color-fg-subtle: var(--fg-subtle);
+  --color-line: var(--line);
+  --color-line-strong: var(--line-strong);
+  --color-field: var(--field);
+  --color-field-hover: var(--field-hover);
+  --color-primary: var(--primary);
+  --color-primary-hover: var(--primary-hover);
+  --color-primary-fg: var(--primary-fg);
+  --color-brand: var(--brand);
+  --color-brand-fg: var(--brand-fg);
+  --color-accent: var(--accent);
+  --color-selected: var(--selected);
+  --color-positive: var(--positive);
+  --color-positive-soft: var(--positive-soft);
+  --color-negative: var(--negative);
+  --color-negative-soft: var(--negative-soft);
+  --color-warning: var(--warning);
+  --color-warning-soft: var(--warning-soft);
+  --color-info: var(--info);
+  --color-info-soft: var(--info-soft);
+  --color-neutral: var(--neutral);
+  --color-ink: var(--ink);
+  --color-amethyst: var(--amethyst);
+  --color-lilac: var(--lilac);
+  --color-lavender: var(--lavender);
+  --color-porcelain: var(--porcelain);
+
+  --font-sans: var(--font-ui), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-display-face), var(--font-ui), ui-sans-serif, sans-serif;
+
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 22px;
+
+  --ease-out: var(--ease-out);
+}
+
+@layer base {
+  html {
+    background: var(--bg);
+    color: var(--fg);
+    -webkit-text-size-adjust: 100%;
+    text-rendering: optimizeLegibility;
+  }
+  body {
+    color: var(--fg);
+    font-family: var(--font-sans);
+    font-size: 0.9375rem;
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+    -webkit-tap-highlight-color: transparent;
+  }
+  h1,
+  h2,
+  h3,
+  h4 {
+    text-wrap: balance;
+    letter-spacing: -0.015em;
+    line-height: 1.2;
+  }
+  p {
+    text-wrap: pretty;
+  }
+  ::selection {
+    background: rgb(155 130 215 / 0.38);
+    color: var(--fg);
+  }
+  :focus-visible {
+    outline: 2px solid var(--focus);
+    outline-offset: 2px;
+    border-radius: 6px;
+  }
+  input,
+  textarea,
+  select {
+    caret-color: var(--accent);
+  }
+  a {
+    text-underline-offset: 0.2em;
+    text-decoration-thickness: 1px;
+  }
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: var(--line-strong) transparent;
+  }
+}
+
+@layer components {
+  /* The ambient field the glass floats over. Fixed and painted once. */
+  .archive-light {
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    background:
+      radial-gradient(60rem 40rem at 85% -10%, var(--glow-a), transparent 60%),
+      radial-gradient(40rem 32rem at -5% 30%, var(--glow-b), transparent 65%),
+      radial-gradient(50rem 30rem at 50% 110%, var(--glow-c), transparent 70%),
+      var(--bg);
+  }
+
+  .glass-1 {
+    background: var(--depth-1);
+    -webkit-backdrop-filter: blur(var(--blur-1)) saturate(140%);
+    backdrop-filter: blur(var(--blur-1)) saturate(140%);
+    border: 1px solid var(--line);
+    box-shadow: var(--edge), var(--shadow-1);
+  }
+  .glass-2 {
+    background: var(--depth-2);
+    -webkit-backdrop-filter: blur(var(--blur-2)) saturate(150%);
+    backdrop-filter: blur(var(--blur-2)) saturate(150%);
+    border: 1px solid var(--line-strong);
+    box-shadow: var(--edge), var(--shadow-2);
+  }
+  .glass-3 {
+    background: var(--depth-3);
+    -webkit-backdrop-filter: blur(var(--blur-3)) saturate(150%);
+    backdrop-filter: blur(var(--blur-3)) saturate(150%);
+  }
+
+  .num {
+    font-variant-numeric: tabular-nums lining-nums;
+    font-feature-settings: "tnum" 1, "lnum" 1;
+  }
+
+  .prose-archive {
+    max-width: 68ch;
+    line-height: 1.7;
+  }
+  .prose-archive :where(p, ul, ol, blockquote, pre) {
+    margin-block: 0.75em;
+  }
+  .prose-archive :where(h1, h2, h3) {
+    margin-block: 1.4em 0.5em;
+    font-weight: 600;
+  }
+  .prose-archive h2 {
+    font-size: 1.15rem;
+  }
+  .prose-archive h3 {
+    font-size: 1rem;
+  }
+  .prose-archive :where(ul) {
+    list-style: disc;
+    padding-left: 1.25em;
+  }
+  .prose-archive :where(ol) {
+    list-style: decimal;
+    padding-left: 1.25em;
+  }
+  .prose-archive a {
+    color: var(--accent);
+    text-decoration: underline;
+  }
+  .prose-archive blockquote {
+    border-left: 1px solid var(--line-strong);
+    padding-left: 1em;
+    color: var(--fg-muted);
+  }
+  .prose-archive code {
+    font-size: 0.875em;
+    background: var(--field);
+    padding: 0.1em 0.35em;
+    border-radius: 4px;
+  }
+  .prose-archive table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.875rem;
+  }
+  .prose-archive :where(th, td) {
+    border-bottom: 1px solid var(--line);
+    padding: 0.4em 0.6em;
+    text-align: left;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+}
+@keyframes dialog-in {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -47%) scale(0.97);
+    filter: blur(6px);
+  }
+}
+@keyframes menu-in {
+  from {
+    opacity: 0;
+    transform: translateY(-4px) scale(0.98);
+  }
+}
+@keyframes rise-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
 }

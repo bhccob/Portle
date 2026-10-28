@@ -20,6 +20,7 @@ const securityHeaders = [
 
 const nextConfig: NextConfig = {
   poweredByHeader: false,
+  devIndicators: false,
   serverExternalPackages: ["@electric-sql/pglite"],
   turbopack: {
     rules: {

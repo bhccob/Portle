@@ -371,3 +371,51 @@ export async function importCsv(
 export async function listImports(userId: string) {
   return getDb().select().from(importBatches).where(eq(importBatches.userId, userId)).orderBy(desc(importBatches.createdAt)).limit(20);
 }
+
+const SAMPLE: { symbol: string; type: "buy" | "sell" | "dividend"; date: string; qty?: string; price?: string; amount?: string; fee?: string }[] = [
+  { symbol: "VWCE", type: "buy", date: "2024-02-05", qty: "40", price: "108.20", fee: "2" },
+  { symbol: "ASML", type: "buy", date: "2024-03-12", qty: "4", price: "880.00", fee: "2" },
+  { symbol: "MSFT", type: "buy", date: "2024-04-08", qty: "6", price: "420.10", fee: "1" },
+  { symbol: "NOVO-B", type: "buy", date: "2024-06-17", qty: "10", price: "960.00", fee: "3" },
+  { symbol: "VWCE", type: "buy", date: "2024-09-02", qty: "25", price: "117.40", fee: "2" },
+  { symbol: "MSFT", type: "dividend", date: "2024-12-12", amount: "4.98" },
+  { symbol: "ASML", type: "sell", date: "2025-01-20", qty: "1", price: "710.00", fee: "2" },
+  { symbol: "AGG", type: "buy", date: "2025-02-10", qty: "20", price: "97.80", fee: "1" },
+  { symbol: "EIMI", type: "buy", date: "2025-05-06", qty: "60", price: "30.10", fee: "2" },
+];
+
+/**
+ * Creates a clearly labelled demo account with sample transactions so a new
+ * member can explore before entering real data. Archive it to remove it from totals.
+ */
+export async function loadSamplePortfolio(userId: string) {
+  const portfolio = await ensurePortfolio(userId);
+  const db = getDb();
+  const existing = await db.select().from(accounts).where(and(eq(accounts.userId, userId), eq(accounts.source, "demo"), isNull(accounts.archivedAt)));
+  if (existing.length) throw new UserFacingError("The sample portfolio is already loaded.");
+  await db.transaction(async (tx) => {
+    const [acc] = await tx
+      .insert(accounts)
+      .values({ userId, portfolioId: portfolio.id, name: "Sample portfolio", institution: "Demo data", kind: "brokerage", currency: portfolio.baseCurrency, source: "demo" })
+      .returning();
+    for (const row of SAMPLE) {
+      const [inst] = await tx.select().from(instruments).where(and(eq(instruments.symbol, row.symbol), sql`${instruments.exchange} <> ''`));
+      if (!inst) continue;
+      await tx.insert(transactions).values({
+        userId,
+        accountId: acc.id,
+        instrumentId: inst.id,
+        type: row.type,
+        tradeDate: row.date,
+        quantity: row.qty ?? null,
+        price: row.price ?? null,
+        amount: row.amount ?? null,
+        fee: row.fee ?? "0",
+        currency: inst.currency,
+        source: "demo",
+        dedupeHash: `demo:${randomUUID()}`,
+        note: "Sample data",
+      });
+    }
+  });
+}
