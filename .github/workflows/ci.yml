@@ -1,0 +1,62 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm typecheck
+      - run: pnpm lint
+      - run: pnpm test
+      - run: pnpm audit --prod
+
+  e2e:
+    runs-on: ubuntu-latest
+    needs: check
+    env:
+      BETTER_AUTH_SECRET: ci-only-secret-ci-only-secret-ci-only-000
+      BETTER_AUTH_URL: http://localhost:3000
+      PORFAEL_ENCRYPTION_KEY: Y2ktb25seS1rZXktY2ktb25seS1rZXktY2ktMDAwMDA=
+      MARKET_DATA_PROVIDER: demo
+      FX_PROVIDER: demo
+      AUTH_RATE_LIMIT: "off"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm exec playwright install --with-deps chromium
+      - name: Seed example members
+        run: |
+          pnpm dev > dev.log 2>&1 &
+          npx wait-on http://localhost:3000/sign-in --timeout 240000
+          pnpm exec tsx scripts/seed-dev.ts
+      - run: pnpm test:e2e --project=desktop
+      - if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-artifacts
+          path: |
+            test-results/
+            dev.log
