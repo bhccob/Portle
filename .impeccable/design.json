@@ -1,0 +1,144 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-10-28T21:00:00.000Z",
+  "title": "Design System: Porfael",
+  "extensions": {
+    "colorMeta": {
+      "ink": { "role": "neutral", "displayName": "Ink", "canonical": "#171320", "tonalRamp": ["#0b0910", "#100d17", "#171320", "#221c2f", "#2f2840", "#4a4260", "#78708f", "#b4adc6"] },
+      "cabinet-ground": { "role": "neutral", "displayName": "Cabinet Ground", "canonical": "#100e1e", "tonalRamp": ["#08070f", "#100e1e", "#19162b", "#24203b", "#332e50", "#4d4770", "#7a7499", "#b2adc8"] },
+      "amethyst": { "role": "secondary", "displayName": "Vault Amethyst", "canonical": "#49366b", "tonalRamp": ["#140f1f", "#21192f", "#302443", "#49366b", "#63508a", "#8573a8", "#ada0c8", "#d9d1e8"] },
+      "lilac": { "role": "primary", "displayName": "Lamp Lilac", "canonical": "#9b82d7", "tonalRamp": ["#1e1730", "#2e2347", "#44356a", "#5f4b93", "#7d66bd", "#9b82d7", "#c0afe8", "#e6defa"] },
+      "archive-violet": { "role": "primary", "displayName": "Archive Violet", "canonical": "#7f62d2", "tonalRamp": ["#1c1433", "#2d2052", "#422f78", "#5a43a0", "#7f62d2", "#9a82de", "#bcabea", "#e2d9f7"] },
+      "lavender": { "role": "tertiary", "displayName": "Lantern Lavender", "canonical": "#d5c6f2", "tonalRamp": ["#2a2338", "#463b5e", "#6a5c8c", "#8f7fba", "#b2a2dd", "#d5c6f2", "#e6dcf8", "#f5f0fd"] },
+      "porcelain": { "role": "neutral", "displayName": "Porcelain", "canonical": "#f3eff8", "tonalRamp": ["#3d3747", "#5f586b", "#857e91", "#aba5b6", "#cdc8d6", "#e3dfea", "#f3eff8", "#fbf9fd"] },
+      "muted-heather": { "role": "neutral", "displayName": "Muted Heather", "canonical": "#b7aecb" },
+      "dusk-heather": { "role": "neutral", "displayName": "Dusk Heather", "canonical": "#8a84b7" },
+      "label-ink": { "role": "neutral", "displayName": "Label Ink", "canonical": "#2f2258" }
+    },
+    "typographyMeta": {
+      "display": { "displayName": "Display", "purpose": "The landing headline only; sized in container units of the hero frame so the first viewport scales as one piece." },
+      "headline": { "displayName": "Headline", "purpose": "Landing section headings, balanced, weight 400." },
+      "title": { "displayName": "Title", "purpose": "App page titles." },
+      "body": { "displayName": "Body", "purpose": "App working text; long-form notes at a 68ch measure." },
+      "label": { "displayName": "Label", "purpose": "Accession labels, table headers and pane captions, with tabular figures." }
+    },
+    "shadows": [
+      { "name": "edge", "value": "inset 0 1px 0 rgb(255 255 255 / 0.06)", "purpose": "The lit top edge of every app glass panel." },
+      { "name": "ambient-1", "value": "0 10px 30px -18px rgb(0 0 0 / 0.7)", "purpose": "App content panels (glass depth 1)." },
+      { "name": "ambient-2", "value": "0 24px 60px -24px rgb(0 0 0 / 0.75)", "purpose": "App overlays, menus and toasts (glass depth 2). Never used on the landing page." }
+    ],
+    "motion": [
+      { "name": "ease-out", "value": "cubic-bezier(0.22, 1, 0.36, 1)", "purpose": "Default easing for state transitions." },
+      { "name": "ease-in-out", "value": "cubic-bezier(0.65, 0, 0.35, 1)", "purpose": "Symmetric moves such as panels sliding between positions." },
+      { "name": "dur-fast", "value": "140ms", "purpose": "Hover and press feedback." },
+      { "name": "dur", "value": "220ms", "purpose": "Standard state changes." },
+      { "name": "dur-slow", "value": "360ms", "purpose": "Overlays entering." },
+      { "name": "locker-light", "value": "lamp 0→0.85 in 0.5s then →0 over 2.2s (expo.out); sheen -20%→120% over 2s (power2.inOut); pointer follow 0.7s (power3.out)", "purpose": "The landing page's single authored moment; disabled under reduced motion." }
+    ],
+    "breakpoints": [
+      { "name": "phone", "value": "640px" },
+      { "name": "frame", "value": "1024px" }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "The app's primary action: lilac fill, ink text, gently rounded.",
+      "html": "<button class=\"ds-btn-primary\">Save thesis</button>",
+      "css": ".ds-btn-primary { display: inline-flex; align-items: center; justify-content: center; height: 40px; padding: 0 16px; border: 0; border-radius: 12px; background: #9b82d7; color: #171320; font: 500 14px/1 Onest, ui-sans-serif, system-ui, sans-serif; box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.15); cursor: pointer; transition: background-color 140ms cubic-bezier(0.22, 1, 0.36, 1), transform 140ms cubic-bezier(0.22, 1, 0.36, 1); } .ds-btn-primary:hover { background: #ac97e0; } .ds-btn-primary:active { transform: scale(0.98); } .ds-btn-primary:focus-visible { outline: 2px solid #d5c6f2; outline-offset: 2px; }"
+    },
+    {
+      "name": "Archive Button",
+      "kind": "button",
+      "refersTo": "button-archive",
+      "description": "The landing page's call to action: a white-on-violet pill that holds 4.5:1.",
+      "html": "<button class=\"ds-btn-archive\">Open your archive</button>",
+      "css": ".ds-btn-archive { height: 52px; padding: 0 24px; border: 0; border-radius: 999px; background: #7f62d2; color: #ffffff; font: 500 15.5px/1 Geom, Onest, ui-sans-serif, sans-serif; white-space: nowrap; cursor: pointer; transition: background-color 160ms cubic-bezier(0.22, 1, 0.36, 1), transform 160ms cubic-bezier(0.22, 1, 0.36, 1); } .ds-btn-archive:hover { background: #7154c6; } .ds-btn-archive:active { transform: scale(0.98); } .ds-btn-archive:focus-visible { outline: 2px solid #d5c6f2; outline-offset: 3px; }"
+    },
+    {
+      "name": "Archive Email Field",
+      "kind": "input",
+      "refersTo": "input-archive",
+      "description": "Pill field with a mail glyph; the border turns lilac on focus.",
+      "html": "<label class=\"ds-field\"><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.6\" aria-hidden=\"true\"><rect x=\"3\" y=\"5\" width=\"18\" height=\"14\" rx=\"2\"/><path d=\"m3.5 6.5 8.5 6.5 8.5-6.5\"/></svg><input type=\"email\" placeholder=\"Your email address\" aria-label=\"Email address\"></label>",
+      "css": ".ds-field { display: flex; align-items: center; gap: 12px; height: 52px; padding: 0 18px; border: 1px solid #554e82; border-radius: 999px; background: #171428; transition: border-color 160ms cubic-bezier(0.22, 1, 0.36, 1); } .ds-field svg { width: 18px; height: 18px; flex: none; color: #8a84b7; } .ds-field input { flex: 1; min-width: 0; border: 0; background: transparent; color: #efedf7; font: 16px Geom, Onest, ui-sans-serif, sans-serif; caret-color: #9b82d7; outline: none; } .ds-field input::placeholder { color: #8a84b7; } .ds-field:focus-within { border-color: #9b82d7; outline: 2px solid #d5c6f2; outline-offset: 3px; }"
+    },
+    {
+      "name": "Accession Label",
+      "kind": "chip",
+      "refersTo": "accession-tag",
+      "description": "The one label form for positions, theses and orders: PF-#### · SYMBOL · status.",
+      "html": "<span class=\"ds-tag\">PF-0017 · VWCE</span>",
+      "css": ".ds-tag { display: inline-flex; align-items: center; height: 22px; padding: 0 8px; border: 1px solid rgb(213 198 242 / 0.12); border-radius: 4px; background: rgb(213 198 242 / 0.06); color: #cfc6ea; font: 500 12px/1 Geom, Onest, ui-sans-serif, sans-serif; letter-spacing: 0.01em; white-space: nowrap; font-variant-numeric: tabular-nums; }"
+    },
+    {
+      "name": "Accession Label, Lit",
+      "kind": "chip",
+      "refersTo": "accession-tag-lit",
+      "description": "The one specimen in focus: frosted lavender with label ink.",
+      "html": "<span class=\"ds-tag-lit\">PF-0042 · ASML · Sample thesis</span>",
+      "css": ".ds-tag-lit { display: inline-flex; align-items: center; height: 22px; padding: 0 8px; border: 1px solid rgb(255 255 255 / 0.3); border-radius: 4px; background: linear-gradient(172deg, #dccafb, #c3abf2); color: #2f2258; font: 500 12px/1 Geom, Onest, ui-sans-serif, sans-serif; letter-spacing: 0.01em; white-space: nowrap; font-variant-numeric: tabular-nums; }"
+    },
+    {
+      "name": "Glass Pane",
+      "kind": "card",
+      "refersTo": "glass-panel",
+      "description": "Vitrine glass over lilac light: hairline border, brighter top edge, no nesting.",
+      "html": "<div class=\"ds-stage\"><div class=\"ds-pane\"><div class=\"ds-pane-head\"><span>Sample portfolio</span><small>Illustrative figures</small></div><p>Holdings without a price stay listed and out of totals.</p></div></div>",
+      "css": ".ds-stage { padding: 28px; background: radial-gradient(closest-side at 70% 40%, rgb(124 92 214 / 0.32), transparent), #100e1e; } .ds-pane { border: 1px solid rgb(213 198 242 / 0.13); border-radius: 14px; background: linear-gradient(180deg, rgb(213 198 242 / 0.075), rgb(213 198 242 / 0.02)); -webkit-backdrop-filter: blur(10px) saturate(1.15); backdrop-filter: blur(10px) saturate(1.15); box-shadow: inset 0 1px 0 rgb(239 237 247 / 0.14); color: #efedf7; font: 14px/1.5 Geom, Onest, ui-sans-serif, sans-serif; } .ds-pane-head { display: flex; justify-content: space-between; padding: 16px 20px; border-bottom: 1px solid rgb(213 198 242 / 0.07); font-weight: 500; } .ds-pane-head small { color: #8a84b7; font-weight: 400; } .ds-pane p { margin: 0; padding: 16px 20px; color: #b3adcf; }"
+    },
+    {
+      "name": "Landing Navigation",
+      "kind": "nav",
+      "refersTo": "landing-nav",
+      "description": "Porcelain links that warm to lavender on hover.",
+      "html": "<nav class=\"ds-nav\"><a href=\"#\">Portfolio</a><a href=\"#\">Theses</a><a href=\"#\">Paper Lab</a><a href=\"#\">Guilds</a></nav>",
+      "css": ".ds-nav { display: flex; gap: 32px; padding: 16px 0; background: #100e1e; font: 16px/1 Geom, Onest, ui-sans-serif, sans-serif; } .ds-nav a { color: #efedf7; text-decoration: none; transition: color 160ms cubic-bezier(0.22, 1, 0.36, 1); } .ds-nav a:hover { color: #d5c6f2; } .ds-nav a:focus-visible { outline: 2px solid #d5c6f2; outline-offset: 3px; border-radius: 4px; }"
+    },
+    {
+      "name": "Revision Rail",
+      "kind": "custom",
+      "refersTo": "revision-rail",
+      "description": "Thesis history: open rings for revisions, a filled lilac marker for now.",
+      "html": "<ol class=\"ds-rail\"><li><b>Rev 1 · 14 Jan</b>First draft.</li><li><b>Rev 2 · 3 Jun</b>Bear case rewritten.</li><li class=\"is-now\"><b>Now</b>Open.</li></ol>",
+      "css": ".ds-rail { position: relative; display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin: 0; padding: 0; list-style: none; color: #b3adcf; font: 13.5px/1.45 Geom, Onest, ui-sans-serif, sans-serif; } .ds-rail::before { content: \"\"; position: absolute; left: 0; right: 0; top: 7px; height: 1px; background: linear-gradient(to right, rgb(213 198 242 / 0.28), rgb(155 130 215 / 0.7)); } .ds-rail li { position: relative; display: grid; gap: 4px; padding-top: 22px; } .ds-rail li::before { content: \"\"; position: absolute; top: 3px; left: 0; width: 9px; height: 9px; border-radius: 50%; background: #100e1e; box-shadow: inset 0 0 0 1.5px #d5c6f2; } .ds-rail li.is-now::before { background: #9b82d7; box-shadow: 0 0 0 4px rgb(155 130 215 / 0.22), inset 0 0 0 1.5px #d5c6f2; } .ds-rail b { color: #efedf7; font-weight: 500; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Specimen Vitrine",
+    "overview": "Every position is a specimen kept under glass with the reasoning that put it there. Porfael is a quiet collection room at night: an ink ground deepening into amethyst, frosted vitrine panes with one bright hairline along their top edge, and lilac light falling on whatever the visitor has chosen to keep. Nothing on the page shouts. The interface earns trust by being calm, legible and exact, so a beginner is not intimidated and a serious investor is not patronised.\n\nDensity follows the surface. The public landing page is spacious and image-led: a wall of glass specimen lockers with one lit and pulled forward. The signed-in app is an Operate surface, with denser glass panels, tabular numerals and familiar controls. Brand lives in the details there: the faceted P, the accession label, the lilac focus ring and the glass depth steps.",
+    "keyCharacteristics": [
+      "Dark by default (evening research under low light); a porcelain light theme carries the same roles.",
+      "Glass is a depth system with exactly three steps, never decoration.",
+      "One accession-label form (PF-#### · SYMBOL · status) repeats at every scale, from the hero plate to table chips.",
+      "Lilac is the only accent; semantic colours appear only on data.",
+      "Numbers are tabular, and money is shown only to its owner."
+    ],
+    "rules": [
+      { "name": "The One Lamp Rule", "body": "Lilac is the only accent. A screen lights one thing (the primary action, the lit specimen, the selected row) and leaves the rest of the collection in shadow.", "section": "colors" },
+      { "name": "The Lilac-Not-Grey Rule", "body": "Neutrals are tinted from the violet family. Secondary text, borders and dividers are heather or translucent lavender, never neutral grey.", "section": "colors" },
+      { "name": "The Weight-Not-Size Rule", "body": "Display and headline stay at weight 400. Emphasis comes from size and from the one lilac accent, never from bold display type or gradient text.", "section": "typography" },
+      { "name": "The Tabular Rule", "body": "Every number that can be compared (weights, returns, quantities, dates in a rail) is set with tabular, lining figures.", "section": "typography" },
+      { "name": "The Overlap Rule", "body": "On the landing page, one pane sits in front of another to show depth, and the pane behind gets more blur and less light. Nothing there casts a drop shadow.", "section": "elevation" },
+      { "name": "The Glass-Has-Something-Behind-It Rule", "body": "A glass pane is only drawn where there is light behind it to frost: the ambient field in the app, or a soft lilac glow in a landing section. Glass on a flat ground is a costume.", "section": "elevation" }
+    ],
+    "dos": [
+      "Do keep one lilac accent lit per screen and leave the rest in ink, heather and hairline.",
+      "Do repeat the accession label (PF-#### · SYMBOL · status) wherever a position, thesis or order is named.",
+      "Do set every comparable number with tabular, lining figures, and show money values only to their owner. Shared views use percentages.",
+      "Do label demonstration content as a sample, in the panel caption, wherever it appears.",
+      "Do keep white text on lilac at 4.5:1 or better: use archive-violet (#7f62d2) or deeper behind white, and ink text on the lighter lilac.",
+      "Do place glass only where there is light behind it to frost."
+    ],
+    "donts": [
+      "Don't put a kicker or eyebrow label above a heading; the heading carries itself.",
+      "Don't use drop shadows on the landing page; show depth by overlapping panes.",
+      "Don't use gradient text, coloured side stripes, or neutral grey for secondary text.",
+      "Don't set display lines in bold; Geom display stays at weight 400.",
+      "Don't use semantic green or red outside data (returns, gains, losses, warnings).",
+      "Don't shrink the faceted gem mark (PorfaelGem) below about 24px; use the two-tone PorfaelMark there."
+    ]
+  }
+}

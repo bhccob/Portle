@@ -5,7 +5,7 @@
  * Brand foundation: Ink #171320 · Amethyst #49366B · Lilac #9B82D7 · Lavender #D5C6F2 · Porcelain #F3EFF8.
  * Glass is a depth system, not decoration: --depth-1 (content panels), --depth-2 (overlays),
  * --depth-3 (navigation chrome). Each step raises blur and surface brightness together.
- * Contrast pairs are verified in docs/DESIGN.md.
+ * The full system (roles, rules, components) is recorded in DESIGN.md.
  */
 
 @custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
