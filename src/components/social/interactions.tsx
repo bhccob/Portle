@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { Bookmark, BookmarkCheck, Flag, HelpCircle, Lightbulb, MoreHorizontal, Swords, ThumbsUp } from "lucide-react";
 import { toast } from "sonner";
 import { bookmarkAction, commentAction, reactAction, reportAction } from "@/app/(app)/theses/actions";
-import { useResultToast } from "@/components/forms/use-result";
+import { useResetKey, useResultToast } from "@/components/forms/use-result";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/field";
 import { Menu, MenuItem, MenuLabel } from "@/components/ui/overlay";
@@ -120,11 +120,17 @@ export function ReportMenu({ target }: { target: Target }) {
 export function CommentForm({ target, placeholder = "Add to the discussion. Evidence beats opinion." }: { target: Target; placeholder?: string }) {
   const [state, action, pending] = useActionState(commentAction.bind(null, target), null);
   const router = useRouter();
-  useResultToast(state, { onSuccess: () => router.refresh() });
+  const [key, reset] = useResetKey();
+  useResultToast(state, {
+    onSuccess: () => {
+      reset();
+      router.refresh();
+    },
+  });
   return (
     <form
       action={action}
-      key={state?.ok ? String(Date.now()) : "form"}
+      key={key}
       className="flex flex-col gap-2 sm:flex-row sm:items-end"
     >
       <Textarea name="body" required maxLength={2000} placeholder={placeholder} aria-label="Write a comment" className="min-h-[44px] flex-1" rows={2} />

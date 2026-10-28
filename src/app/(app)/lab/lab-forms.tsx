@@ -52,7 +52,7 @@ export function OrderTicket({
   });
 
   useEffect(() => {
-    if (!instrument) return setQuote(null);
+    if (!instrument) return;
     const ctrl = new AbortController();
     fetch(`/api/quote?id=${instrument.id}`, { signal: ctrl.signal })
       .then((r) => (r.ok ? r.json() : { quote: null }))
@@ -61,17 +61,19 @@ export function OrderTicket({
     return () => ctrl.abort();
   }, [instrument]);
 
+  const shownQuote = instrument ? quote : null;
+
   // An estimate only; the server recomputes everything at execution.
   const estimate = useMemo(() => {
     const q = Number(qty);
-    const p = type === "limit" && limit ? Number(limit) : quote ? Number(quote.price) * (1 + ((side === "buy" ? 1 : -1) * Number(config.slippageBps)) / 10000) : NaN;
+    const p = type === "limit" && limit ? Number(limit) : shownQuote ? Number(shownQuote.price) * (1 + ((side === "buy" ? 1 : -1) * Number(config.slippageBps)) / 10000) : NaN;
     if (!q || !p || !Number.isFinite(q * p)) return null;
     const notional = q * p;
     const fee = Number(config.feeFlat) + (notional * Number(config.feeBps)) / 10000;
     return { notional, fee, total: side === "buy" ? notional + fee : notional - fee };
-  }, [qty, limit, type, quote, side, config]);
+  }, [qty, limit, type, shownQuote, side, config]);
 
-  const wrongCurrency = quote && quote.currency !== config.currency;
+  const wrongCurrency = shownQuote && shownQuote.currency !== config.currency;
 
   return (
     <form action={action} className="space-y-4">
@@ -95,17 +97,17 @@ export function OrderTicket({
         ))}
       </div>
       <Field label="Security">{(p) => <InstrumentPicker name="instrumentId" id={p.id} defaultValue={initial} onChange={setInstrument} />}</Field>
-      {quote ? (
+      {shownQuote ? (
         <div className="flex flex-wrap items-center justify-between gap-2 text-sm">
           <span className="num text-fg">
-            {formatMoney(quote.price, quote.currency)} <span className="text-fg-subtle">last</span>
+            {formatMoney(shownQuote.price, shownQuote.currency)} <span className="text-fg-subtle">last</span>
           </span>
-          <SourceBadge kind={quote.isDemo ? "demo" : "delayed"} asOf={quote.asOf} detail={quote.isDemo ? "Demo · synthetic" : quote.source} />
+          <SourceBadge kind={shownQuote.isDemo ? "demo" : "delayed"} asOf={shownQuote.asOf} detail={shownQuote.isDemo ? "Demo · synthetic" : shownQuote.source} />
         </div>
       ) : instrument ? (
         <p className="text-sm text-warning">No quote available. The Lab will reject the order rather than invent a price.</p>
       ) : null}
-      {wrongCurrency ? <p className="text-sm text-warning">This Lab account trades in {config.currency}; {instrument?.symbol} is quoted in {quote?.currency}. Choose a {config.currency} security.</p> : null}
+      {wrongCurrency ? <p className="text-sm text-warning">This Lab account trades in {config.currency}; {instrument?.symbol} is quoted in {shownQuote?.currency}. Choose a {config.currency} security.</p> : null}
       <div className="grid grid-cols-2 gap-3">
         <Field label="Order type">
           {(p) => (

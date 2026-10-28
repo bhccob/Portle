@@ -4,7 +4,7 @@ import { useActionState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { Trash2 } from "lucide-react";
 import { toast } from "sonner";
-import { useResultToast } from "@/components/forms/use-result";
+import { useResetKey, useResultToast } from "@/components/forms/use-result";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/field";
 import { addNoteAction, deleteThesisAction } from "../actions";
@@ -12,9 +12,15 @@ import { addNoteAction, deleteThesisAction } from "../actions";
 export function PrivateNoteForm({ thesisId }: { thesisId: string }) {
   const [state, action, pending] = useActionState(addNoteAction.bind(null, thesisId), null);
   const router = useRouter();
-  useResultToast(state, { onSuccess: () => router.refresh() });
+  const [key, reset] = useResetKey();
+  useResultToast(state, {
+    onSuccess: () => {
+      reset();
+      router.refresh();
+    },
+  });
   return (
-    <form action={action} key={state?.ok ? String(Math.random()) : "note"} className="space-y-2">
+    <form action={action} key={key} className="space-y-2">
       <Textarea name="body" required maxLength={4000} aria-label="Private note" placeholder="Only you will ever see this." className="min-h-20" />
       <Button type="submit" size="sm" variant="secondary" loading={pending}>
         Save note

@@ -109,6 +109,7 @@ export function PrivacyForm({ privacy }: { privacy: Privacy }) {
 }
 
 export function DeleteAccountDialog() {
+  const router = useRouter();
   const [password, setPassword] = useState("");
   const [confirmText, setConfirm] = useState("");
   const [pending, setPending] = useState(false);
@@ -130,7 +131,8 @@ export function DeleteAccountDialog() {
           if (error) setError(authErrorMessage(error));
           else {
             toast.success("Your account was deleted.");
-            window.location.href = "/";
+            router.replace("/");
+            router.refresh();
           }
         }}
       >

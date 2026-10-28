@@ -21,6 +21,8 @@ import { STATUS_LABEL, STATUS_TONE } from "../theses/page";
 
 export const metadata = { title: "Overview" };
 
+const olderThanDays = (date: Date, days: number) => Date.now() - date.getTime() > days * 86400_000;
+
 export default async function HomePage() {
   const { user, profile, viewer } = await requireViewer();
   const [val, perf, lab, theses, journal, lists, feed, relics] = await Promise.all([
@@ -46,7 +48,7 @@ export default async function HomePage() {
     .filter((m) => m.chg)
     .sort((a, b) => b.chg!.abs().cmp(a.chg!.abs()))
     .slice(0, 5);
-  const attention = theses.filter((t) => t.thesis.status === "under_review" || (t.thesis.status === "active" && Date.now() - +t.thesis.updatedAt > 90 * 86400_000)).slice(0, 3);
+  const attention = theses.filter((t) => t.thesis.status === "under_review" || (t.thesis.status === "active" && olderThanDays(t.thesis.updatedAt, 90))).slice(0, 3);
   const today = new Date().toISOString().slice(0, 10);
   const wroteToday = journal.some((j) => j.entry.entryDate === today);
   const prompt = REFLECTION_PROMPTS[new Date().getUTCDate() % REFLECTION_PROMPTS.length];

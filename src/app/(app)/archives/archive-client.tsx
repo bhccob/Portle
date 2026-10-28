@@ -4,7 +4,7 @@ import { useActionState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { Plus, Trash2 } from "lucide-react";
 import { toast } from "sonner";
-import { fieldError, useResultToast } from "@/components/forms/use-result";
+import { fieldError, useResetKey, useResultToast } from "@/components/forms/use-result";
 import { Button } from "@/components/ui/button";
 import { Field, Input, Select, Textarea } from "@/components/ui/field";
 import { Dialog } from "@/components/ui/overlay";
@@ -51,9 +51,15 @@ export function NewCollectionDialog() {
 export function AddLinkForm({ collectionId }: { collectionId: string }) {
   const [state, action, pending] = useActionState(addItemAction.bind(null, collectionId), null);
   const router = useRouter();
-  useResultToast(state, { onSuccess: () => router.refresh() });
+  const [key, reset] = useResetKey();
+  useResultToast(state, {
+    onSuccess: () => {
+      reset();
+      router.refresh();
+    },
+  });
   return (
-    <form action={action} key={state?.ok ? Math.random() : "f"} className="grid gap-3 sm:grid-cols-[1fr_1.3fr_auto] sm:items-end">
+    <form action={action} key={key} className="grid gap-3 sm:grid-cols-[1fr_1.3fr_auto] sm:items-end">
       <input type="hidden" name="itemType" value="link" />
       <Field label="Title" error={fieldError(state, "title")}>
         {(p) => <Input {...p} name="title" required maxLength={160} />}

@@ -1,36 +1,79 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Porfael
 
-## Getting Started
+A private archive for your portfolio, your investment theses, and the friends you trust with them.
 
-First, run the development server:
+Porfael combines a multi-account portfolio tracker, an investment-thesis archive with immutable revisions, a paper trading lab on a separate ledger, a reflective journal, and a friends-first social layer with Guilds and Relics. Exact values are private by default and enforced on the server; others only ever see the percentages and writing you choose to share.
+
+> Early access. Market data runs in a clearly labelled **demo mode** (synthetic prices) until a licensed provider is configured. FX uses live ECB reference rates. Broker sync is not enabled yet; CSV import is supported.
+
+## Quick start
+
+Requires Node 24+ and pnpm 9.
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+pnpm install
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+```bash
+cp .env.example .env.local
+```
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Fill `BETTER_AUTH_SECRET` and `PORFAEL_ENCRYPTION_KEY` with 32 random bytes each, base64-encoded:
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+node -e "console.log(require('crypto').randomBytes(32).toString('base64'))"
+```
 
-## Learn More
+Start everything (a local PostgreSQL server is started automatically from `.data/postgres`, migrated and seeded):
 
-To learn more about Next.js, take a look at the following resources:
+```bash
+pnpm dev
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Optional: three example members (`ada`, `ben`, `cleo` @example.test, password in `e2e/fixtures.ts`) with sample portfolios, theses, a Guild and posts:
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+```bash
+pnpm db:seed-dev
+```
 
-## Deploy on Vercel
+Open http://localhost:3000. Without a mail provider, verification and reset emails appear at http://localhost:3000/dev/mailbox (development only).
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Tests and checks
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+```bash
+pnpm test
+```
+
+```bash
+pnpm test:e2e
+```
+
+```bash
+pnpm typecheck
+```
+
+```bash
+pnpm lint
+```
+
+- Unit and integration: 87 tests (domain accounting, valuation, FX, returns, paper engine, permissions, Relics, CSV import, plus service tests on in-memory Postgres).
+- End-to-end: the full member journey including privacy checks and account deletion.
+
+## Configuration
+
+See `.env.example`. Production needs `DATABASE_URL` (PostgreSQL), `BETTER_AUTH_SECRET`, `BETTER_AUTH_URL`, `PORFAEL_ENCRYPTION_KEY` and `RESEND_API_KEY`. Real quotes need `MARKET_DATA_PROVIDER=finnhub` and `FINNHUB_API_KEY` (check the licence terms for your use).
+
+## Documentation
+
+- `PRODUCT.md`: product truth and principles
+- `docs/PRODUCT_SPEC.md`: what each screen does
+- `docs/ARCHITECTURE.md`: structure and key decisions
+- `docs/DATA_MODEL.md`: schema, accounting and return methodology
+- `docs/SECURITY.md`: privacy model, auth, threat mitigations
+- `docs/ROADMAP.md`: what's next and known limitations
+
+## Stack
+
+Next.js 16 (App Router), React 19, TypeScript, Tailwind CSS 4, Drizzle ORM, PostgreSQL, Better Auth, decimal.js, Zod, Radix UI, Vitest, Playwright.
+
+Porfael is for education and record-keeping. It is not a broker and does not give financial advice.
