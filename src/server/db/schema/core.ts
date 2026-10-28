@@ -1,0 +1,136 @@
+import { sql } from "drizzle-orm";
+import {
+  boolean,
+  index,
+  jsonb,
+  pgEnum,
+  pgTable,
+  primaryKey,
+  text,
+  timestamp,
+  uniqueIndex,
+  uuid,
+} from "drizzle-orm/pg-core";
+import { user } from "./auth";
+
+const ts = () => timestamp({ withTimezone: true });
+
+/** Who may see a piece of content. Enforced server-side in src/domain/permissions.ts. */
+export const audience = pgEnum("audience", ["private", "friends", "guild", "public"]);
+
+export const profiles = pgTable(
+  "profiles",
+  {
+    userId: text()
+      .primaryKey()
+      .references(() => user.id, { onDelete: "cascade" }),
+    handle: text().notNull(),
+    displayName: text().notNull(),
+    bio: text().notNull().default(""),
+    avatarHue: text().notNull().default("262"),
+    baseCurrency: text().notNull().default("EUR"),
+    interests: text()
+      .array()
+      .notNull()
+      .default(sql`'{}'::text[]`),
+    theme: text().notNull().default("system"),
+    onboardedAt: ts(),
+    createdAt: ts().notNull().defaultNow(),
+    updatedAt: ts().notNull().defaultNow(),
+  },
+  (t) => [uniqueIndex("profiles_handle_lower_idx").on(sql`lower(${t.handle})`)],
+);
+
+/**
+ * Granular privacy controls. Every value defaults to the most private option.
+ * `shareAllocation` exposes percentages only; exact values are never shared.
+ */
+export const privacySettings = pgTable("privacy_settings", {
+  userId: text()
+    .primaryKey()
+    .references(() => user.id, { onDelete: "cascade" }),
+  profileVisibility: audience().notNull().default("friends"),
+  allocationVisibility: audience().notNull().default("private"),
+  holdingsVisibility: audience().notNull().default("private"),
+  activityVisibility: audience().notNull().default("private"),
+  thesesDefaultVisibility: audience().notNull().default("private"),
+  journalDefaultVisibility: audience().notNull().default("private"),
+  guildsVisibility: audience().notNull().default("friends"),
+  relicsVisibility: audience().notNull().default("friends"),
+  discoverable: boolean().notNull().default(true),
+  updatedAt: ts().notNull().defaultNow(),
+});
+
+/** Append-only consent record (GDPR). The latest row per kind wins. */
+export const consents = pgTable(
+  "consents",
+  {
+    id: uuid().primaryKey().defaultRandom(),
+    userId: text()
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    kind: text().notNull(),
+    granted: boolean().notNull(),
+    version: text().notNull(),
+    createdAt: ts().notNull().defaultNow(),
+  },
+  (t) => [index().on(t.userId, t.kind)],
+);
+
+/** Minimal audit trail for sensitive actions. Never stores values, tokens or balances. */
+export const auditEvents = pgTable(
+  "audit_events",
+  {
+    id: uuid().primaryKey().defaultRandom(),
+    userId: text().references(() => user.id, { onDelete: "set null" }),
+    action: text().notNull(),
+    entityType: text(),
+    entityId: text(),
+    metadata: jsonb().$type<Record<string, string | number | boolean>>().notNull().default({}),
+    createdAt: ts().notNull().defaultNow(),
+  },
+  (t) => [index().on(t.userId, t.createdAt)],
+);
+
+export const notifications = pgTable(
+  "notifications",
+  {
+    id: uuid().primaryKey().defaultRandom(),
+    userId: text()
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    kind: text().notNull(),
+    actorId: text().references(() => user.id, { onDelete: "cascade" }),
+    entityType: text(),
+    entityId: text(),
+    title: text().notNull(),
+    body: text().notNull().default(""),
+    href: text(),
+    readAt: ts(),
+    createdAt: ts().notNull().defaultNow(),
+  },
+  (t) => [index().on(t.userId, t.createdAt)],
+);
+
+/** Development mailbox: outgoing mail is stored here when no mail provider is configured. */
+export const emailOutbox = pgTable("email_outbox", {
+  id: uuid().primaryKey().defaultRandom(),
+  to: text().notNull(),
+  subject: text().notNull(),
+  text: text().notNull(),
+  createdAt: ts().notNull().defaultNow(),
+});
+
+export const userBlocks = pgTable(
+  "user_blocks",
+  {
+    blockerId: text()
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    blockedId: text()
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    createdAt: ts().notNull().defaultNow(),
+  },
+  (t) => [primaryKey({ columns: [t.blockerId, t.blockedId] }), index().on(t.blockedId)],
+);
