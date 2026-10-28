@@ -1,5 +1,5 @@
 {
-  "id": "e821fb03-1434-4db4-9260-66ed943897c0",
+  "id": "7d4f2626-22d5-4fb4-ba2d-004d8b5935be",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -3312,6 +3312,12 @@
           "primaryKey": true,
           "notNull": true,
           "default": "gen_random_uuid()"
+        },
+        "seq": {
+          "name": "seq",
+          "type": "bigserial",
+          "primaryKey": false,
+          "notNull": true
         },
         "paper_account_id": {
           "name": "paper_account_id",

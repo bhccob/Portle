@@ -397,6 +397,7 @@ CREATE TABLE "paper_fills" (
 --> statement-breakpoint
 CREATE TABLE "paper_ledger" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
+	"seq" bigserial NOT NULL,
 	"paper_account_id" uuid NOT NULL,
 	"epoch" integer NOT NULL,
 	"order_id" uuid,

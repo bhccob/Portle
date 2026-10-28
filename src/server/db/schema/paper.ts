@@ -1,4 +1,4 @@
-import { index, integer, pgEnum, pgTable, text, timestamp, unique, uuid } from "drizzle-orm/pg-core";
+import { bigserial, index, integer, pgEnum, pgTable, text, timestamp, unique, uuid } from "drizzle-orm/pg-core";
 import { user } from "./auth";
 import { dec, instruments } from "./portfolio";
 import { theses } from "./research";
@@ -96,6 +96,8 @@ export const paperLedger = pgTable(
   "paper_ledger",
   {
     id: uuid().primaryKey().defaultRandom(),
+    /** Strict insertion order; createdAt alone ties within a transaction. */
+    seq: bigserial({ mode: "number" }).notNull(),
     paperAccountId: uuid()
       .notNull()
       .references(() => paperAccounts.id, { onDelete: "cascade" }),
