@@ -36,6 +36,9 @@ async function main() {
     if (await reachable(LOCAL_URL)) {
       console.log(`Reusing local Postgres on port ${PORT}.`);
     } else {
+      // Postgres's log stays quiet; its last lines are shown only if start-up fails,
+      // because embedded-postgres rejects without a reason (e.g. when the port is taken).
+      const pgLog: string[] = [];
       pg = new EmbeddedPostgres({
         databaseDir: ".data/postgres",
         port: PORT,
@@ -43,14 +46,20 @@ async function main() {
         password: "porfael-local-dev",
         persistent: true,
         postgresFlags: ["-c", "listen_addresses=localhost"],
-        onLog: () => {},
+        onLog: (m) => {
+          if (pgLog.push(String(m).trim()) > 20) pgLog.shift();
+        },
         onError: (e) => console.error("[postgres]", e instanceof Error ? e.message : String(e).trim()),
       });
       if (!existsSync(".data/postgres/PG_VERSION")) {
         console.log("Initialising local Postgres in .data/postgres (first run only)…");
         await pg.initialise();
       }
-      await pg.start();
+      await pg.start().catch(() => {
+        throw new Error(
+          `Local Postgres did not start on port ${PORT}. If another Postgres holds the port, stop it or set PORTLE_DEV_PG_PORT.\n` + pgLog.slice(-6).join("\n"),
+        );
+      });
       await pg.createDatabase("porfael").catch(() => {
         /* already exists */
       });
