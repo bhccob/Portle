@@ -2,40 +2,26 @@ import Image from "next/image";
 import Link from "next/link";
 import { Gabarito } from "next/font/google";
 import { redirect } from "next/navigation";
-import { ChartPie, FileText, FlaskConical, Gem } from "lucide-react";
+import { Eye, LockKeyhole, Sprout } from "lucide-react";
 import { PorfaelGem } from "@/components/brand/logo";
 import { getSession } from "@/server/session";
-import { VitrineLight } from "./landing-motion";
+import { NotesMotion } from "./landing-motion";
 import { LandingFooter, LandingSections } from "./landing-sections";
 import "./landing.css";
 
 const landingFace = Gabarito({ subsets: ["latin", "latin-ext"], variable: "--font-landing", display: "swap" });
 
 export const metadata = {
-  title: { absolute: "Porfael · Keep the reasoning behind every position" },
-  description: "A private archive for your portfolio, your theses, and the friends you trust with them. Private by default.",
+  title: { absolute: "Porfael · Know why you own what you own" },
+  description: "Track every account in one place and jot down the reasons behind each investment. Private by default, free while in early access.",
 };
 
-/** A three-person group, in lucide's 24px grid and stroke, as the comp draws Guilds. */
-function Group(props: React.SVGProps<SVGSVGElement> & { strokeWidth?: number }) {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" {...props}>
-      <circle cx="12" cy="7" r="3.2" />
-      <path d="M6.5 19v-1.2a5.5 5.5 0 0 1 11 0V19Z" />
-      <circle cx="5.6" cy="9" r="2.3" />
-      <path d="M2 17.6v-.6a3.6 3.6 0 0 1 4.4-3.5" />
-      <circle cx="18.4" cy="9" r="2.3" />
-      <path d="M22 17.6v-.6a3.6 3.6 0 0 0-4.4-3.5" />
-    </svg>
-  );
-}
-
-const DRAWERS = [
-  { href: "#portfolio", label: "Portfolio", Icon: ChartPie },
-  { href: "#theses", label: "Theses", Icon: FileText },
-  { href: "#lab", label: "Paper Lab", Icon: FlaskConical },
-  { href: "#guilds", label: "Guilds", Icon: Group },
-  { href: "#relics", label: "Relics", Icon: Gem },
+/* Illustrative sample holdings for the hero; labelled "Sample" on the card. */
+const HOLDINGS = [
+  { name: "Apple", mark: "A", pct: "32.4%" },
+  { name: "Microsoft", mark: "M", pct: "28.7%" },
+  { name: "Alphabet", mark: "G", pct: "21.3%" },
+  { name: "NVIDIA", mark: "N", pct: "17.6%" },
 ] as const;
 
 export default async function Landing() {
@@ -44,25 +30,6 @@ export default async function Landing() {
     <div className={`landing ${landingFace.variable}`}>
       <main>
         <section className="l-frame" aria-labelledby="l-title">
-          <div className="l-plate">
-            <div className="l-plate-art">
-              <Image
-                src="/assets/plates/vitrine.png"
-                alt="A cut amethyst geode glowing inside a glass display case, its growth bands marked as thesis revisions."
-                fill
-                priority
-                sizes="(max-width: 639px) 300vw, (max-width: 1179px) 1400px, 100vw"
-              />
-              <ol className="l-revs" aria-label="Sample thesis revisions">
-                <li className="l-rev l-rev-4">Rev 4 · now</li>
-                <li className="l-rev l-rev-3">Rev 3</li>
-                <li className="l-rev l-rev-2">Rev 2</li>
-                <li className="l-rev l-rev-1">Rev 1 · Mar 2025</li>
-              </ol>
-              <VitrineLight />
-            </div>
-          </div>
-
           <Link href="/" className="l-brand" aria-label="Porfael home">
             <PorfaelGem />
             <span>Porfael</span>
@@ -88,61 +55,108 @@ export default async function Landing() {
           </Link>
 
           <h1 id="l-title" className="l-headline">
-            Keep the reasoning behind <br />
-            every position.
+            Know why you own <br />
+            what you own.
           </h1>
-
-          <article className="l-card" aria-label="Sample thesis card">
-            <p className="l-card-title">PF-0042 · ASML · Sample thesis</p>
-            <p className="l-card-status">Active</p>
-            <dl className="l-card-cases">
-              <div className="l-card-bull">
-                <dt>Bull case:</dt>
-                <dd>
-                  EUV lithography monopoly holds <br />
-                  through 2027
-                </dd>
-              </div>
-              <div className="l-card-invalidation">
-                <dt>Invalidation:</dt>
-                <dd>
-                  EUV orders fall two quarters <br />
-                  in a row
-                </dd>
-              </div>
-            </dl>
-            <dl className="l-card-rows">
-              <div>
-                <dt>Allocation</dt>
-                <dd>8.2%</dd>
-              </div>
-              <div>
-                <dt>Value</dt>
-                <dd>Private</dd>
-              </div>
-            </dl>
-          </article>
-
-          <p className="l-subline">A private archive for your portfolio, your theses, and the friends you trust with them.</p>
+          <p className="l-subline">
+            Track every account in one place and jot down the <br />
+            reasons behind each investment. Private by default, <br />
+            free while we&rsquo;re in early access.
+          </p>
 
           <form className="l-signup" action="/sign-up" method="get">
             <label className="l-email">
               <span className="sr-only-l">Email address</span>
-              <input type="email" name="email" placeholder="you@domain.com" autoComplete="email" required />
+              <input type="email" name="email" placeholder="you@email.com" autoComplete="email" required />
             </label>
             <button type="submit" className="l-cta">
-              Open your archive
+              Start your archive
             </button>
           </form>
 
-          <nav className="l-drawers" aria-label="Sections">
-            {DRAWERS.map(({ href, label, Icon }, i) => (
-              <a key={href} href={href} className="l-drawer" style={{ "--i": i } as React.CSSProperties}>
-                <Icon aria-hidden strokeWidth={1.4} />
-                <span>{label}</span>
-              </a>
-            ))}
-          </nav>
+          <ul className="l-assure">
+            <li>
+              <LockKeyhole aria-hidden strokeWidth={1.5} />
+              No broker passwords
+            </li>
+            <li aria-hidden className="l-assure-sep" />
+            <li>
+              <Eye aria-hidden strokeWidth={1.5} />
+              Only you see your numbers
+            </li>
+            <li aria-hidden className="l-assure-sep" />
+            <li>
+              <Sprout aria-hidden strokeWidth={1.5} />
+              Free to start
+            </li>
+          </ul>
+
+          <div className="l-memos">
+            <article className="l-memo l-memo-thesis" aria-label="Sample thesis note">
+              <h2 className="l-th-title">Why I bought ASML</h2>
+              <ul className="l-th-list">
+                <li>
+                  Leader in EUV lithography <br />
+                  with a wide moat.
+                </li>
+                <li>
+                  Essential to the chip supply <br />
+                  chain, long runway ahead.
+                </li>
+                <li>
+                  Strong balance sheet and <br />
+                  consistent execution.
+                </li>
+              </ul>
+              <p className="l-th-tag">Revisit in January</p>
+              <Image className="l-gem" src="/assets/plates/gem.png" alt="" width={294} height={360} />
+            </article>
+
+            <article className="l-memo l-memo-portfolio" aria-label="Sample portfolio">
+              <h2 className="l-pf-title">Portfolio</h2>
+              <p className="l-pf-sample">Sample</p>
+              <div className="l-pf-donut" aria-hidden />
+              <p className="l-pf-label">Total value</p>
+              <p className="l-pf-value">$24,832</p>
+              <p className="l-pf-gain">
+                <span>
+                  <svg viewBox="0 0 10 9" aria-hidden>
+                    <path d="M5 .6 9.6 8.4H.4Z" fill="currentColor" />
+                  </svg>
+                  +5.2%
+                </span>{" "}
+                (all time)
+              </p>
+              <ul className="l-pf-rows">
+                {HOLDINGS.map((h) => (
+                  <li key={h.name}>
+                    <span className="l-pf-dot" aria-hidden />
+                    <span className="l-pf-mark" aria-hidden>
+                      {h.mark}
+                    </span>
+                    <span className="l-pf-name">{h.name}</span>
+                    <span className="l-pf-pct">{h.pct}</span>
+                  </li>
+                ))}
+              </ul>
+            </article>
+
+            <article className="l-memo l-memo-comment" aria-label="Sample comment from a friend">
+              <Image className="l-avatar" src="/assets/plates/avatar.png" alt="" width={348} height={348} />
+              <p className="l-comment">
+                <b>Bob:</b>
+                good point on the export risk
+              </p>
+            </article>
+            <NotesMotion />
+          </div>
+
+          {/* The top of the next section, which the first viewport shows. */}
+          <div className="l-panel">
+            <h2 id="how-title" className="l-how">
+              How Porfael works
+            </h2>
+          </div>
         </section>
 
         <LandingSections />

@@ -1,68 +1,29 @@
 /*
- * Landing page (/) — the Specimen Vitrine, from the approved comp
- * .impeccable/mocks/blend/blend-a.png. The first viewport is the measured comp
- * layout (.impeccable/build/scaffold/layout.css): region boxes are % of a
- * 2688×1520 frame and sizes are cqw of that frame (1cqw = 26.88 comp px), so it
- * scales as one piece on desktop. Below 1180px it reflows to one column.
- * Section styles live in landing-sections.css.
+ * Landing page (/) — "Notebook": a friendly charcoal page with the product's
+ * own cards laid out like notes on a desk. The first viewport is the measured
+ * comp (.impeccable/mocks/friendly/notebook.png, scaffold in
+ * .impeccable/build/scaffold/layout.css): positions are % of a 2688×1520 frame
+ * and sizes are cqw of that frame (1cqw = 26.88 comp px). Each note is its own
+ * container, so its contents are sized in cqw of the note and scale with it.
+ * Below 1180px the page reflows to one column. Sections: landing-sections.css.
  */
 .landing {
-  --l-ground: #120c20;
-  --l-ink: #f4f1f7;
-  --l-body: #b3adcf;
-  --l-muted: #8a84b7;
-  --l-subtle: #6e688f;
+  --l-ground: #1c1c20;
+  --l-raised: #212128;
+  --l-card: #25262d;
+  --l-ink: #f6f4fc;
+  --l-body: #bcb9d8;
+  --l-muted: #9a98b6;
+  --l-subtle: #77758f;
   --l-lilac: #9b82d7;
   --l-lavender: #d5c6f2;
-  --l-glass-text: #d7cef6;
-  --l-annotation: #c3b7ea;
-  --l-cta: #bca6fa;
-  --l-cta-hover: #cdbbfd;
-  --l-cta-ink: #24163d;
-  --l-field: #241d42;
-  --l-field-line: #a79dd5;
-  --l-label-ink: #2f2258;
-  --l-line: rgb(213 198 242 / 0.12);
-  --l-line-soft: rgb(213 198 242 / 0.07);
+  --l-cta: #9877e1;
+  --l-cta-hover: #a68aea;
+  --l-gain: #7fd6a0;
+  --l-label-ink: #2a1d52;
+  --l-line: rgb(255 255 255 / 0.09);
+  --l-line-soft: rgb(255 255 255 / 0.06);
   --ease: cubic-bezier(0.22, 1, 0.36, 1);
-
-  --r-vitrine-y: 7.37%;
-  --r-vitrine-h: 74.47%;
-  --r-drawers-x: 8.56%;
-  --r-drawers-y: 81.84%;
-  --r-drawers-w: 82.96%;
-  --r-drawers-h: 18.16%;
-  --r-brand-x: 4.39%;
-  --r-brand-y: 1.45%;
-  --r-brand-h: 6.05%;
-  --r-nav-x: 35.53%;
-  --r-nav-y: 2.63%;
-  --r-nav-w: 27.9%;
-  --r-nav-h: 3.03%;
-  --r-signin-x: 91.82%;
-  --r-signin-y: 2.76%;
-  --r-signin-w: 3.79%;
-  --r-signin-h: 2.76%;
-  --r-headline-x: 28.65%;
-  --r-headline-y: 13.16%;
-  --r-headline-w: 42.97%;
-  --r-headline-h: 12.89%;
-  --r-card-x: 56.25%;
-  --r-card-y: 28.95%;
-  --r-card-w: 17.71%;
-  --r-card-h: 31.71%;
-  --r-subline-x: 29.24%;
-  --r-subline-y: 68.03%;
-  --r-subline-w: 41.52%;
-  --r-subline-h: 2.5%;
-  --r-email-x: 33.44%;
-  --r-email-y: 72.76%;
-  --r-email-w: 21.5%;
-  --r-email-h: 5.2%;
-  --r-cta-x: 55.39%;
-  --r-cta-y: 72.76%;
-  --r-cta-w: 11.16%;
-  --r-cta-h: 5.2%;
 
   background: var(--l-ground);
   color: var(--l-ink);
@@ -79,7 +40,7 @@
 }
 
 .landing ::selection {
-  background: rgb(145 116 218 / 0.45);
+  background: rgb(152 119 225 / 0.45);
   color: #fff;
 }
 
@@ -104,13 +65,13 @@
 .l-field {
   display: flex;
   align-items: center;
-  border: 1px solid rgb(167 157 213 / 0.55);
-  border-radius: 10px;
-  background: var(--l-field);
+  border: 1px solid #383843;
+  border-radius: 999px;
+  background: #26262d;
   transition: border-color 160ms var(--ease);
 }
 .l-field:focus-within {
-  border-color: var(--l-lavender);
+  border-color: var(--l-lilac);
 }
 .l-field svg {
   flex: none;
@@ -128,7 +89,7 @@
   outline: none;
 }
 .l-field input::placeholder {
-  color: #a99fd6;
+  color: #8f8da8;
 }
 .landing .l-field:has(input:focus-visible) {
   outline: 2px solid var(--l-lavender);
@@ -137,11 +98,11 @@
 
 .l-btn {
   border: 0;
-  border-radius: 10px;
-  background: var(--l-cta);
-  color: var(--l-cta-ink);
+  border-radius: 999px;
+  background: #8462d6; /* white text at 4.6:1 at any size */
+  color: #fff;
   font: inherit;
-  font-weight: 500;
+  font-weight: 600;
   white-space: nowrap;
   cursor: pointer;
   transition:
@@ -149,7 +110,7 @@
     transform 160ms var(--ease);
 }
 .l-btn:hover {
-  background: var(--l-cta-hover);
+  background: #7653cb;
 }
 .l-btn:active {
   transform: scale(0.98);
@@ -159,27 +120,24 @@
 .l-tag {
   display: inline-flex;
   align-items: center;
-  height: 22px;
-  padding: 0 8px;
-  border-radius: 4px;
-  border: 1px solid var(--l-line);
-  background: rgb(213 198 242 / 0.06);
-  color: #cfc6ea;
-  font-size: 12px;
-  font-weight: 500;
+  height: 24px;
+  padding: 0 10px;
+  border-radius: 999px;
+  background: rgb(155 130 215 / 0.16);
+  color: #d9cdf8;
+  font-size: 12.5px;
+  font-weight: 600;
   letter-spacing: 0.01em;
   white-space: nowrap;
   font-variant-numeric: tabular-nums;
 }
 .l-tag.is-lit {
-  border-color: rgb(255 255 255 / 0.3);
-  background: linear-gradient(172deg, #dccafb, #c3abf2);
+  background: #b096ec;
   color: var(--l-label-ink);
 }
 .l-tag.is-paper {
-  border-style: dashed;
-  border-color: rgb(213 198 242 / 0.3);
   background: transparent;
+  box-shadow: inset 0 0 0 1px rgb(213 198 242 / 0.35);
 }
 
 /* ---------- First viewport (comp frame) ---------- */
@@ -190,95 +148,32 @@
   margin-inline: auto;
   aspect-ratio: 2688 / 1520;
   container-type: inline-size;
-  background: radial-gradient(48% 30% at 50% 0%, #241a40, rgb(36 26 64 / 0));
-}
-
-/* The vitrine plate. Its geode and leader lines sit 23px higher than the comp's,
-   so the art drops 23px (2.03% of the box) to put each line under its label. */
-.l-plate {
-  position: absolute;
-  left: 0;
-  top: var(--r-vitrine-y);
-  width: 100%;
-  height: var(--r-vitrine-h);
-}
-.l-plate-art {
-  position: absolute;
-  inset: 0;
-  transform: translateY(2.03%);
-  container-type: inline-size;
-  -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 2.5%, #000 95%, transparent 100%);
-  mask-image: linear-gradient(to bottom, transparent 0, #000 2.5%, #000 95%, transparent 100%);
-}
-.l-plate img {
-  object-fit: cover;
-}
-
-/* Light layers driven by landing-motion.tsx; both rest invisible. */
-.l-fx {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-}
-/* The geode's glow, swelling once on load. */
-.l-lamp {
-  position: absolute;
-  left: 28%;
-  top: 22%;
-  width: 28%;
-  height: 62%;
-  border-radius: 50%;
-  background: radial-gradient(closest-side, rgb(206 186 255 / 0.5), rgb(160 128 240 / 0.16) 55%, rgb(160 128 240 / 0));
-  mix-blend-mode: screen;
-  opacity: 0;
-}
-/* Specular sweep: a band of light that crosses the case glass once on load,
-   then follows a mouse pointer. */
-.l-sheen {
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(
-    100deg,
-    transparent calc(var(--sheen-x, -30%) - 14%),
-    rgb(232 222 255 / 0.08) calc(var(--sheen-x, -30%) - 5%),
-    rgb(244 238 255 / 0.16) var(--sheen-x, -30%),
-    rgb(232 222 255 / 0.08) calc(var(--sheen-x, -30%) + 5%),
-    transparent calc(var(--sheen-x, -30%) + 14%)
-  );
-  mix-blend-mode: screen;
-  opacity: var(--sheen-o, 0);
-  /* Only the glass case catches the light, not the room around it. */
-  clip-path: inset(1.5% 11.6% 26% 11.6%);
 }
 
 .l-brand {
   position: absolute;
-  left: var(--r-brand-x);
-  top: var(--r-brand-y);
-  height: var(--r-brand-h);
+  left: 3.227%;
+  top: 2.5%;
+  height: 6.32%;
   display: flex;
   align-items: center;
-  gap: 0.93cqw;
   color: var(--l-ink);
   text-decoration: none;
-  font-size: 2.31cqw; /* 62px at 2688: cap height 42px */
-  font-weight: 500;
+  font-size: 2.381cqw; /* 64px at 2688 */
+  font-weight: 600;
   letter-spacing: -0.01em;
 }
-/* The mark's P fills 26.2 of its 32 viewBox units; size it so the P spans the
-   comp's 86px mark, then pull the empty viewBox margin back out. */
 .l-brand svg {
-  width: 3.906cqw;
-  height: 3.906cqw;
-  margin: -0.25cqw 0 -0.25cqw -0.47cqw;
+  width: 4.018cqw;
+  height: 4.018cqw;
 }
 
 .l-nav {
   position: absolute;
-  left: var(--r-nav-x);
-  top: var(--r-nav-y);
-  width: var(--r-nav-w);
-  height: var(--r-nav-h);
+  left: 22.17%;
+  top: 4.08%;
+  width: 29.69%;
+  height: 3.42%;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -288,211 +183,75 @@
 }
 .l-nav a,
 .l-signin {
-  color: var(--l-ink);
+  color: #bdbcd8;
   text-decoration: none;
-  font-size: max(13px, 1.116cqw); /* 30px at 2688 */
+  font-size: max(13px, 1.265cqw); /* 34px at 2688 */
   line-height: 1;
   white-space: nowrap;
   transition: color 160ms var(--ease);
+}
+.l-signin {
+  position: absolute;
+  left: 92.45%;
+  top: 4.08%;
+  height: 3.03%;
+  display: flex;
+  align-items: center;
+  color: #fff;
+  font-weight: 500;
+  font-size: max(13px, 1.302cqw);
 }
 .l-nav a:hover,
 .l-signin:hover {
   color: var(--l-lavender);
 }
-.l-signin {
-  position: absolute;
-  left: var(--r-signin-x);
-  top: var(--r-signin-y);
-  width: var(--r-signin-w);
-  height: var(--r-signin-h);
-  display: flex;
-  align-items: center;
-  justify-content: flex-start;
-  padding-left: 0.22cqw;
-  font-size: max(13px, 1.116cqw); /* 30px at 2688 */
-}
 
-/* Etched in the front glass of the case. */
 .l-headline {
   position: absolute;
-  left: var(--r-headline-x);
-  top: var(--r-headline-y);
-  width: var(--r-headline-w);
-  height: var(--r-headline-h);
-  margin: -0.15cqw 0 0;
-  font-size: 3.646cqw; /* 98px at 2688: cap height 66.5px */
-  font-weight: 400;
-  line-height: 1;
-  letter-spacing: 0.012em;
-  text-align: center;
-  white-space: nowrap;
-  color: var(--l-glass-text);
-}
-
-/* Leader-line labels, placed in the plate's own coordinates so they stay on
-   their lines however the plate is cropped; the lines are part of the plate. */
-.l-revs {
+  left: 3.87%;
+  top: 17.7%;
   margin: 0;
-  padding: 0;
-  list-style: none;
-}
-.l-rev {
-  position: absolute;
-  left: 25.86%;
-  height: 2.65%;
-  display: flex;
-  align-items: center;
-  font-size: 0.83cqw; /* 22px at 2688 */
-  font-weight: 500;
-  line-height: 1;
+  font-size: 4.948cqw; /* 133px at 2688: cap height 91px */
+  font-weight: 700;
+  line-height: 1.135;
+  letter-spacing: -0.02em;
   white-space: nowrap;
-  color: var(--l-annotation);
-  font-variant-numeric: tabular-nums;
-}
-.l-rev-4 {
-  top: 28.27%;
-}
-.l-rev-3 {
-  top: 36.48%;
-}
-.l-rev-2 {
-  top: 44.7%;
-}
-.l-rev-1 {
-  top: 53.45%;
-}
-
-/* The thesis card standing in the case, laid over the plate's own placard. */
-.l-card {
-  position: absolute;
-  left: var(--r-card-x);
-  top: var(--r-card-y);
-  width: var(--r-card-w);
-  height: var(--r-card-h);
-  margin: 0;
-  border: 1px solid rgb(225 215 255 / 0.42);
-  border-radius: 0.22cqw;
-  background: linear-gradient(180deg, rgb(150 138 205 / 0.3), rgb(120 108 180 / 0.24));
-  -webkit-backdrop-filter: blur(6px) saturate(1.1);
-  backdrop-filter: blur(6px) saturate(1.1);
-  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.22);
-  color: var(--l-ink);
-  font-variant-numeric: tabular-nums;
-}
-/* The card's small text is set in Onest, the closer match at this size. */
-.l-card > *,
-.l-card-cases > div {
-  position: absolute;
-  left: 1.414cqw;
-  font-family: var(--font-ui), ui-sans-serif, system-ui, sans-serif;
-  margin: 0;
-}
-.l-card-title {
-  top: 1.36cqw;
-  font-family: inherit !important;
-  font-size: 1.004cqw; /* 27px: cap height 18.8px */
-  font-weight: 400;
-  line-height: 1.2;
-  letter-spacing: 0.034em;
-  white-space: nowrap;
-  color: #efeef8;
-}
-.l-card-status {
-  top: 3.274cqw;
-  width: 3.943cqw;
-  height: 1.488cqw;
-  display: grid;
-  place-items: center;
-  border-radius: 999px;
-  background: #c8b1f8;
-  color: #3f2f6f;
-  font-size: 0.82cqw;
-  font-weight: 500;
-  line-height: 1;
-}
-.l-card-cases {
-  inset: 0 auto auto 0 !important;
-  left: 0 !important;
-}
-.l-card-cases dt,
-.l-card-cases dd,
-.l-card-rows dt,
-.l-card-rows dd {
-  margin: 0;
-  font-size: 0.818cqw; /* 22px in Onest: cap height 16px */
-  line-height: 1.36;
-  white-space: nowrap;
-}
-.l-card-cases dt {
-  font-weight: 500;
-  color: #ebe7fa;
-}
-.l-card-cases dd {
-  color: #c6bfe9;
-}
-.l-card-bull {
-  top: 5.35cqw;
-}
-.l-card-invalidation {
-  top: 9.24cqw;
-}
-.l-card-rows {
-  top: 13.281cqw;
-  right: 1.42cqw;
-  padding-top: 0.42cqw;
-  border-top: 1px solid rgb(225 215 255 / 0.4);
-}
-.l-card-rows div {
-  display: flex;
-  justify-content: space-between;
-  margin-top: 0.36cqw;
-}
-.l-card-rows dt,
-.l-card-rows dd {
-  font-size: 0.796cqw; /* 21.4px in Onest: cap height 15.6px */
-}
-.l-card-rows dt {
-  color: #e6e3f2;
-}
-.l-card-rows dd {
-  color: #f1f0f5;
+  color: #f8f6ff;
 }
 
 .l-subline {
   position: absolute;
-  left: var(--r-subline-x);
-  top: var(--r-subline-y);
-  width: var(--r-subline-w);
-  height: var(--r-subline-h);
+  left: 3.87%;
+  top: 39.47%;
   margin: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1.116cqw; /* 30px at 2688: cap height 21px */
-  line-height: 1;
+  font-size: 1.6cqw; /* 43px at 2688: cap height 29px */
+  line-height: 1.45;
   white-space: nowrap;
-  color: #c1b5ef;
+  color: var(--l-body);
 }
 
+/* The email field and its button, joined into one pill. */
 .l-signup {
-  display: contents;
+  position: absolute;
+  left: 4.09%;
+  top: 55.72%;
+  width: 41.52%;
+  height: 7.3%;
+  margin: 0;
 }
 .l-email {
   position: absolute;
-  left: var(--r-email-x);
-  top: var(--r-email-y);
-  width: var(--r-email-w);
-  height: var(--r-email-h);
+  inset: 0;
   display: flex;
   align-items: center;
-  padding: 0 1.265cqw;
-  border: 1px solid rgb(167 157 213 / 0.7);
-  border-radius: 0.3cqw;
-  background: var(--l-field);
+  padding: 0 15.5cqw 0 1.711cqw;
+  border: 1px solid #383843;
+  border-radius: 999px;
+  background: #26262d;
   transition: border-color 160ms var(--ease);
 }
 .l-email:focus-within {
-  border-color: var(--l-lavender);
+  border-color: var(--l-lilac);
 }
 .landing .l-email:has(input:focus-visible) {
   outline: 2px solid var(--l-lavender);
@@ -505,27 +264,27 @@
   background: transparent;
   color: var(--l-ink);
   font: inherit;
-  font-size: max(14px, 0.85cqw);
+  font-size: max(16px, 1.414cqw); /* 38px at 2688 */
   caret-color: var(--l-lilac);
   outline: none;
 }
 .l-email input::placeholder {
-  color: #a99fd6;
+  color: #8f8da8;
 }
 .l-cta {
   position: absolute;
-  left: var(--r-cta-x);
-  top: var(--r-cta-y);
-  width: var(--r-cta-w);
-  height: var(--r-cta-h);
+  right: 0;
+  top: 0;
+  width: 14.695cqw;
+  height: 100%;
   padding: 0;
   border: 0;
-  border-radius: 0.3cqw;
-  background: var(--l-cta);
-  color: var(--l-cta-ink);
+  border-radius: 999px;
+  background: var(--l-cta); /* the comp's lilac; its 20px+ semibold label counts as large text */
+  color: #fff;
   font: inherit;
-  font-size: max(13px, 1.004cqw); /* 27px at 2688 */
-  font-weight: 500;
+  font-size: max(15px, 1.414cqw); /* 38px at 2688 */
+  font-weight: 600;
   white-space: nowrap;
   cursor: pointer;
   transition:
@@ -539,92 +298,388 @@
   transform: scale(0.98);
 }
 
-/* The drawer row: one plate, each link showing its own fifth of it. */
-.l-drawers {
+/* Three reassurances under the form. */
+.l-assure {
   position: absolute;
-  left: var(--r-drawers-x);
-  top: var(--r-drawers-y);
-  width: var(--r-drawers-w);
-  height: var(--r-drawers-h);
-  display: grid;
-  grid-template-columns: repeat(5, minmax(0, 1fr));
-}
-.l-drawer {
-  --plate: image-set(url("/assets/plates/drawers.webp") type("image/webp"), url("/assets/plates/drawers.png") type("image/png"));
+  left: 4.2%;
+  top: 68.16%;
+  height: 3.68%;
   display: flex;
-  flex-direction: column;
   align-items: center;
-  gap: 0.6cqw;
-  padding-top: 2.16cqw;
-  background-image: url("/assets/plates/drawers.png");
-  background-image: var(--plate);
-  background-size: 500% 100%;
-  /* The comp keeps 12px of cabinet above the drawer row. */
-  background-position: calc(var(--i) * 25%) 0.41cqw;
-  background-repeat: no-repeat;
-  color: #bdacf1;
-  text-decoration: none;
-  font-family: var(--font-ui), ui-sans-serif, system-ui, sans-serif;
-  font-size: 1.02cqw; /* 27.5px Onest at 2688: cap height 20px */
+  gap: 1.3cqw;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: max(12px, 1.116cqw); /* 30px at 2688 */
   line-height: 1;
-  transition: color 160ms var(--ease);
+  white-space: nowrap;
+  color: #c4c2df;
 }
-.l-drawer svg {
-  width: 2.2cqw;
-  height: 2.2cqw;
+.l-assure li {
+  display: flex;
+  align-items: center;
+  gap: 1.45cqw;
 }
-/* Icons and labels sit where the comp puts them, within 25px of each slice centre. */
-.l-drawer > * {
-  translate: var(--dx, 0) 0;
+.l-assure svg {
+  width: 1.711cqw;
+  height: 1.711cqw;
+  flex: none;
+  color: #cdc9ee;
 }
-.l-drawer:nth-child(1) {
-  --dx: 0.93cqw;
+.l-assure .l-assure-sep {
+  /* A one-pixel rule with soft edges, as the comp draws it. */
+  width: 1px;
+  height: 1.71cqw;
+  margin: 0.07cqw 0 0 -0.149cqw;
+  background: #6a687d;
+  box-shadow:
+    -1px 0 #3d3c48,
+    1px 0 #3d3c48;
 }
-.l-drawer:nth-child(2) {
-  --dx: 0.97cqw;
+
+/* ---------- The notes ---------- */
+
+.l-memos {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
 }
-.l-drawer:nth-child(4) {
-  --dx: -0.78cqw;
+.l-memo {
+  --px: 0px;
+  --py: 0px;
+  position: absolute;
+  margin: 0;
+  container-type: inline-size;
+  /* The note's own box is sized in frame cqw; only its children see the note
+     as their container. 44px corners at 2688. */
+  border: 1px solid rgb(255 255 255 / 0.075);
+  border-radius: 1.637cqw;
+  background: linear-gradient(180deg, #28292f, #222329);
+  box-shadow:
+    0 0.7cqw 1.4cqw -0.4cqw rgb(0 0 0 / 0.55),
+    inset 0 1px 0 rgb(255 255 255 / 0.05);
+  translate: var(--px) var(--py);
+  transform: translate(-50%, -50%) rotate(var(--rot));
 }
-.l-drawer:nth-child(5) {
-  --dx: -1cqw;
+.l-memo > * {
+  position: absolute;
+  margin: 0;
 }
-.l-drawer:hover {
-  color: #ddd2fb;
+@media (prefers-reduced-motion: no-preference) {
+  .l-memo {
+    animation: l-settle 1100ms var(--ease) both;
+  }
+  .l-memo-thesis {
+    animation-delay: 90ms;
+  }
+  .l-memo-comment {
+    animation-delay: 180ms;
+  }
+}
+@keyframes l-settle {
+  from {
+    rotate: var(--settle);
+    scale: 0.96;
+  }
+}
+
+/* Portfolio: 600×789 comp px, so 1cqw = 6px. */
+.l-memo-portfolio {
+  --rot: -5.16deg;
+  --settle: -3deg;
+  z-index: 1;
+  left: 63.44%;
+  top: 42.43%;
+  width: 22.321cqw;
+  aspect-ratio: 600 / 789;
+}
+.l-pf-title {
+  left: 7.833cqw;
+  top: 7.333cqw;
+  font-size: 7.667cqw;
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: 0.03em;
+}
+.l-pf-sample {
+  left: 72.667cqw;
+  top: 6.5cqw;
+  width: 21.333cqw;
+  height: 8cqw;
+  display: grid;
+  place-items: center;
+  border-radius: 999px;
+  background: #b096ec;
+  color: var(--l-label-ink);
+  font-size: 4.333cqw;
+  font-weight: 600;
+  line-height: 1;
+}
+/* Built from the sample weights: 32.4 / 28.7 / 21.3 / 17.6. */
+.l-pf-donut {
+  left: 7.667cqw;
+  top: 23.167cqw;
+  width: 31.667cqw;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: conic-gradient(
+    #c6acf5 0 32.4%,
+    #9b7be6 32.4% 61.1%,
+    #a99cd1 61.1% 82.4%,
+    #4f4b5e 82.4% 100%
+  );
+  -webkit-mask: radial-gradient(circle closest-side, transparent 46%, #000 47%);
+  mask: radial-gradient(circle closest-side, transparent 46%, #000 47%);
+}
+.l-pf-label {
+  left: 47.5cqw;
+  top: 26.333cqw;
+  font-size: 4.333cqw;
+  line-height: 1;
+  color: #aeabca;
+}
+.l-pf-value {
+  left: 47.333cqw;
+  top: 32.5cqw;
+  font-size: 8.6cqw;
+  color: var(--l-ink);
+  font-weight: 600;
+  line-height: 1;
+  letter-spacing: -0.01em;
+  font-variant-numeric: tabular-nums;
+}
+.l-pf-gain {
+  left: 47.667cqw;
+  top: 44.17cqw;
+  font-size: 4.95cqw;
+  line-height: 1;
+  color: #aeabca;
+  white-space: nowrap;
+}
+.l-pf-gain span {
+  color: var(--l-gain);
+}
+.l-pf-gain svg {
+  display: inline-block;
+  width: 0.82em;
+  height: 0.74em;
+  margin-right: 0.45em;
+  vertical-align: 0;
+}
+.l-pf-rows {
+  left: 7.333cqw;
+  right: 7.333cqw;
+  top: 61.5cqw;
+  padding: 0;
+  list-style: none;
+  border-top: 1px solid var(--l-line);
+}
+.l-pf-rows li {
+  position: relative;
+  height: 15cqw;
+  display: flex;
+  align-items: center;
+  border-bottom: 1px solid var(--l-line-soft);
+}
+.l-pf-rows li:last-child {
+  border-bottom: 0;
+}
+.l-pf-rows li:first-child {
+  margin-top: 2.6cqw;
+}
+.l-pf-dot {
+  position: absolute;
+  left: 0.667cqw;
+  width: 2.667cqw;
+  height: 2.667cqw;
+  border-radius: 50%;
+  background: #9b7be7;
+}
+.l-pf-mark {
+  position: absolute;
+  left: 7.667cqw;
+  width: 6.667cqw;
+  height: 6.667cqw;
+  display: grid;
+  place-items: center;
+  border-radius: 1.6cqw;
+  background: #ebe8f4;
+  color: #232129;
+  font-size: 4cqw;
+  font-weight: 700;
+  line-height: 1;
+}
+.l-pf-name {
+  position: absolute;
+  left: 20cqw;
+  font-size: 5.333cqw;
+  font-weight: 500;
+  color: #f2f0fb;
+}
+.l-pf-pct {
+  position: absolute;
+  right: 4cqw;
+  font-size: 4.833cqw;
+  color: #e7e5f3;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Thesis note: 588×595 comp px, so 1cqw = 5.88px. */
+.l-memo-thesis {
+  --rot: 5.5deg;
+  --settle: 3deg;
+  z-index: 2;
+  left: 84.83%;
+  top: 40.28%;
+  width: 21.875cqw;
+  aspect-ratio: 588 / 595;
+}
+.l-th-title {
+  left: 8.163cqw;
+  top: 8.844cqw;
+  font-size: 7.823cqw;
+  font-weight: 700;
+  line-height: 1;
+  white-space: nowrap;
+}
+.l-th-list {
+  left: 8.163cqw;
+  top: 24.915cqw;
+  padding: 0;
+  list-style: none;
+  font-size: 5.102cqw;
+  line-height: 1.433;
+  color: #e9e8f6;
+  white-space: nowrap;
+}
+.l-th-list li {
+  position: relative;
+  padding-left: 7.823cqw;
+}
+.l-th-list li + li {
+  margin-top: 4.762cqw;
+}
+.l-th-list li::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 2.6cqw;
+  width: 2.041cqw;
+  height: 2.041cqw;
+  border-radius: 50%;
+  background: #9b7be7;
+}
+.l-th-tag {
+  left: 8.503cqw;
+  top: 84.864cqw;
+  width: 42.517cqw;
+  height: 8.503cqw;
+  display: grid;
+  place-items: center;
+  border-radius: 999px;
+  background: #a385ec;
+  color: var(--l-label-ink);
+  font-size: 4.592cqw;
+  font-weight: 500;
+  line-height: 1;
+}
+.l-gem {
+  left: 80.07cqw;
+  top: -6.6cqw;
+  width: 13.6cqw;
+  height: auto;
+  rotate: -5.5deg;
+}
+
+/* Comment: 593×215 comp px, so 1cqw = 5.93px. */
+.l-memo-comment {
+  --rot: -3.85deg;
+  --settle: -1.5deg;
+  z-index: 3;
+  left: 84.83%;
+  top: 65.16%;
+  width: 22.061cqw;
+  aspect-ratio: 593 / 215;
+  background: linear-gradient(180deg, #2a2b32, #25262d);
+}
+.l-avatar {
+  left: 6.54cqw;
+  top: 13.09cqw;
+  width: 16.19cqw;
+  height: auto;
+}
+.l-comment {
+  left: 27.319cqw;
+  top: 13.491cqw;
+  font-size: 5.228cqw;
+  line-height: 1.452;
+  white-space: nowrap;
+  color: #f4f2fb;
+}
+.l-comment b {
+  display: block;
+  font-weight: 600;
+  color: #b48ff0;
+}
+
+/* ---------- The start of the next section ---------- */
+
+.l-panel {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 81.84%;
+  bottom: 0;
+  border-radius: 4.836cqw 4.836cqw 0 0;
+  background: var(--l-raised);
+}
+.l-how {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 2.5cqw;
+  margin: 4cqw 0 0;
+  font-size: 2.35cqw; /* 63px at 2688 */
+  font-weight: 600;
+  line-height: 1;
+  color: #f5f3ff;
+}
+.l-how::before,
+.l-how::after {
+  content: "";
+  width: 3.348cqw;
+  height: 0.112cqw;
+  border-radius: 1px;
+  background: #7a64ad;
 }
 
 /* ---------- Tablet and phone ---------- */
 
 @media (max-width: 1179px) {
   .l-frame {
-    --art-w: 1400px;
-    --art-h: calc(var(--art-w) * 1132 / 2688);
     width: 100%;
     aspect-ratio: auto;
     display: flex;
     flex-direction: column;
-    align-items: center;
-    padding: 76px 16px 8px;
-    text-align: center;
-    background: radial-gradient(90% 30% at 50% 0%, #241a40, rgb(36 26 64 / 0));
+    align-items: flex-start;
+    padding: 92px clamp(16px, 5vw, 48px) 0;
   }
   .l-brand {
-    left: 16px;
+    left: clamp(16px, 5vw, 48px);
     top: 20px;
-    height: 40px;
-    gap: 10px;
+    height: 44px;
     font-size: 24px;
   }
   .l-brand svg {
-    width: 40px;
-    height: 40px;
-    margin: 0 0 0 -5px;
+    width: 44px;
+    height: 44px;
+    margin-left: -8px;
   }
   .l-nav {
     left: 50%;
     top: 20px;
     width: auto;
-    height: 40px;
+    height: 44px;
     gap: 28px;
     transform: translateX(-50%);
   }
@@ -634,174 +689,139 @@
   }
   .l-signin {
     left: auto;
-    right: 16px;
+    right: clamp(16px, 5vw, 48px);
     top: 20px;
     width: auto;
-    height: 40px;
+    height: 44px;
   }
   .l-headline,
   .l-subline,
-  .l-card,
-  .l-email,
-  .l-cta,
-  .l-drawers {
+  .l-signup,
+  .l-assure,
+  .l-memos,
+  .l-panel {
     position: static;
-    width: auto;
-    height: auto;
   }
   .l-headline {
-    order: 1;
-    margin-top: 24px;
-    font-size: clamp(32px, 6.4vw, 54px);
-    line-height: 1.12;
-    letter-spacing: -0.015em;
+    margin-top: 28px;
+    font-size: clamp(40px, 8.4vw, 72px);
+    line-height: 1.04;
     white-space: normal;
     text-wrap: balance;
   }
-  /* A window onto the case interior, centred on the geode: the thesis card
-     comes out of the case below it, so the blank placard stays mostly out of view. */
-  .l-plate {
-    order: 2;
-    position: relative;
-    top: auto;
-    width: calc(100% + 32px);
-    height: calc(var(--art-h) * 0.6);
-    margin: 16px -16px 0;
-    overflow: hidden;
-    -webkit-mask-image: linear-gradient(to right, #000 0, #000 58%, transparent 88%);
-    mask-image: linear-gradient(to right, #000 0, #000 58%, transparent 88%);
+  .l-subline {
+    margin-top: 18px;
+    max-width: 34em;
+    font-size: clamp(17px, 2.4vw, 20px);
+    white-space: normal;
   }
-  .l-plate-art {
-    inset: auto;
-    top: calc(var(--art-h) * -0.17);
-    left: 50%;
-    width: var(--art-w);
-    height: var(--art-h);
-    transform: translateX(-40%);
+  .l-subline br {
+    display: none;
   }
-  /* The action comes straight after the case; the sample card follows it. */
-  .l-card {
-    order: 5;
+  .l-signup {
     position: relative;
     left: auto;
     top: auto;
-    width: min(100%, 420px);
-    margin-top: 32px;
-    padding: 18px 20px;
-    border-radius: 10px;
-    text-align: left;
-  }
-  .l-card > *,
-  .l-card-cases > div,
-  .l-card-cases {
-    position: static !important;
-  }
-  .l-card-title {
-    font-size: 15px;
-  }
-  .l-card-status {
-    width: auto;
-    height: auto;
-    display: inline-block;
-    margin-top: 10px;
-    padding: 4px 10px;
-    font-size: 12px;
-  }
-  .l-card-cases {
-    display: grid;
-    gap: 10px;
-    margin-top: 12px;
-  }
-  .l-card-cases dt,
-  .l-card-cases dd,
-  .l-card-rows dt,
-  .l-card-rows dd {
-    font-size: 14px;
-    white-space: normal;
-  }
-  .l-card-cases dd br {
-    display: none;
-  }
-  .l-card-rows {
-    margin-top: 14px;
-    padding-top: 10px;
-  }
-  .l-subline {
-    order: 3;
-    margin: 20px 0 0;
-    font-size: clamp(16px, 2.3vw, 19px);
-    line-height: 1.45;
-    white-space: normal;
-    text-wrap: balance;
-  }
-  .l-signup {
-    order: 4;
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    width: min(100%, 440px);
-    margin-top: 18px;
-  }
-  .l-email,
-  .l-cta {
-    width: 100%;
-    height: 52px;
-    border-radius: 10px;
+    width: min(100%, 520px);
+    height: 60px;
+    margin-top: 28px;
   }
   .l-email {
-    padding: 0 16px;
+    padding: 0 190px 0 22px;
   }
-  .l-email input,
   .l-cta {
+    width: 180px;
     font-size: 16px;
+    background: #8462d6; /* below 18px the label needs 4.5:1 */
   }
-  .l-drawers {
-    order: 6;
-    width: 100%;
-    margin-top: 36px;
+  .l-cta:hover {
+    background: #7653cb;
+  }
+  .l-assure {
+    height: auto;
+    flex-wrap: wrap;
+    gap: 10px 16px;
+    margin-top: 22px;
+    font-size: 14px;
+  }
+  .l-assure li {
     gap: 8px;
-    grid-template-columns: repeat(5, minmax(0, 1fr));
   }
-  .l-drawer {
-    --dx: 0 !important;
-    aspect-ratio: 446 / 276;
-    justify-content: flex-start;
-    padding: 10% 0 0;
-    gap: 4px;
-    font-size: 12px;
-    background-position: calc(var(--i) * 25%) 0;
+  .l-assure svg {
+    width: 18px;
+    height: 18px;
   }
-  .l-drawer svg {
-    width: 20px;
-    height: 20px;
+  .l-assure .l-assure-sep {
+    height: 16px;
+  }
+  /* The notes stack, each full width, keeping a little of their tilt. */
+  .l-memos {
+    display: grid;
+    justify-items: center;
+    width: 100%;
+    margin-top: 48px;
+    padding-bottom: 24px;
+  }
+  .l-memo {
+    position: relative;
+    left: auto;
+    top: auto;
+    width: min(100%, 440px);
+    border-radius: 22px;
+    box-shadow:
+      0 12px 28px -10px rgb(0 0 0 / 0.55),
+      inset 0 1px 0 rgb(255 255 255 / 0.05);
+    transform: rotate(calc(var(--rot) * 0.4));
+  }
+  .l-memo-portfolio {
+    order: 1;
+  }
+  .l-memo-thesis {
+    order: 2;
+    margin-top: -6%;
+  }
+  .l-memo-comment {
+    order: 3;
+    margin-top: -3%;
+  }
+  .l-panel {
+    width: calc(100% + 2 * clamp(16px, 5vw, 48px));
+    margin: 40px calc(-1 * clamp(16px, 5vw, 48px)) 0;
+    padding: 40px 16px 0;
+    border-radius: 32px 32px 0 0;
+  }
+  .l-how {
+    margin: 0;
+    gap: 16px;
+    font-size: clamp(26px, 4.4vw, 34px);
+  }
+  .l-how::before,
+  .l-how::after {
+    width: 40px;
+    height: 3px;
   }
 }
 
 @media (max-width: 639px) {
-  .l-frame {
-    --art-w: 300vw;
-  }
-  .l-plate {
-    -webkit-mask-image: linear-gradient(to right, #000 0, #000 84%, transparent 100%);
-    mask-image: linear-gradient(to right, #000 0, #000 84%, transparent 100%);
-  }
-  .l-plate-art {
-    transform: translateX(-42%);
-  }
   .l-nav {
     display: none;
   }
-  .l-headline br {
+  .l-signup {
+    height: auto;
+    display: grid;
+    gap: 10px;
+  }
+  .l-email {
+    position: relative;
+    height: 56px;
+    padding: 0 20px;
+  }
+  .l-cta {
+    position: relative;
+    width: 100%;
+    height: 56px;
+  }
+  .l-assure .l-assure-sep {
     display: none;
-  }
-  .l-drawers {
-    grid-template-columns: repeat(6, minmax(0, 1fr));
-  }
-  .l-drawer {
-    grid-column: span 2;
-    font-size: 13px;
-  }
-  .l-drawer:nth-child(4) {
-    grid-column: 2 / span 2;
   }
 }

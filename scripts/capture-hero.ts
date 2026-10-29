@@ -14,6 +14,17 @@ const base = process.env.QA_BASE ?? "http://localhost:3000";
   const page = await browser.newPage({ viewport: { width: Number(w), height: Number(h) }, deviceScaleFactor: 1, reducedMotion: "reduce", colorScheme: "dark" });
   await page.goto(`${base}/`, { waitUntil: "networkidle" });
   await page.evaluate(() => document.fonts.ready);
+  if (full === "--full") {
+    // Walk the page once so lazy images below the fold load before the shot.
+    await page.evaluate(async () => {
+      for (let y = 0; y < document.body.scrollHeight; y += window.innerHeight / 2) {
+        window.scrollTo(0, y);
+        await new Promise((r) => setTimeout(r, 60));
+      }
+      window.scrollTo(0, 0);
+      await Promise.all([...document.images].map((img) => (img.complete ? null : new Promise((r) => (img.onload = img.onerror = r)))));
+    });
+  }
   await page.waitForTimeout(600);
   await page.screenshot({ path: out, fullPage: full === "--full" });
   await browser.close();
