@@ -6,13 +6,14 @@ import { getDb } from "./db";
 import { account, rateLimit, session, user, verification } from "./db/schema";
 import { sendMail } from "./mail";
 import { handOverOwnedGuilds } from "./services/guilds";
-import { siteUrl } from "./site-url";
+import { deploymentOrigins, siteUrl } from "./site-url";
 
 const isProd = process.env.NODE_ENV === "production";
 
 export const auth = betterAuth({
   appName: "Portle",
   baseURL: siteUrl(),
+  trustedOrigins: deploymentOrigins(),
   secret: process.env.BETTER_AUTH_SECRET,
   database: drizzleAdapter(getDb(), {
     provider: "pg",
