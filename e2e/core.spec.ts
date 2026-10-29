@@ -1,5 +1,5 @@
 import { expect, test, type Browser, type Page } from "@playwright/test";
-import { TEST_PASSWORD, testUser } from "./fixtures";
+import { TEST_PASSWORD, testUser, watchCsp } from "./fixtures";
 
 /** Reads the newest link for `email` from the development mailbox. */
 async function mailLink(page: Page, email: string, contains: string) {
@@ -15,10 +15,12 @@ test.describe.serial("a new member's core journey", () => {
   const me = testUser("Erin");
   let thesisUrl = "";
   let page: Page;
+  let cspViolations: string[] = [];
 
   // One browser session for the whole journey, as a real member would have.
   test.beforeAll(async ({ browser }: { browser: Browser }) => {
     page = await browser.newPage();
+    cspViolations = watchCsp(page);
   });
   test.afterAll(async () => {
     await page.close();
@@ -138,6 +140,10 @@ test.describe.serial("a new member's core journey", () => {
     await expect(page).toHaveURL(/\/$|\/sign-in/);
     const res = await page.request.post("/api/auth/sign-in/email", { data: { email: me.email, password: TEST_PASSWORD } });
     expect(res.status()).toBe(401);
+  });
+
+  test("met no Content Security Policy violations on the way", () => {
+    expect(cspViolations).toEqual([]);
   });
 });
 

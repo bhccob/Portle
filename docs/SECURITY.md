@@ -46,7 +46,9 @@
 
 ## Headers
 
-`X-Content-Type-Options: nosniff`, `X-Frame-Options: DENY`, `Referrer-Policy: strict-origin-when-cross-origin`, a restrictive `Permissions-Policy`, `Cross-Origin-Opener-Policy: same-origin`, HSTS in production, `X-Powered-By` removed. A nonce-based Content-Security-Policy is planned (ROADMAP).
+`X-Content-Type-Options: nosniff`, `X-Frame-Options: DENY`, `Referrer-Policy: strict-origin-when-cross-origin`, a restrictive `Permissions-Policy`, `Cross-Origin-Opener-Policy: same-origin`, HSTS in production, `X-Powered-By` removed.
+
+**Content-Security-Policy.** `src/proxy.ts` gives every page request a fresh nonce and builds the policy in `src/lib/csp.ts`. Scripts run only if they carry the nonce (Next.js stamps it on its own scripts) or were loaded by one that does (`'strict-dynamic'`); there is no `'unsafe-inline'` for scripts, and `'unsafe-eval'` only in development, where React uses it for error stacks. Styles allow inline, because React writes `style` attributes and Sonner injects a `<style>` tag without a nonce; the injection risk the policy guards against is in scripts. Everything else comes from this site: `object-src` and `base-uri` are `'none'`, forms post only to this site, framing is refused, and production upgrades insecure requests. API routes, build assets and public files are outside the proxy matcher, since they carry no page scripts. Nonces need request-time rendering, which every page already uses.
 
 ## Rate limiting outside auth
 
@@ -55,7 +57,7 @@ Server actions use an in-memory sliding window (posts 20/h, comments 60/h, trans
 ## Verified by tests
 
 - Service tests: cross-user access by id, friends-only vs strangers, Guild-only scoping, blocks, privacy defaults, percentages-only profile output (no values, quantities or account ids in the serialized response), export contains no password/token/secret, paper ledger separation, idempotency, oversell/overspend refusal, deletion cascades.
-- End-to-end: anonymous access redirects or returns 401; another member's request for a private thesis never contains its content; account deletion prevents sign-in.
+- End-to-end: anonymous access redirects or returns 401; another member's request for a private thesis never contains its content; account deletion prevents sign-in; every script tag in a page carries that response's nonce, each load gets a fresh one, and the whole member journey (sign-up to deletion) reports no CSP violations.
 
 ## Dependency hygiene
 

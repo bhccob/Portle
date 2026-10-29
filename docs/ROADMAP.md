@@ -10,13 +10,13 @@ Status as of the first build. Phases follow the master prompt; adjusted to what 
 - **Phase 4:** theses with immutable revisions, sources, tags, notes; Paper Lab with separate ledger, market/limit orders, fees/slippage, idempotency, thesis links.
 - **Phase 5:** feed, posts with audiences, comments, reactions, bookmarks, reports, friendships, blocks, notifications, Guilds with roles, requests, invites, moderation, consented analytics.
 - **Phase 6:** Relics with server-side evaluation, journal with prompts/calendar/search, Archives with guides and collections.
-- **Phase 7 (partial):** data export, account deletion, broker adapter interface, security headers, dependency audit.
+- **Phase 7 (partial):** data export, account deletion, broker adapter interface, security headers, nonce-based Content-Security-Policy via `proxy.ts`, dependency audit.
 
 ## Next, in priority order
 
 1. **Landing page** — shipped: the friendly Notebook design on charcoal (see DESIGN.md).
 2. **Production deployment:** managed Postgres (Neon or Supabase), Vercel project, `RESEND_API_KEY`, staging environment, CI workflow running lint/typecheck/unit/integration/e2e on every push.
-3. **Nonce-based CSP** via `proxy.ts`, and a shared rate-limit store (Redis/Upstash) before scaling past one instance.
+3. **Shared rate-limit store** (Redis/Upstash) before scaling past one instance. (The nonce-based CSP from this item is done.)
 4. **Licensed market data:** choose a provider after checking coverage and licence terms (Finnhub/Polygon/EODHD), add daily history to the adapter, cache per provider rules; earnings calendar and fundamentals from the same source.
 5. **Broker sync (SnapTrade):** verify coverage for IBKR, DEGIRO, Trading 212; implement request signing, hosted connection flow, encrypted token storage, nightly idempotent sync into the ledger, reconnect/disconnect, reconciliation against broker balances, duplicate handling between CSV and synced rows.
 6. **Performance at scale:** materialised daily portfolio snapshots refreshed by a background job; pagination on feeds already exists, add it to theses and journal lists.
