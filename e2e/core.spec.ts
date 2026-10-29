@@ -57,6 +57,11 @@ test.describe.serial("a new member's core journey", () => {
 
   test("creates an account and records a holding", async () => {
     await page.goto("/portfolio");
+    // Three ways in; without SnapTrade keys, connecting says it isn't switched on yet.
+    await page.getByRole("button", { name: /Connect your broker/ }).click();
+    await expect(page.getByRole("dialog").getByText(/isn.t switched on yet/)).toBeVisible();
+    await page.keyboard.press("Escape");
+    await page.getByRole("button", { name: /Type it in/ }).click();
     await page.getByLabel("Account name").fill("Test broker");
     await page.getByRole("button", { name: "Add account" }).click();
     await expect(page.getByRole("heading", { name: "Record your first position" })).toBeVisible();

@@ -1,19 +1,22 @@
 import Link from "next/link";
-import { FileUp, Info, Lock, Wallet } from "lucide-react";
+import { after } from "next/server";
+import { FileUp, Info, Lock, PlugZap, Wallet } from "lucide-react";
 import { LineChart } from "@/components/charts/line-chart";
 import { Ring, RingLegend, ringColor } from "@/components/charts/ring";
 import { holdingSlices } from "@/components/charts/ring-data";
 import { SourceBadge } from "@/components/ui/badge";
-import { ButtonLink } from "@/components/ui/button";
+import { Button, ButtonLink } from "@/components/ui/button";
 import { Change, Money } from "@/components/ui/finance";
 import { PageHeader, Panel, Stat } from "@/components/ui/panel";
 import { Callout, EmptyState } from "@/components/ui/states";
 import { LinkTabs } from "@/components/ui/tabs";
 import { formatMoney, formatPercent, formatQuantity } from "@/lib/format";
+import { brokerStatus, listBrokerConnections, syncStaleBrokerConnections } from "@/server/services/brokers";
 import type { Range } from "@/server/services/market";
 import { getPerformance, getValuation } from "@/server/services/portfolio";
 import { requireMember } from "@/server/session";
-import { AddTransactionDialog, BaseCurrencySelect, CreateAccountForm, LoadSampleButton } from "./portfolio-forms";
+import { AddWays, ConnectBrokerSheet } from "./broker-client";
+import { AddTransactionDialog, BaseCurrencySelect, LoadSampleButton } from "./portfolio-forms";
 
 export const metadata = { title: "My portfolio" };
 
@@ -42,23 +45,25 @@ export default async function PortfolioPage({ searchParams }: { searchParams: Pr
     return `/portfolio?${p}`;
   };
   const accountOptions = accounts.map((a) => ({ id: a.id, name: a.name, currency: a.currency }));
+  const brokers = brokerStatus();
+  const connections = await listBrokerConnections(user.id);
+  // Linked brokers catch up quietly after the page is sent, at most every few hours.
+  if (connections.length) after(() => syncStaleBrokerConnections(user.id).catch(() => undefined));
 
   if (!accounts.length) {
     return (
       <>
-        <PageHeader title="My portfolio" description={INTRO} />
-        <EmptyState icon={Wallet} title="Start with an account">
-          Add the brokerage or bank account you invest through. Then record positions by hand, or import a CSV export from your broker.
-        </EmptyState>
-        <div className="mx-auto max-w-3xl">
-          <CreateAccountForm compact />
-          <p className="mt-4 text-center text-sm text-fg-muted">
-            Just looking around? <LoadSampleButton />
-          </p>
-        </div>
+        <PageHeader title="Add what you own" description="Only you ever see the amounts. Portle never moves money." />
+        <AddWays configured={brokers.configured} />
+        <p className="mt-8 text-center text-sm text-fg-muted">
+          Just looking around? <LoadSampleButton />
+        </p>
       </>
     );
   }
+
+  const synced = connections.filter((c) => c.accounts > 0);
+  const oldestSync = synced.reduce<Date | null>((min, c) => (c.lastSyncAt && (!min || c.lastSyncAt < min) ? c.lastSyncAt : min), null);
 
   const hasHoldings = v.holdings.length > 0;
   const perf = hasHoldings ? await getPerformance(user.id, range, { accountId: sp.account }) : null;
@@ -76,6 +81,14 @@ export default async function PortfolioPage({ searchParams }: { searchParams: Pr
         actions={
           <>
             <BaseCurrencySelect value={base} />
+            <ConnectBrokerSheet
+              configured={brokers.configured}
+              trigger={
+                <Button variant="secondary">
+                  <PlugZap className="size-4" aria-hidden /> Connect broker
+                </Button>
+              }
+            />
             <ButtonLink href="/portfolio/import" variant="secondary">
               <FileUp className="size-4" aria-hidden /> Import CSV
             </ButtonLink>
@@ -83,6 +96,26 @@ export default async function PortfolioPage({ searchParams }: { searchParams: Pr
           </>
         }
       />
+
+      {sp.synced ? (
+        <Callout tone="neutral" className="mb-6">
+          Your accounts are in. Portle keeps them up to date from your broker, and labels everything it copies.
+        </Callout>
+      ) : null}
+      {synced.length ? (
+        <div className="-mt-3 mb-6 flex flex-wrap items-center gap-2">
+          <SourceBadge
+            kind="broker"
+            detail={`From ${synced.map((c) => c.institution).join(", ")}`}
+            asOf={oldestSync}
+          />
+          {synced.some((c) => c.status === "error") ? (
+            <Link href="/settings/connections" className="text-[0.8125rem] font-medium text-warning hover:underline">
+              A broker needs you to sign in again
+            </Link>
+          ) : null}
+        </div>
+      ) : null}
 
       {accounts.length > 1 ? (
         <LinkTabs

@@ -22,6 +22,13 @@
       "when": 1793290825504,
       "tag": "0002_profile_experience",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1793297695296,
+      "tag": "0003_broker_sync",
+      "breakpoints": true
     }
   ]
 }

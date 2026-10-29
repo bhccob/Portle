@@ -32,9 +32,11 @@ const DOCS: Record<string, { title: string; body: string }> = {
 
 **Processors.** Hosting and email delivery providers process data on our behalf. Market and currency data providers receive security identifiers, never your holdings.
 
+**Connecting a broker.** Only if you choose to. SnapTrade, a company in the United States that links brokers to apps, then handles the sign-in with your broker on its own page and passes your accounts, holdings and transactions to Portle, read-only. Portle never sees your broker password and knows you to SnapTrade only by a random reference. Disconnecting in Settings → Connections, or deleting your account, removes the link at SnapTrade too.
+
 **Your rights.** Download everything (Settings → Data & account), correct it, or delete your account. Under the GDPR you can also object, restrict processing or complain to your data protection authority.
 
-**Security.** Passwords are hashed; broker access tokens, if ever connected, are encrypted at rest; access to private data is checked on the server for every request.`,
+**Security.** Passwords are hashed; broker access secrets are encrypted at rest; access to private data is checked on the server for every request.`,
   },
 };
 

@@ -18,7 +18,7 @@ Status as of the first build. Phases follow the master prompt; adjusted to what 
 2. **Production deployment:** the repo is ready for Vercel with Neon and Resend (`docs/DEPLOYMENT.md`, CI already runs every check on each push); the accounts and a custom domain remain, then Neon preview branches as a staging environment.
 3. **Shared rate-limit store** (Redis/Upstash) before scaling past one instance. (The nonce-based CSP from this item is done.)
 4. **Licensed market data:** choose a provider after checking coverage and licence terms (Finnhub/Polygon/EODHD), add daily history to the adapter, cache per provider rules; earnings calendar and fundamentals from the same source.
-5. **Broker sync (SnapTrade):** verify coverage for IBKR, DEGIRO, Trading 212; implement request signing, hosted connection flow, encrypted token storage, nightly idempotent sync into the ledger, reconnect/disconnect, reconciliation against broker balances, duplicate handling between CSV and synced rows.
+5. **Broker sync (SnapTrade):** built: hosted connection flow, encrypted per-member secret, idempotent sync of history plus matching to current holdings, sync on Portfolio visits (at most every 6 hours) and on demand, reconnect and disconnect. Still to do: verify against real DEGIRO, IBKR and Trading 212 accounts; cash balances; duplicates between a CSV import and a synced account of the same broker.
 6. **Performance at scale:** materialised daily portfolio snapshots refreshed by a background job; pagination on feeds already exists, add it to theses and journal lists.
 7. **Money-weighted return in the UI**, per-currency return breakdown, FX history for historic conversion.
 8. **Moderation console** for platform reports; email notifications with preferences (thesis revisit reminders are the first candidate).
@@ -31,5 +31,5 @@ Status as of the first build. Phases follow the master prompt; adjusted to what 
 - Paper Lab account is single-currency (USD by default); non-USD securities are refused rather than converted.
 - Historic portfolio values convert at today's FX rate.
 - In-memory rate limits for server actions are per instance.
-- Broker sync is not implemented; CSV import is the supported path.
+- Broker sync needs SnapTrade keys (SNAPTRADE_CLIENT_ID, SNAPTRADE_CONSUMER_KEY) and has only been tested against a stand-in broker so far; CSV import works for every broker.
 - Thesis revisit reminders are created when the member next opens the app (no background job yet), and appear in Notifications only, not by email.

@@ -5,6 +5,7 @@ import { audit } from "./audit";
 import { getDb } from "./db";
 import { account, rateLimit, session, user, verification } from "./db/schema";
 import { sendMail } from "./mail";
+import { forgetBrokerUser } from "./services/brokers";
 import { handOverOwnedGuilds } from "./services/guilds";
 import { deploymentOrigins, siteUrl } from "./site-url";
 
@@ -77,6 +78,7 @@ export const auth = betterAuth({
       async beforeDelete(u) {
         const db = getDb();
         await handOverOwnedGuilds(db, u.id);
+        await forgetBrokerUser(u.id);
         await audit(db, { userId: null, action: "account.deleted" });
       },
     },

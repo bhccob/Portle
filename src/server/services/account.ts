@@ -47,6 +47,7 @@ export async function exportUserData(userId: string) {
     relics: await db.select().from(s.userRelics).where(eq(s.userRelics.userId, userId)),
     notifications: await db.select().from(s.notifications).where(eq(s.notifications.userId, userId)),
     brokerConnections: (await db.select().from(s.brokerConnections).where(eq(s.brokerConnections.userId, userId))).map((c) => ({ ...c, encryptedSecret: undefined })),
+    brokerIdentities: (await db.select().from(s.brokerUsers).where(eq(s.brokerUsers.userId, userId))).map((b) => ({ ...b, encryptedSecret: undefined })),
   };
   await audit(db, { userId, action: "account.exported" });
   return data;

@@ -154,7 +154,8 @@ export async function listTransactions(userId: string, opts: { accountId?: strin
   return { rows, total: count };
 }
 
-async function ledgerRows(userId: string, accountIds?: string[]): Promise<LedgerTransaction[]> {
+/** The ledger rows for a member (optionally some accounts), in trade order. */
+export async function ledgerRows(userId: string, accountIds?: string[]): Promise<LedgerTransaction[]> {
   const conds = [eq(transactions.userId, userId)];
   if (accountIds?.length) conds.push(inArray(transactions.accountId, accountIds));
   const rows = await getDb().select().from(transactions).where(and(...conds)).orderBy(asc(transactions.tradeDate), asc(transactions.createdAt));

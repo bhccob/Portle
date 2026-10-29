@@ -86,10 +86,12 @@ export const accounts = pgTable(
     currency: text().notNull(),
     source: dataSource().notNull().default("manual"),
     brokerConnectionId: uuid(),
+    /** The broker's own id for this account, for accounts that sync from a broker. */
+    externalId: text(),
     archivedAt: ts(),
     createdAt: ts().notNull().defaultNow(),
   },
-  (t) => [index().on(t.userId), index().on(t.portfolioId)],
+  (t) => [index().on(t.userId), index().on(t.portfolioId), unique().on(t.userId, t.externalId)],
 );
 
 export const importBatches = pgTable(
@@ -218,8 +220,27 @@ export const brokerConnectionStatus = pgEnum("broker_connection_status", [
 ]);
 
 /**
- * A link to an external brokerage-data provider. Provider secrets are encrypted
- * at rest (src/server/crypto.ts) and never leave the server.
+ * A member's identity at a brokerage-data provider (one per provider). The
+ * provider's secret for them is encrypted at rest (src/server/crypto.ts) and
+ * never leaves the server.
+ */
+export const brokerUsers = pgTable(
+  "broker_users",
+  {
+    userId: text()
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    provider: text().notNull(),
+    externalUserId: text().notNull(),
+    encryptedSecret: text().notNull(),
+    createdAt: ts().notNull().defaultNow(),
+  },
+  (t) => [primaryKey({ columns: [t.userId, t.provider] })],
+);
+
+/**
+ * One broker a member linked through a provider (e.g. their DEGIRO login).
+ * `externalId` is the provider's id for that link.
  */
 export const brokerConnections = pgTable(
   "broker_connections",
@@ -229,6 +250,7 @@ export const brokerConnections = pgTable(
       .notNull()
       .references(() => user.id, { onDelete: "cascade" }),
     provider: text().notNull(),
+    externalId: text(),
     institution: text().notNull().default(""),
     status: brokerConnectionStatus().notNull().default("pending"),
     encryptedSecret: text(),
@@ -237,5 +259,5 @@ export const brokerConnections = pgTable(
     createdAt: ts().notNull().defaultNow(),
     revokedAt: ts(),
   },
-  (t) => [index().on(t.userId)],
+  (t) => [index().on(t.userId), unique().on(t.userId, t.provider, t.externalId)],
 );

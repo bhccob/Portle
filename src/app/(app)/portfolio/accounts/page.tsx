@@ -4,6 +4,7 @@ import { SourceBadge } from "@/components/ui/badge";
 import { ButtonLink } from "@/components/ui/button";
 import { PageHeader, Panel } from "@/components/ui/panel";
 import { formatDate } from "@/lib/format";
+import { brokerAccountLabels } from "@/server/services/brokers";
 import { listAccounts } from "@/server/services/portfolio";
 import { requireMember } from "@/server/session";
 import { ArchiveAccountButton, CreateAccountForm } from "../portfolio-forms";
@@ -13,6 +14,10 @@ export const metadata = { title: "Accounts" };
 export default async function AccountsPage() {
   const { user } = await requireMember();
   const accounts = await listAccounts(user.id);
+  const synced = await brokerAccountLabels(
+    user.id,
+    accounts.map((a) => a.id),
+  );
   return (
     <>
       <Link href="/portfolio" className="mb-3 inline-flex items-center gap-1.5 text-sm text-fg-muted hover:text-fg">
@@ -42,7 +47,14 @@ export default async function AccountsPage() {
                     </p>
                   </div>
                   <div className="flex items-center gap-2">
-                    <SourceBadge kind={a.source === "csv" ? "imported" : a.source === "broker" ? "broker" : "manual"} />
+                    {synced.has(a.id) ? (
+                      <SourceBadge kind="broker" detail={`From ${synced.get(a.id)!.institution}`} asOf={synced.get(a.id)!.lastSyncAt} />
+                    ) : (
+                      <SourceBadge
+                        kind={a.source === "csv" ? "imported" : "manual"}
+                        detail={a.source === "broker" ? `Was synced from ${a.institution || "a broker"}` : undefined}
+                      />
+                    )}
                     <Link href={`/portfolio/transactions?account=${a.id}`} className="text-sm text-accent hover:underline">
                       Transactions
                     </Link>
