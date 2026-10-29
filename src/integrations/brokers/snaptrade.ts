@@ -1,5 +1,5 @@
 import "server-only";
-import { Snaptrade, SnaptradeAuth, type UniversalSymbol } from "snaptrade-typescript-sdk";
+import { Snaptrade, SnaptradeAuth, type Instrument, type UniversalSymbol } from "snaptrade-typescript-sdk";
 import { NotConfiguredError, type BrokerActivity, type BrokerProvider, type BrokerSecurity, type BrokerUser, type ProviderStatus } from "./types";
 
 /** SnapTrade's activity kinds that Portle's ledger can hold. Anything else is left out; holdings still match through the daily check. */
@@ -28,7 +28,24 @@ const KIND: Record<string, BrokerSecurity["kind"]> = {
   crypto: "crypto",
 };
 
-const num = (n: number | null | undefined) => (n === null || n === undefined || !Number.isFinite(n) ? null : String(Math.abs(n)));
+/** What Portle can hold, by the kind on SnapTrade's positions. Options, futures and CFDs are left out. */
+const POSITION_KIND: Partial<Record<Instrument["kind"], BrokerSecurity["kind"]>> = {
+  stock: "equity",
+  adr: "equity",
+  etf: "etf",
+  mutualfund: "fund",
+  cef: "fund",
+  bond: "bond",
+  crypto: "crypto",
+  tokenized_asset: "other",
+  other: "other",
+};
+
+/** A positive amount as a decimal string; SnapTrade sends numbers on older calls and strings on newer ones. */
+function num(n: number | string | null | undefined) {
+  if (n === null || n === undefined || n === "" || !Number.isFinite(Number(n))) return null;
+  return typeof n === "string" ? n.trim().replace(/^-/, "") : String(Math.abs(n));
+}
 
 function security(s: Partial<UniversalSymbol> | null | undefined, fallbackCurrency: string): BrokerSecurity | null {
   const symbol = (s?.raw_symbol || s?.symbol || "").trim();
@@ -111,15 +128,26 @@ export class SnapTradeProvider implements BrokerProvider {
       }));
   }
 
+  // SnapTrade answers the older holdings call with 410 Gone for accounts made after May 2026.
   async listPositions(user: BrokerUser, accountExternalId: string) {
-    const { data } = await this.client().accountInformation.getUserHoldings({ ...user, accountId: accountExternalId });
-    const currency = data.account?.balance?.total?.currency || "EUR";
-    return (data.positions ?? []).flatMap((p) => {
-      const sec = p.cash_equivalent ? null : security(p.symbol?.symbol, p.currency?.code || currency);
-      const quantity = num(p.units ?? p.fractional_units);
-      return sec && quantity
-        ? [{ ...sec, currency: p.currency?.code || sec.currency, quantity, averagePrice: num(p.average_purchase_price), price: num(p.price) }]
-        : [];
+    const { data } = await this.client().accountInformation.getAllAccountPositions({ ...user, accountId: accountExternalId });
+    return (data.results ?? []).flatMap((p) => {
+      const kind = POSITION_KIND[p.instrument?.kind];
+      const inst = p.instrument as { raw_symbol?: string; symbol?: string; description?: string | null; currency?: string | null };
+      const symbol = (inst.raw_symbol || inst.symbol || "").trim();
+      const quantity = num(p.units);
+      if (!kind || p.cash_equivalent || !symbol || !quantity) return [];
+      return [
+        {
+          symbol,
+          name: (inst.description || symbol).slice(0, 120),
+          currency: p.currency || inst.currency || "EUR",
+          kind,
+          quantity,
+          averagePrice: num(p.cost_basis),
+          price: num(p.price),
+        },
+      ];
     });
   }
 

@@ -23,17 +23,18 @@ export async function startConnectAction(reconnectId?: string): Promise<ActionRe
 
 export async function addAccountsAction(_: ActionResult | null, form: FormData): Promise<ActionResult> {
   const { user } = await requireMember();
+  let copied = true;
   const res = await runAction(async () => {
     const results = await addBrokerAccounts(
       user.id,
       form.getAll("account").map((v) => String(v).slice(0, 200)),
     );
-    const failed = results.find((r) => !r.ok);
-    if (failed) throw new UserFacingError(`Your accounts were added, but the first copy didn't finish: ${failed.error}`);
+    copied = results.every((r) => r.ok);
   });
   if (!res.ok) return res;
   revalidatePath("/", "layout");
-  redirect("/portfolio?synced=1");
+  // The accounts are in either way. If the first copy failed, Connections shows why and offers Sync now.
+  redirect(copied ? "/portfolio?synced=1" : "/settings/connections");
 }
 
 export async function syncConnectionAction(connectionId: string): Promise<ActionResult> {

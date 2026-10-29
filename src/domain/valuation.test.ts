@@ -53,6 +53,34 @@ describe("FX", () => {
   });
 });
 
+describe("dividends in another currency", () => {
+  // A EUR-listed ETF that pays its dividends in USD, as DEGIRO reports VUSA.
+  const ledger = buildLedger([
+    t({ instrumentId: "VUSA", quantity: "4", price: "110" }),
+    t({ instrumentId: "VUSA", type: "dividend", tradeDate: "2024-04-01", amount: "5", fee: "0", currency: "USD" }),
+    t({ instrumentId: "VUSA", type: "dividend", tradeDate: "2024-07-01", amount: "2", currency: "EUR" }),
+  ]);
+
+  it("are normal, not a mismatch, and stay in the currency they were paid in", () => {
+    expect(ledger.issues).toEqual([]);
+    expect(ledger.positions[0].income.toFixed()).toBe("2");
+    expect(ledger.positions[0].foreignIncome.USD.toFixed()).toBe("5");
+  });
+
+  it("count toward income at current rates", () => {
+    const v = valuePortfolio({
+      positions: ledger.positions,
+      cash: [],
+      instruments: new Map([["VUSA", inst("VUSA", "EUR", "etf")]]),
+      prices: new Map([["VUSA", price("120", "EUR")]]),
+      fx,
+      baseCurrency: "EUR",
+    });
+    // 2 EUR + 5 USD at 1.25 = 6 EUR
+    expect(v.totals.income.toFixed()).toBe("6");
+  });
+});
+
 describe("valuePortfolio", () => {
   const ledger = buildLedger([
     t({ instrumentId: "ASML", quantity: "10", price: "500" }),

@@ -93,7 +93,7 @@ export function valuePortfolio(input: {
   const { fx, baseCurrency } = input;
   const byInstrument = new Map<string, Position[]>();
   for (const p of input.positions) {
-    if (p.quantity.isZero() && p.realizedPL.isZero() && p.income.isZero()) continue;
+    if (p.quantity.isZero() && p.realizedPL.isZero() && p.income.isZero() && !Object.keys(p.foreignIncome).length) continue;
     const list = byInstrument.get(p.instrumentId) ?? [];
     list.push(p);
     byInstrument.set(p.instrumentId, list);
@@ -120,7 +120,12 @@ export function valuePortfolio(input: {
     const realizedNative = sum(list.map((p) => p.realizedPL));
     const incomeNative = sum(list.map((p) => p.income));
     const realizedBase = toBase(realizedNative, ccy);
-    const incomeBase = toBase(incomeNative, ccy);
+    let incomeBase = toBase(incomeNative, ccy);
+    // Dividends paid in another currency convert straight to the base currency, at the same current rates.
+    for (const [currency, amount] of list.flatMap((p) => Object.entries(p.foreignIncome))) {
+      const converted = toBase(amount, currency);
+      if (converted) incomeBase = (incomeBase ?? ZERO).plus(converted);
+    }
     if (realizedBase) realized = realized.plus(realizedBase);
     if (incomeBase) income = income.plus(incomeBase);
 

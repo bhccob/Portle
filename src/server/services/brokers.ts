@@ -37,7 +37,14 @@ function describe(e: unknown) {
   if (e instanceof NotConfiguredError || e instanceof UserFacingError) return e.message;
   const status = (e as { status?: number })?.status;
   if (status === 401 || status === 402 || status === 403) return RECONNECT;
-  console.error("[brokers] provider call failed:", e instanceof Error ? `${e.name}: ${e.message.slice(0, 160)}` : "unknown");
+  // The SDK redacts ids and secrets from the URL; the body is the provider's own error message.
+  const { method, url, responseBody } = (e ?? {}) as { method?: string; url?: string; responseBody?: unknown };
+  console.error(
+    "[brokers] provider call failed:",
+    e instanceof Error
+      ? `${e.name} ${status ?? ""} ${method ?? ""} ${url?.split("?")[0] ?? ""} ${JSON.stringify(responseBody ?? e.message).slice(0, 300)}`
+      : "unknown",
+  );
   return UNREACHABLE;
 }
 

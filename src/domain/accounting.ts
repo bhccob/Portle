@@ -37,6 +37,8 @@ export type Position = {
   costBasisKnown: boolean;
   realizedPL: Dec;
   income: Dec;
+  /** Dividends paid in another currency than the position, by currency (e.g. USD payouts on a EUR-listed ETF). */
+  foreignIncome: Record<string, Dec>;
   firstAcquired: string | null;
 };
 
@@ -92,10 +94,11 @@ export function buildLedger(transactions: LedgerTransaction[]): LedgerResult {
         costBasisKnown: true,
         realizedPL: ZERO,
         income: ZERO,
+        foreignIncome: {},
         firstAcquired: null,
       };
       positions.set(k, p);
-    } else if (p.currency !== t.currency && !["split"].includes(t.type)) {
+    } else if (p.currency !== t.currency && !["split", "dividend"].includes(t.type)) {
       issues.push({
         transactionId: t.id,
         kind: "currency_mismatch",
@@ -209,7 +212,9 @@ export function buildLedger(transactions: LedgerTransaction[]): LedgerResult {
         }
         if (t.instrumentId) {
           const p = positionFor(t);
-          p.income = p.income.plus(amount).minus(fee);
+          const net = amount.minus(fee);
+          if (p.currency === t.currency) p.income = p.income.plus(net);
+          else p.foreignIncome[t.currency] = (p.foreignIncome[t.currency] ?? ZERO).plus(net);
         }
         const c = cashFor(t.accountId, t.currency);
         c.balance = c.balance.plus(amount).minus(fee);
