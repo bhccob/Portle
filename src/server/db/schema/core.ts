@@ -33,6 +33,8 @@ export const profiles = pgTable(
       .array()
       .notNull()
       .default(sql`'{}'::text[]`),
+    /** How long they have invested, if they said (see domain/topics EXPERIENCE). Only they see it. */
+    experience: text(),
     theme: text().notNull().default("system"),
     onboardedAt: ts(),
     createdAt: ts().notNull().defaultNow(),

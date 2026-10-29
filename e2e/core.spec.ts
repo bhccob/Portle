@@ -36,11 +36,23 @@ test.describe.serial("a new member's core journey", () => {
 
     await page.goto(await mailLink(page, me.email, "verify-email"));
     await expect(page).toHaveURL(/\/onboarding/);
+    // Four short screens: only the handle and the terms need an answer, and no money question.
     await page.getByLabel("Handle").fill(me.handle);
+    await expect(page.getByText("Available")).toBeVisible();
+    await page.getByRole("button", { name: "Continue" }).click();
+    await expect(page.getByRole("heading", { name: "What are you into?" })).toBeVisible();
+    await page.getByText("ETFs", { exact: true }).click();
+    await page.getByText("Market news", { exact: true }).click();
+    await expect(page.getByText("2 picked")).toBeVisible();
+    await page.getByRole("button", { name: "Continue" }).click();
+    await page.getByLabel("How long have you been investing?").selectOption({ label: "Just starting" });
+    await page.getByRole("button", { name: "Continue" }).click();
+    await expect(page.getByRole("heading", { name: "Private by default" })).toBeVisible();
     await page.getByRole("checkbox", { name: /I agree/ }).check();
     await page.getByRole("button", { name: "Open my archive" }).click();
     await expect(page).toHaveURL(/\/home/);
     await expect(page.getByRole("heading", { name: /Erin/ })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Start here" })).toBeVisible();
   });
 
   test("creates an account and records a holding", async () => {

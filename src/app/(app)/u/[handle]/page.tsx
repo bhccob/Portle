@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { ButtonLink } from "@/components/ui/button";
 import { Panel } from "@/components/ui/panel";
 import { LinkTabs } from "@/components/ui/tabs";
+import { topicLabel } from "@/domain/topics";
 import { formatDate, formatPercent, relativeTime } from "@/lib/format";
 import { UserFacingError } from "@/server/errors";
 import { getProfileView } from "@/server/services/profile";
@@ -80,7 +81,7 @@ export default async function ProfilePage({ params, searchParams }: { params: Pr
         {p.interests.length ? (
           <div className="mt-4 flex flex-wrap gap-1.5">
             {p.interests.map((i) => (
-              <Badge key={i}>{i}</Badge>
+              <Badge key={i}>{topicLabel(i)}</Badge>
             ))}
           </div>
         ) : null}

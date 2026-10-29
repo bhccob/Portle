@@ -3,6 +3,7 @@ import { z } from "zod";
 import { isCurrency } from "@/domain/money";
 import { canView, profileAccess, type Audience, type Viewer } from "@/domain/permissions";
 import { RELIC_BY_KEY } from "@/domain/relics";
+import { EXPERIENCE, INTERESTS } from "@/domain/topics";
 import { audit } from "../audit";
 import { getDb } from "../db";
 import { consents, friendships, guildMembers, guilds, privacySettings, profiles, theses, user, userRelics } from "../db/schema";
@@ -21,28 +22,17 @@ export const handleSchema = z
   .regex(/^[a-z0-9_]{3,20}$/, "3–20 characters: lowercase letters, numbers and underscores.")
   .refine((h) => !RESERVED.has(h), "That handle is reserved.");
 
-export const INTERESTS = [
-  "Long-term investing",
-  "Dividends",
-  "Index funds",
-  "Growth stocks",
-  "Value investing",
-  "ETFs",
-  "Technology",
-  "Healthcare",
-  "Energy",
-  "Emerging markets",
-  "Bonds",
-  "Crypto",
-  "Macro",
-  "Learning the basics",
-] as const;
+// The topic list lives in domain/topics, grouped the way onboarding shows it.
+export { INTERESTS };
 
 export const onboardingInput = z.object({
   handle: handleSchema,
   displayName: z.string().trim().min(1, "Enter a display name.").max(40),
-  baseCurrency: z.string().refine(isCurrency, "Choose a supported currency."),
-  interests: z.array(z.enum(INTERESTS)).max(8).default([]),
+  baseCurrency: z.string().refine(isCurrency, "Choose a supported currency.").default("EUR"),
+  interests: z.array(z.enum(INTERESTS)).max(INTERESTS.length).default([]),
+  // Optional and private: how long they have invested ("Rather not say" is null).
+  experience: z.enum(EXPERIENCE).nullable().default(null),
+  // Practice starts with pretend money on its own; nothing to choose at sign-up.
   paperStartingCash: z.enum(["10000", "50000", "100000"]).default("100000"),
   acceptTerms: z.literal(true, { error: "Please accept the terms and privacy notice to continue." }),
 });
@@ -71,12 +61,20 @@ export async function completeOnboarding(userId: string, raw: z.input<typeof onb
         displayName: input.displayName,
         baseCurrency: input.baseCurrency,
         interests: input.interests,
+        experience: input.experience,
         avatarHue: String(200 + (userId.charCodeAt(0) * 7) % 120),
         onboardedAt: new Date(),
       })
       .onConflictDoUpdate({
         target: profiles.userId,
-        set: { handle: input.handle, displayName: input.displayName, baseCurrency: input.baseCurrency, interests: input.interests, onboardedAt: new Date() },
+        set: {
+          handle: input.handle,
+          displayName: input.displayName,
+          baseCurrency: input.baseCurrency,
+          interests: input.interests,
+          experience: input.experience,
+          onboardedAt: new Date(),
+        },
       });
     await tx.insert(privacySettings).values({ userId }).onConflictDoNothing();
     await tx.insert(consents).values([
@@ -96,7 +94,7 @@ export async function completeOnboarding(userId: string, raw: z.input<typeof onb
 export const profileInput = z.object({
   displayName: z.string().trim().min(1, "Enter a display name.").max(40),
   bio: z.string().trim().max(280).default(""),
-  interests: z.array(z.enum(INTERESTS)).max(8).default([]),
+  interests: z.array(z.enum(INTERESTS)).max(INTERESTS.length).default([]),
   avatarHue: z.coerce.number().int().min(0).max(359).transform(String),
 });
 

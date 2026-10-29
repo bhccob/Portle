@@ -15,6 +15,13 @@
       "when": 1793263772128,
       "tag": "0001_thesis_revisit_dates",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1793290825504,
+      "tag": "0002_profile_experience",
+      "breakpoints": true
     }
   ]
 }

@@ -1,7 +1,8 @@
-import { and, asc, desc, eq, gte, ilike, inArray, or, sql } from "drizzle-orm";
+import { and, asc, desc, eq, gte, ilike, inArray, notInArray, or, sql } from "drizzle-orm";
 import { z } from "zod";
 import { canRemoveMember, guildCan, type GuildRole, type Viewer } from "@/domain/permissions";
 import { d, ZERO, type Dec } from "@/domain/money";
+import { topicSearchTerms, type Interest } from "@/domain/topics";
 import { getDb, type DbOrTx } from "../db";
 import { guildInvites, guildMembers, guildModerationActions, guilds, posts, profiles, theses } from "../db/schema";
 import { forbidden, notFound, UserFacingError } from "../errors";
@@ -63,6 +64,29 @@ export async function discoverGuilds(viewer: Viewer, q = "") {
     .orderBy(desc(memberCount), asc(guilds.name))
     .limit(60);
   return rows.map((r) => ({ ...r, isMember: viewer.guildIds.has(r.guild.id) }));
+}
+
+/**
+ * Discoverable Guilds about a member's topics (by name or topic, using each topic's
+ * everyday words), leaving out the ones they are already in. Most members first.
+ */
+export async function suggestGuilds(viewer: Viewer, interests: readonly Interest[], limit = 6) {
+  const terms = [...new Set(interests.flatMap(topicSearchTerms))];
+  if (!terms.length) return [];
+  const mine = [...viewer.guildIds];
+  const rows = await getDb()
+    .select({ guild: guilds, members: memberCount })
+    .from(guilds)
+    .where(
+      and(
+        eq(guilds.visibility, "discoverable"),
+        mine.length ? notInArray(guilds.id, mine) : undefined,
+        or(...terms.flatMap((t) => [ilike(guilds.name, `%${t}%`), ilike(guilds.topic, `%${t}%`)])),
+      ),
+    )
+    .orderBy(desc(memberCount), asc(guilds.name))
+    .limit(limit);
+  return rows;
 }
 
 /** A private Guild is invisible to non-members, except to someone holding a pending invite. */

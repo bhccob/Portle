@@ -3,18 +3,41 @@ import { Lock, Search, Users } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { PageHeader, Panel } from "@/components/ui/panel";
 import { EmptyState } from "@/components/ui/states";
-import { discoverGuilds, myGuilds } from "@/server/services/guilds";
+import { INTERESTS, type Interest } from "@/domain/topics";
+import { discoverGuilds, myGuilds, suggestGuilds } from "@/server/services/guilds";
 import { requireViewer } from "@/server/viewer-session";
 import { CreateGuildDialog, GuildOpButton } from "./guild-client";
 
 export const metadata = { title: "Guilds" };
 const POLICY = { open: "Open", request: "Request to join", invite: "Invite only" } as const;
 
+type Listed = Awaited<ReturnType<typeof suggestGuilds>>[number];
+
+function GuildRow({ guild, members }: Listed) {
+  return (
+    <li className="flex flex-col border-t border-line py-4">
+      <Link href={`/guilds/${guild.slug}`} className="font-semibold text-fg hover:underline">
+        {guild.name}
+      </Link>
+      {guild.topic ? <p className="text-xs text-accent">{guild.topic}</p> : null}
+      {guild.description ? <p className="mt-2 line-clamp-2 text-sm text-fg-muted">{guild.description}</p> : null}
+      <div className="mt-auto flex items-center justify-between gap-2 pt-3">
+        <span className="text-xs text-fg-subtle">
+          {members} member{members === 1 ? "" : "s"} · {POLICY[guild.joinPolicy]}
+        </span>
+        {guild.joinPolicy !== "invite" ? <GuildOpButton input={{ op: "join", guildId: guild.id }} label={guild.joinPolicy === "open" ? "Join" : "Ask to join"} /> : null}
+      </div>
+    </li>
+  );
+}
+
 export default async function GuildsPage({ searchParams }: { searchParams: Promise<{ q?: string }> }) {
   const { q = "" } = await searchParams;
-  const { user, viewer } = await requireViewer();
-  const [mine, discover] = await Promise.all([myGuilds(user.id), discoverGuilds(viewer, q)]);
-  const others = discover.filter((g) => !g.isMember);
+  const { user, profile, viewer } = await requireViewer();
+  const topics = profile.interests.filter((i): i is Interest => (INTERESTS as readonly string[]).includes(i));
+  const [mine, discover, suggested] = await Promise.all([myGuilds(user.id), discoverGuilds(viewer, q), q ? [] : suggestGuilds(viewer, topics)]);
+  // A suggested Guild shows once, at the top, not again under Discover.
+  const others = discover.filter((g) => !g.isMember && !suggested.some((s) => s.guild.id === g.guild.id));
 
   return (
     <>
@@ -40,6 +63,17 @@ export default async function GuildsPage({ searchParams }: { searchParams: Promi
           )}
         </Panel>
 
+        <div className="min-w-0 space-y-5">
+        {suggested.length ? (
+          <Panel title="Suggested for you" description="Around the topics you picked. Change them in Settings.">
+            <ul className="grid gap-x-10 md:grid-cols-2">
+              {suggested.map((g) => (
+                <GuildRow key={g.guild.id} {...g} />
+              ))}
+            </ul>
+          </Panel>
+        ) : null}
+
         <Panel
           title="Discover"
           actions={
@@ -55,24 +89,13 @@ export default async function GuildsPage({ searchParams }: { searchParams: Promi
             </EmptyState>
           ) : (
             <ul className="grid gap-x-10 md:grid-cols-2">
-              {others.map(({ guild, members }) => (
-                <li key={guild.id} className="flex flex-col border-t border-line py-4">
-                  <Link href={`/guilds/${guild.slug}`} className="font-semibold text-fg hover:underline">
-                    {guild.name}
-                  </Link>
-                  {guild.topic ? <p className="text-xs text-accent">{guild.topic}</p> : null}
-                  {guild.description ? <p className="mt-2 line-clamp-2 text-sm text-fg-muted">{guild.description}</p> : null}
-                  <div className="mt-auto flex items-center justify-between gap-2 pt-3">
-                    <span className="text-xs text-fg-subtle">
-                      {members} member{members === 1 ? "" : "s"} · {POLICY[guild.joinPolicy]}
-                    </span>
-                    {guild.joinPolicy !== "invite" ? <GuildOpButton input={{ op: "join", guildId: guild.id }} label={guild.joinPolicy === "open" ? "Join" : "Ask to join"} /> : null}
-                  </div>
-                </li>
+              {others.map((g) => (
+                <GuildRow key={g.guild.id} {...g} />
               ))}
             </ul>
           )}
         </Panel>
+        </div>
       </div>
     </>
   );

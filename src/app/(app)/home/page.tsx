@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { CalendarClock, CheckCircle2, ChevronRight, Circle, FlaskConical, Gem, Lock, NotebookPen, ScrollText, ShieldAlert } from "lucide-react";
+import { BookOpen, CalendarClock, CheckCircle2, ChevronRight, Circle, FlaskConical, Gem, Lock, NotebookPen, ScrollText, ShieldAlert } from "lucide-react";
 import { Ring } from "@/components/charts/ring";
 import { holdingSlices, practiceSlices } from "@/components/charts/ring-data";
 import { Avatar } from "@/components/ui/avatar";
@@ -7,6 +7,7 @@ import { Badge, SourceBadge } from "@/components/ui/badge";
 import { ButtonLink } from "@/components/ui/button";
 import { Change } from "@/components/ui/finance";
 import { Panel } from "@/components/ui/panel";
+import { GUIDE_BY_SLUG } from "@/content/guides";
 import { d } from "@/domain/money";
 import { reviewState, utcToday } from "@/domain/review";
 import { formatDate, formatMoney, formatPercent, relativeTime } from "@/lib/format";
@@ -41,6 +42,9 @@ function RowLink({ href, lead, title, sub, end }: { href: string; lead: React.Re
 }
 
 const tile = "grid size-10 shrink-0 place-items-center rounded-[12px]";
+
+/** For members who said they are just starting: the guides to read first, in order. */
+const START_HERE = ["paper-lab", "diversification", "writing-a-thesis"].map((slug) => GUIDE_BY_SLUG.get(slug)!);
 
 export default async function HomePage() {
   const { user, profile, viewer } = await requireViewer();
@@ -145,6 +149,34 @@ export default async function HomePage() {
                   </li>
                 ))}
               </ol>
+            </Panel>
+          ) : null}
+
+          {profile.experience === "starting" ? (
+            <Panel
+              title="Start here"
+              description="Short guides for your first steps"
+              actions={
+                <Link href="/archives" className="font-display text-sm font-semibold text-accent hover:underline">
+                  All guides
+                </Link>
+              }
+            >
+              <ul className="divide-y divide-line">
+                {START_HERE.map((g) => (
+                  <RowLink
+                    key={g.slug}
+                    href={`/archives/guides/${g.slug}`}
+                    lead={
+                      <span className={`${tile} bg-selected text-accent`}>
+                        <BookOpen className="size-[18px]" aria-hidden />
+                      </span>
+                    }
+                    title={g.title}
+                    sub={`${g.minutes} min read`}
+                  />
+                ))}
+              </ul>
             </Panel>
           ) : null}
 

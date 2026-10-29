@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Field, Input, Select, Textarea } from "@/components/ui/field";
 import { Dialog } from "@/components/ui/overlay";
 import { Callout } from "@/components/ui/states";
+import { topicLabel } from "@/domain/topics";
 import { authClient, authErrorMessage } from "@/lib/auth-client";
 import { updatePrivacyAction, updateProfileAction } from "./actions";
 
@@ -45,7 +46,7 @@ export function ProfileForm({ profile, interests }: { profile: { displayName: st
               className="cursor-pointer rounded-full border border-line bg-field px-3 py-1.5 text-[0.8125rem] text-fg-muted select-none hover:border-line-strong has-[:checked]:border-transparent has-[:checked]:bg-selected has-[:checked]:text-fg has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-[var(--focus)]"
             >
               <input type="checkbox" name="interests" value={i} defaultChecked={profile.interests.includes(i)} className="sr-only" />
-              {i}
+              {topicLabel(i)}
             </label>
           ))}
         </div>
