@@ -12,6 +12,7 @@ export type NotificationKind =
   | "guild_joined"
   | "relic"
   | "paper_fill"
+  | "thesis_review"
   | "system";
 
 export async function notify(

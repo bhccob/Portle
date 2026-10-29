@@ -4,6 +4,7 @@ import { ArrowLeft } from "lucide-react";
 import { PageHeader, Panel } from "@/components/ui/panel";
 import { UserFacingError } from "@/server/errors";
 import { myGuilds } from "@/server/services/guilds";
+import { utcToday } from "@/domain/review";
 import { getThesis } from "@/server/services/theses";
 import { requireViewer } from "@/server/viewer-session";
 import { ThesisForm } from "../../thesis-form";
@@ -52,7 +53,9 @@ export default async function EditThesisPage({ params }: { params: Promise<{ id:
             valuation: c.valuation,
             invalidationCriteria: c.invalidationCriteria,
             sources: c.sources,
+            reviewOn: t.thesis.reviewOn,
           }}
+          today={utcToday()}
         />
       </Panel>
     </>

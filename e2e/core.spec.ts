@@ -63,9 +63,12 @@ test.describe.serial("a new member's core journey", () => {
     await page.goto("/theses/new");
     await page.getByLabel("Title").fill("Index core stays the default");
     await page.getByLabel(/What would prove you wrong/).fill("Fees on global trackers rise above 0.4% a year.");
+    await page.getByRole("button", { name: "In 6 months" }).click();
     await page.getByRole("button", { name: "Create thesis" }).click();
     await expect(page).toHaveURL(/\/theses\/[0-9a-f-]{36}/);
     thesisUrl = new URL(page.url()).pathname;
+    await expect(page.locator("article header").getByText(/Revisit \d/)).toBeVisible();
+    await expect(page.getByLabel("Revisit on")).not.toHaveValue("");
 
     await page.goto("/lab");
     await page.getByRole("combobox", { name: "Security" }).fill("MSFT");
@@ -88,7 +91,10 @@ test.describe.serial("a new member's core journey", () => {
   test("founds a Guild and posts to friends", async () => {
     await page.goto("/guilds");
     await page.getByRole("button", { name: "New Guild" }).click();
-    await page.getByRole("dialog").getByLabel("Name").fill(`Erin's circle ${Date.now().toString(36)}`);
+    await page
+      .getByRole("dialog")
+      .getByLabel("Name")
+      .fill(`Erin's circle ${Date.now().toString(36)}`);
     await page.getByRole("dialog").getByRole("button", { name: "Create Guild" }).click();
     await expect(page.getByText("owner", { exact: true })).toBeVisible();
 

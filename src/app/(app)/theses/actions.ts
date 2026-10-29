@@ -7,7 +7,7 @@ import type { ActionResult } from "@/server/errors";
 import { assertRateLimit } from "@/server/rate-limit";
 import { evaluateRelicsQuietly } from "@/server/services/relics";
 import { addComment, REACTIONS, reportContent, REPORT_REASONS, toggleBookmark, toggleReaction } from "@/server/services/social";
-import { addThesisNote, createThesis, deleteThesis, reviseThesis, type ThesisInput } from "@/server/services/theses";
+import { addThesisNote, createThesis, deleteThesis, reviseThesis, setReviewDate, type ThesisInput } from "@/server/services/theses";
 import { buildViewer } from "@/server/services/viewer";
 import { requireMember } from "@/server/session";
 
@@ -37,6 +37,7 @@ function readThesis(form: FormData): ThesisInput {
     invalidationCriteria: s("invalidationCriteria"),
     sources: urls.map((url, i) => ({ url: url.trim(), label: (labels[i] || url).trim() })).filter((x) => x.url),
     changeNote: s("changeNote"),
+    reviewOn: s("reviewOn") || null,
   };
 }
 
@@ -52,6 +53,24 @@ export async function saveThesisAction(_: ActionResult<{ id: string }> | null, f
   revalidatePath("/theses", "layout");
   await evaluateRelicsQuietly(user.id);
   redirect(`/theses/${res.data.id}${id ? "?revised=1" : "?created=1"}`);
+}
+
+export async function setReviewDateAction(thesisId: string, _: ActionResult | null, form: FormData): Promise<ActionResult> {
+  const { user } = await requireMember();
+  const clear = form.get("intent") === "clear";
+  const day = clear ? null : String(form.get("reviewOn") ?? "") || null;
+  const res = await runAction(
+    async () => {
+      await setReviewDate(user.id, thesisId, day);
+    },
+    day ? "Revisit date saved. You'll get a reminder on the day." : "Revisit date cleared.",
+  );
+  if (res.ok) {
+    revalidatePath(`/theses/${thesisId}`);
+    revalidatePath("/theses");
+    revalidatePath("/home");
+  }
+  return res;
 }
 
 export async function deleteThesisAction(id: string): Promise<ActionResult> {

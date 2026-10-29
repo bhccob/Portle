@@ -6,11 +6,11 @@ Porfael is a private-by-default investing companion: a portfolio tracker, an inv
 
 | Route | Purpose | Notes |
 |---|---|---|
-| `/home` Overview | What needs attention today | Setup checklist, private portfolio snapshot with 3-month TWR, theses under review or stale (90 days), journal prompt of the day, watchlist movers, circle activity, Paper Lab equity, next Relic |
+| `/home` Overview | What needs attention today | Setup checklist, private portfolio snapshot with 3-month TWR, revisits that are due or coming up within two weeks, theses under review or stale (90 days, when no revisit date is set), journal prompt of the day, watchlist movers, circle activity, Paper Lab equity, next Relic |
 | `/portfolio` | Holdings across accounts | Base-currency totals, day change, unrealized/realized/income, TWR by range, allocation by asset class/sector/region/currency, account filter, issues (unpriced securities, oversells), labelled sample data for exploration |
 | `/portfolio/transactions`, `/accounts`, `/import` | Ledger, accounts, CSV import | Column-mapping import with in-browser validation preview and duplicate skipping |
 | `/markets`, `/markets/[id]` | Research | Indices, search, sector moves, watchlists, instrument page with range chart, your private position, related theses. Earnings calendar shows an honest "needs a licensed source" state |
-| `/theses` | Reasoning archive | Thesis editor (claim, bull/bear, assumptions, catalysts, risks, valuation, invalidation, sources, horizon, tags, audience), immutable revisions with change notes, private notes, comments, reactions, bookmarks, linked paper orders |
+| `/theses` | Reasoning archive | Thesis editor (claim, bull/bear, assumptions, catalysts, risks, valuation, invalidation, sources, horizon, tags, audience), immutable revisions with change notes, an optional private revisit date (quick picks for 3, 6 or 12 months) with a one-time reminder in Notifications when it comes round (revising the thesis counts as revisiting it), private notes, comments, reactions, bookmarks, linked paper orders |
 | `/lab` | Paper Trading Lab | Separate virtual ledger, market and limit orders, fees and slippage (editable), idempotent submits, rejection reasons, reset with new epoch |
 | `/journal` | Reflection | Prompts, Markdown, links to theses/securities/paper orders, tags, search, month calendar, streaks, private by default |
 | `/feed` | Friends-first discussion | Audience per post (friends, a Guild, all members), thesis sharing that can't widen the thesis's own audience, allocation insights as server-computed percentages labelled self-reported vs broker-verified, reactions, comments, bookmarks, reports, people search, friend requests, blocking |

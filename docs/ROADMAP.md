@@ -14,14 +14,14 @@ Status as of the first build. Phases follow the master prompt; adjusted to what 
 
 ## Next, in priority order
 
-1. **Landing page** (comp-led, Specimen Vitrine direction) — in progress.
+1. **Landing page** — shipped: the friendly Notebook design on charcoal (see DESIGN.md).
 2. **Production deployment:** managed Postgres (Neon or Supabase), Vercel project, `RESEND_API_KEY`, staging environment, CI workflow running lint/typecheck/unit/integration/e2e on every push.
 3. **Nonce-based CSP** via `proxy.ts`, and a shared rate-limit store (Redis/Upstash) before scaling past one instance.
 4. **Licensed market data:** choose a provider after checking coverage and licence terms (Finnhub/Polygon/EODHD), add daily history to the adapter, cache per provider rules; earnings calendar and fundamentals from the same source.
 5. **Broker sync (SnapTrade):** verify coverage for IBKR, DEGIRO, Trading 212; implement request signing, hosted connection flow, encrypted token storage, nightly idempotent sync into the ledger, reconnect/disconnect, reconciliation against broker balances, duplicate handling between CSV and synced rows.
 6. **Performance at scale:** materialised daily portfolio snapshots refreshed by a background job; pagination on feeds already exists, add it to theses and journal lists.
 7. **Money-weighted return in the UI**, per-currency return breakdown, FX history for historic conversion.
-8. **Moderation console** for platform reports; email notifications with preferences.
+8. **Moderation console** for platform reports; email notifications with preferences (thesis revisit reminders are the first candidate).
 9. **Accessibility audit** with assistive-technology testing; light-theme contrast pass on every screen.
 10. **Legal review** of terms and privacy notice before public launch.
 
@@ -32,3 +32,4 @@ Status as of the first build. Phases follow the master prompt; adjusted to what 
 - Historic portfolio values convert at today's FX rate.
 - In-memory rate limits for server actions are per instance.
 - Broker sync is not implemented; CSV import is the supported path.
+- Thesis revisit reminders are created when the member next opens the app (no background job yet), and appear in Notifications only, not by email.

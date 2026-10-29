@@ -14,7 +14,7 @@ Every member-owned table references `user.id` with `ON DELETE CASCADE`, so delet
 
 **Portfolio:** `portfolios` (base currency), `accounts` (currency, source manual/csv/broker/demo, archivable), `instruments` (unique symbol+exchange; exchange `''` marks an imported, unpriced security), `transactions` (the ledger; `UNIQUE(account_id, dedupe_hash)`), `import_batches` (row counts and up to 200 row errors), `quotes` (cache with source, as-of and delay), `fx_rates` (per day), `watchlists` / `watchlist_items` (personal or Guild-shared), `broker_connections` (encrypted secret, status, last sync).
 
-**Research:** `theses` (head row: current title, status, visibility, tags), `thesis_revisions` (immutable, `UNIQUE(thesis_id, revision)`), `thesis_notes` (owner-only), `thesis_transaction_links`, `journal_entries`, `collections`, `collection_items`.
+**Research:** `theses` (head row: current title, status, visibility, tags, and the owner-only revisit schedule `review_on` / `review_reminded_on`, which is never returned to other viewers and is cleared when a thesis closes), `thesis_revisions` (immutable, `UNIQUE(thesis_id, revision)`), `thesis_notes` (owner-only), `thesis_transaction_links`, `journal_entries`, `collections`, `collection_items`.
 
 **Paper Lab:** `paper_accounts` (assumptions, `epoch` bumped on reset), `paper_orders` (`UNIQUE(paper_account_id, idempotency_key)`, quote snapshot, reject reason), `paper_fills` (one per order), `paper_ledger` (signed amounts with running balance and a `bigserial` sequence).
 

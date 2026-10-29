@@ -36,10 +36,14 @@ export const theses = pgTable(
       .notNull()
       .default(sql`'{}'::text[]`),
     currentRevision: integer().notNull().default(1),
+    /** The day the owner plans to look at this thesis again. Private to the owner; not part of a revision. */
+    reviewOn: date({ mode: "string" }),
+    /** The reviewOn a reminder was last sent for, so each date reminds once. */
+    reviewRemindedOn: date({ mode: "string" }),
     createdAt: ts().notNull().defaultNow(),
     updatedAt: ts().notNull().defaultNow(),
   },
-  (t) => [index().on(t.userId, t.updatedAt), index().on(t.instrumentId), index().on(t.guildId)],
+  (t) => [index().on(t.userId, t.updatedAt), index().on(t.instrumentId), index().on(t.guildId), index().on(t.userId, t.reviewOn)],
 );
 
 /** Immutable snapshots. Every edit to a thesis appends a revision; nothing is overwritten. */

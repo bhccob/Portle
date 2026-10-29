@@ -12,8 +12,19 @@ import { addTransaction, createAccount, getPerformance, getValuation, importCsv 
 import { completeOnboarding, getProfileView, previewProfileAs, updatePrivacy } from "./profile";
 import { evaluateRelics } from "./relics";
 import { addComment, blockUser, createPost, listFeed, respondFriendRequest, sendFriendRequest } from "./social";
-import { createGuild, getGuild, guildAnalytics, handOverOwnedGuilds, joinGuild, removeMember, respondToRequest, setShareAllocation, listPendingRequests } from "./guilds";
-import { createThesis, getThesis, listSharedTheses, reviseThesis } from "./theses";
+import {
+  createGuild,
+  getGuild,
+  guildAnalytics,
+  handOverOwnedGuilds,
+  joinGuild,
+  removeMember,
+  respondToRequest,
+  setShareAllocation,
+  listPendingRequests,
+} from "./guilds";
+import { addMonths, utcToday } from "@/domain/review";
+import { createThesis, getThesis, listSharedTheses, remindDueReviews, reviseThesis, setReviewDate } from "./theses";
 import { buildViewer } from "./viewer";
 
 let db: Db;
@@ -54,7 +65,9 @@ describe("portfolio", () => {
   });
 
   it("rejects transactions on someone else's account", async () => {
-    await expect(addTransaction(bob, { accountId, type: "buy", instrumentId: asml, tradeDate: "2025-03-03", quantity: "1", price: "1" })).rejects.toThrow(/not found/);
+    await expect(addTransaction(bob, { accountId, type: "buy", instrumentId: asml, tradeDate: "2025-03-03", quantity: "1", price: "1" })).rejects.toThrow(
+      /not found/,
+    );
   });
 
   it("rejects future-dated transactions", async () => {
@@ -132,7 +145,8 @@ describe("theses", () => {
 
   beforeAll(async () => {
     privateId = (await createThesis(alice, { title: "Private idea", visibility: "private" })).id;
-    friendsId = (await createThesis(alice, { title: "Shared with friends", visibility: "friends", invalidationCriteria: "Orders fall two quarters in a row." })).id;
+    friendsId = (await createThesis(alice, { title: "Shared with friends", visibility: "friends", invalidationCriteria: "Orders fall two quarters in a row." }))
+      .id;
   });
 
   it("enforces visibility on direct access by id", async () => {
@@ -207,7 +221,9 @@ describe("paper trading lab", () => {
   it("only links orders to theses the trader can see", async () => {
     const msft = (await getInstrumentBySymbol("MSFT"))!.id;
     const hidden = (await createThesis(carol, { title: "Carol private", visibility: "private" })).id;
-    await expect(placeOrder(bob, { instrumentId: msft, side: "buy", type: "market", quantity: "1", thesisId: hidden, idempotencyKey: randomUUID() })).rejects.toThrow(/not found/);
+    await expect(
+      placeOrder(bob, { instrumentId: msft, side: "buy", type: "market", quantity: "1", thesisId: hidden, idempotencyKey: randomUUID() }),
+    ).rejects.toThrow(/not found/);
   });
 });
 
@@ -283,13 +299,89 @@ describe("relics", () => {
   });
 });
 
+describe("thesis revisits", () => {
+  const today = utcToday();
+  const inAMonth = addMonths(today, 1);
+  const reminders = async (userId: string) =>
+    db
+      .select()
+      .from(s.notifications)
+      .where(sql`${s.notifications.userId} = ${userId} and ${s.notifications.kind} = 'thesis_review'`);
+  let id: string;
+
+  beforeAll(async () => {
+    id = (await createThesis(alice, { title: "Revisit me", visibility: "public", status: "active", reviewOn: inAMonth })).id;
+  });
+
+  it("rejects a revisit date in the past", async () => {
+    await expect(createThesis(alice, { title: "Too late", reviewOn: "2020-01-01" })).rejects.toThrow(/today or a later date/);
+    await expect(createThesis(alice, { title: "Not a day", reviewOn: "2027-02-30" })).rejects.toThrow(/valid date/);
+  });
+
+  it("reminds once when the day comes round, and again only for a new date", async () => {
+    expect(await remindDueReviews(alice, today)).toBe(0);
+    expect(await remindDueReviews(alice, inAMonth)).toBe(1);
+    expect(await remindDueReviews(alice, inAMonth)).toBe(0);
+    const [n] = await reminders(alice);
+    expect(n.title).toBe("Time to revisit “Revisit me”");
+    expect(n.href).toBe(`/theses/${id}`);
+
+    await setReviewDate(alice, id, addMonths(today, 3));
+    expect(await remindDueReviews(alice, addMonths(today, 2))).toBe(0);
+    expect(await remindDueReviews(alice, addMonths(today, 3))).toBe(1);
+    expect(await reminders(alice)).toHaveLength(2);
+  });
+
+  it("is concurrency-safe", async () => {
+    await setReviewDate(alice, id, addMonths(today, 4));
+    const counts = await Promise.all([remindDueReviews(alice, addMonths(today, 5)), remindDueReviews(alice, addMonths(today, 5))]);
+    expect(counts.reduce((a, b) => a + b, 0)).toBe(1);
+  });
+
+  it("treats a revision as the revisit when the passed date is resubmitted", async () => {
+    await db.update(s.theses).set({ reviewOn: "2020-01-01" }).where(eq(s.theses.id, id));
+    await expect(reviseThesis(alice, id, { title: "Revisit me", visibility: "public", status: "active", reviewOn: "2020-02-02" })).rejects.toThrow(
+      /today or a later date/,
+    );
+    await reviseThesis(alice, id, { title: "Revisit me", visibility: "public", status: "active", reviewOn: "2020-01-01", changeNote: "Looked again." });
+    const [t] = await db.select().from(s.theses).where(eq(s.theses.id, id));
+    expect(t.reviewOn).toBeNull();
+  });
+
+  it("keeps the date private to the owner", async () => {
+    await setReviewDate(alice, id, inAMonth);
+    expect((await getThesis(await buildViewer(alice), id)).thesis.reviewOn).toBe(inAMonth);
+    expect((await getThesis(await buildViewer(carol), id)).thesis.reviewOn).toBeNull();
+    const shared = (await listSharedTheses(await buildViewer(carol))).find((r) => r.thesis.id === id)!;
+    expect(shared.thesis.reviewOn).toBeNull();
+    await expect(setReviewDate(carol, id, inAMonth)).rejects.toThrow(/not found/);
+  });
+
+  it("never reminds about a closed thesis", async () => {
+    await reviseThesis(alice, id, {
+      title: "Revisit me",
+      visibility: "public",
+      status: "validated",
+      changeNote: "Played out as expected.",
+      reviewOn: inAMonth,
+    });
+    const [t] = await db.select().from(s.theses).where(eq(s.theses.id, id));
+    expect(t.reviewOn).toBeNull();
+    expect(await remindDueReviews(alice, addMonths(today, 24))).toBe(0);
+    await expect(setReviewDate(alice, id, inAMonth)).rejects.toThrow(/not found/);
+  });
+});
+
 describe("account deletion", () => {
   it("cascades every user-owned row", async () => {
     const dave = await member("Dave", "dave");
     await createThesis(dave, { title: "Delete me" });
     await db.delete(s.user).where(eq(s.user.id, dave));
     for (const table of [s.profiles, s.theses, s.paperAccounts, s.portfolios, s.watchlists]) {
-      const rows = await db.select().from(table).where(eq((table as typeof s.theses).userId, dave));
+      const rows = await db
+        .select()
+        .from(table)
+        .where(eq((table as typeof s.theses).userId, dave));
       expect(rows).toHaveLength(0);
     }
   });

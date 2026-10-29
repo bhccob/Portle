@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowLeft, FlaskConical, History, Link2, Lock, PenLine, ShieldAlert } from "lucide-react";
+import { ArrowLeft, CalendarClock, FlaskConical, History, Link2, Lock, PenLine, ShieldAlert } from "lucide-react";
 import { Avatar } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { ButtonLink } from "@/components/ui/button";
@@ -17,8 +17,9 @@ import { listComments } from "@/server/services/social";
 import { getThesis } from "@/server/services/theses";
 import { requireViewer } from "@/server/viewer-session";
 import { UserFacingError } from "@/server/errors";
+import { reviewState, utcToday } from "@/domain/review";
 import { STATUS_LABEL, STATUS_TONE } from "../page";
-import { DeleteThesisButton, PrivateNoteForm } from "./thesis-owner-controls";
+import { DeleteThesisButton, PrivateNoteForm, ReviewDateForm } from "./thesis-owner-controls";
 
 const UUID = /^[0-9a-f-]{36}$/i;
 const VIS_LABEL: Record<string, string> = { private: "Only you", friends: "Friends", guild: "Guild members", public: "All members" };
@@ -61,13 +62,21 @@ export default async function ThesisPage({ params, searchParams }: { params: Pro
   const db = getDb();
   const [comments, reactionRows, [saved], lab] = await Promise.all([
     listComments(viewer, target),
-    db.select().from(reactions).where(and(eq(reactions.targetType, "thesis"), eq(reactions.targetId, t.thesis.id))),
-    db.select().from(bookmarks).where(and(eq(bookmarks.userId, viewer.userId), eq(bookmarks.targetType, "thesis"), eq(bookmarks.targetId, t.thesis.id))),
+    db
+      .select()
+      .from(reactions)
+      .where(and(eq(reactions.targetType, "thesis"), eq(reactions.targetId, t.thesis.id))),
+    db
+      .select()
+      .from(bookmarks)
+      .where(and(eq(bookmarks.userId, viewer.userId), eq(bookmarks.targetType, "thesis"), eq(bookmarks.targetId, t.thesis.id))),
     ordersForThesis(viewer.userId, t.thesis.id),
   ]);
   const counts: Record<string, number> = {};
   for (const r of reactionRows) counts[r.kind] = (counts[r.kind] ?? 0) + 1;
   const isLatest = shown.revision === t.current.revision;
+  const today = utcToday();
+  const review = t.isOwner ? reviewState(t.thesis.reviewOn, t.thesis.status, today) : "none";
 
   return (
     <>
@@ -86,6 +95,11 @@ export default async function ThesisPage({ params, searchParams }: { params: Pro
                 </Link>
               ) : null}
               {shown.timeHorizon ? <span>Horizon {shown.timeHorizon}</span> : null}
+              {review !== "none" ? (
+                <span className={`inline-flex items-center gap-1 ${review === "due" ? "font-medium text-warning" : ""}`}>
+                  <CalendarClock className="size-3" aria-hidden /> {review === "due" ? "Revisit due" : "Revisit"} {formatDate(t.thesis.reviewOn)}
+                </span>
+              ) : null}
               <span className="inline-flex items-center gap-1">
                 <Lock className="size-3" aria-hidden /> {VIS_LABEL[t.thesis.visibility]}
               </span>
@@ -108,6 +122,13 @@ export default async function ThesisPage({ params, searchParams }: { params: Pro
               </div>
             </div>
           </header>
+
+          {review === "due" && isLatest ? (
+            <Callout tone="warning" className="mt-5" icon={CalendarClock} title="Time to revisit this thesis">
+              You planned to look at it again on {formatDate(t.thesis.reviewOn)}. Has anything changed? Revise it with what you&apos;ve learned, or pick a new
+              date in your controls.
+            </Callout>
+          ) : null}
 
           {!isLatest ? (
             <Callout tone="info" className="mt-5" icon={History}>
@@ -136,7 +157,11 @@ export default async function ThesisPage({ params, searchParams }: { params: Pro
             <Section title="Valuation" body={shown.valuation} />
             {shown.invalidationCriteria ? (
               <div className="rounded-[var(--radius-lg)] border border-line-strong bg-selected/40 p-4">
-                <Section title="What would prove this wrong" body={shown.invalidationCriteria} icon={<ShieldAlert className="size-4 text-accent" aria-hidden />} />
+                <Section
+                  title="What would prove this wrong"
+                  body={shown.invalidationCriteria}
+                  icon={<ShieldAlert className="size-4 text-accent" aria-hidden />}
+                />
               </div>
             ) : t.isOwner ? (
               <Callout tone="warning" title="No invalidation criteria yet">
@@ -201,6 +226,11 @@ export default async function ThesisPage({ params, searchParams }: { params: Pro
                 ) : null}
                 <DeleteThesisButton id={t.thesis.id} title={t.thesis.title} />
               </div>
+              {review !== "none" || ["researching", "active", "under_review"].includes(t.thesis.status) ? (
+                <div className="mt-4 border-t border-line pt-4">
+                  <ReviewDateForm thesisId={t.thesis.id} reviewOn={t.thesis.reviewOn} today={today} />
+                </div>
+              ) : null}
             </Panel>
           ) : t.instrument ? (
             <Panel>
@@ -214,8 +244,15 @@ export default async function ThesisPage({ params, searchParams }: { params: Pro
             <ol className="relative space-y-3 border-l border-line pl-4">
               {t.revisions.map((r) => (
                 <li key={r.id} className="relative">
-                  <span className={`absolute top-1.5 -left-[21px] size-2.5 rounded-full ${r.revision === shown.revision ? "bg-accent" : "bg-line-strong"}`} aria-hidden />
-                  <Link href={`/theses/${t.thesis.id}?rev=${r.revision}`} className="block text-sm hover:underline" aria-current={r.revision === shown.revision ? "true" : undefined}>
+                  <span
+                    className={`absolute top-1.5 -left-[21px] size-2.5 rounded-full ${r.revision === shown.revision ? "bg-accent" : "bg-line-strong"}`}
+                    aria-hidden
+                  />
+                  <Link
+                    href={`/theses/${t.thesis.id}?rev=${r.revision}`}
+                    className="block text-sm hover:underline"
+                    aria-current={r.revision === shown.revision ? "true" : undefined}
+                  >
                     <span className="font-medium text-fg">Rev {r.revision}</span> <span className="text-fg-subtle">· {formatDate(r.createdAt)}</span>
                     <Badge tone={STATUS_TONE[r.status]} className="ml-2 h-5">
                       {STATUS_LABEL[r.status]}
@@ -242,7 +279,11 @@ export default async function ThesisPage({ params, searchParams }: { params: Pro
                 ))}
               </ul>
             )}
-            {lab.othersCount ? <p className="mt-3 text-xs text-fg-subtle">{lab.othersCount} other member{lab.othersCount === 1 ? "" : "s"} tested this thesis in their Lab.</p> : null}
+            {lab.othersCount ? (
+              <p className="mt-3 text-xs text-fg-subtle">
+                {lab.othersCount} other member{lab.othersCount === 1 ? "" : "s"} tested this thesis in their Lab.
+              </p>
+            ) : null}
           </Panel>
 
           {t.isOwner ? (

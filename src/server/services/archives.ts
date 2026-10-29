@@ -13,7 +13,10 @@ export const collectionInput = z.object({
 
 export async function listCollections(userId: string) {
   return getDb()
-    .select({ collection: collections, items: sql<number>`(select count(*)::int from ${collectionItems} where ${collectionItems.collectionId} = ${collections.id})` })
+    .select({
+      collection: collections,
+      items: sql<number>`(select count(*)::int from ${collectionItems} where ${collectionItems.collectionId} = ${collections.id})`,
+    })
     .from(collections)
     .where(eq(collections.userId, userId))
     .orderBy(desc(collections.updatedAt));
@@ -21,18 +24,28 @@ export async function listCollections(userId: string) {
 
 export async function createCollection(userId: string, raw: z.input<typeof collectionInput>) {
   const v = collectionInput.parse(raw);
-  const [row] = await getDb().insert(collections).values({ ...v, userId }).returning();
+  const [row] = await getDb()
+    .insert(collections)
+    .values({ ...v, userId })
+    .returning();
   return row;
 }
 
 export async function updateCollection(userId: string, id: string, raw: z.input<typeof collectionInput>) {
   const v = collectionInput.parse(raw);
-  const res = await getDb().update(collections).set({ ...v, updatedAt: new Date() }).where(and(eq(collections.id, id), eq(collections.userId, userId))).returning();
+  const res = await getDb()
+    .update(collections)
+    .set({ ...v, updatedAt: new Date() })
+    .where(and(eq(collections.id, id), eq(collections.userId, userId)))
+    .returning();
   if (!res.length) throw notFound("Collection");
 }
 
 export async function deleteCollection(userId: string, id: string) {
-  const res = await getDb().delete(collections).where(and(eq(collections.id, id), eq(collections.userId, userId))).returning({ id: collections.id });
+  const res = await getDb()
+    .delete(collections)
+    .where(and(eq(collections.id, id), eq(collections.userId, userId)))
+    .returning({ id: collections.id });
   if (!res.length) throw notFound("Collection");
 }
 
@@ -57,9 +70,17 @@ export const itemInput = z
 export async function addItem(userId: string, collectionId: string, raw: z.input<typeof itemInput>) {
   const v = itemInput.parse(raw);
   const db = getDb();
-  const [c] = await db.select().from(collections).where(and(eq(collections.id, collectionId), eq(collections.userId, userId)));
+  const [c] = await db
+    .select()
+    .from(collections)
+    .where(and(eq(collections.id, collectionId), eq(collections.userId, userId)));
   if (!c) throw notFound("Collection");
-  const n = (await db.select({ n: sql<number>`count(*)::int` }).from(collectionItems).where(eq(collectionItems.collectionId, collectionId)))[0].n;
+  const n = (
+    await db
+      .select({ n: sql<number>`count(*)::int` })
+      .from(collectionItems)
+      .where(eq(collectionItems.collectionId, collectionId))
+  )[0].n;
   if (n >= 500) throw new UserFacingError("A collection holds up to 500 items.");
   await db.insert(collectionItems).values({ ...v, collectionId });
   await db.update(collections).set({ updatedAt: new Date() }).where(eq(collections.id, collectionId));
@@ -112,6 +133,9 @@ export async function listBookmarks(viewer: Viewer) {
   ]);
   return {
     posts: postRows.filter((r) => canView(viewer, { ownerId: r.post.userId, audience: r.post.audience as Audience, guildId: r.post.guildId })),
-    theses: thesisRows.filter((r) => canView(viewer, { ownerId: r.thesis.userId, audience: r.thesis.visibility as Audience, guildId: r.thesis.guildId })),
+    theses: thesisRows
+      .filter((r) => canView(viewer, { ownerId: r.thesis.userId, audience: r.thesis.visibility as Audience, guildId: r.thesis.guildId }))
+      // A revisit schedule is private to the thesis owner.
+      .map((r) => (r.thesis.userId === viewer.userId ? r : { ...r, thesis: { ...r.thesis, reviewOn: null, reviewRemindedOn: null } })),
   };
 }

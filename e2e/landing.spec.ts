@@ -14,6 +14,8 @@ test.describe("landing page", () => {
   });
 
   test("navigation jumps to each part of the page, and sample data is labelled", async ({ page }) => {
+    // Instant jumps: smooth scrolling would still be moving when the next link is clicked.
+    await page.emulateMedia({ reducedMotion: "reduce" });
     await page.goto("/");
     for (const [link, heading] of [
       ["Portfolio", "Add your accounts"],

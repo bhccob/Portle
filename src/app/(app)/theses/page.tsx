@@ -1,12 +1,13 @@
 import Link from "next/link";
-import { Plus, ScrollText } from "lucide-react";
+import { CalendarClock, Plus, ScrollText } from "lucide-react";
 import { Avatar } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { ButtonLink } from "@/components/ui/button";
 import { PageHeader, Panel } from "@/components/ui/panel";
 import { EmptyState } from "@/components/ui/states";
 import { LinkTabs } from "@/components/ui/tabs";
-import { relativeTime } from "@/lib/format";
+import { reviewState, utcToday } from "@/domain/review";
+import { formatDate, relativeTime } from "@/lib/format";
 import { listOwnTheses, listSharedTheses, type ThesisStatus } from "@/server/services/theses";
 import { requireViewer } from "@/server/viewer-session";
 
@@ -36,6 +37,7 @@ export default async function ThesesPage({ searchParams }: { searchParams: Promi
   const view = sp.view === "shared" ? "shared" : "mine";
   const status = sp.status && sp.status in STATUS_LABEL ? (sp.status as ThesisStatus) : undefined;
   const rows = view === "mine" ? await listOwnTheses(user.id, { status }) : await listSharedTheses(viewer);
+  const today = utcToday();
 
   return (
     <>
@@ -61,7 +63,10 @@ export default async function ThesesPage({ searchParams }: { searchParams: Promi
           <LinkTabs
             label="Filter by status"
             current={status ?? "all"}
-            items={[{ value: "all", label: "All", href: "/theses" }, ...Object.entries(STATUS_LABEL).map(([v, l]) => ({ value: v, label: l, href: `/theses?status=${v}` }))]}
+            items={[
+              { value: "all", label: "All", href: "/theses" },
+              ...Object.entries(STATUS_LABEL).map(([v, l]) => ({ value: v, label: l, href: `/theses?status=${v}` })),
+            ]}
           />
         ) : null}
       </div>
@@ -71,7 +76,15 @@ export default async function ThesesPage({ searchParams }: { searchParams: Promi
           <EmptyState
             icon={ScrollText}
             title={view === "mine" ? (status ? `No ${STATUS_LABEL[status].toLowerCase()} theses` : "Write your first thesis") : "Nothing shared with you yet"}
-            action={view === "mine" ? <ButtonLink href="/theses/new">New thesis</ButtonLink> : <ButtonLink href="/feed" variant="secondary">Find friends</ButtonLink>}
+            action={
+              view === "mine" ? (
+                <ButtonLink href="/theses/new">New thesis</ButtonLink>
+              ) : (
+                <ButtonLink href="/feed" variant="secondary">
+                  Find friends
+                </ButtonLink>
+              )
+            }
           >
             {view === "mine"
               ? "A good thesis names the claim, the strongest argument against it, and the specific evidence that would make you change your mind."
@@ -82,7 +95,10 @@ export default async function ThesesPage({ searchParams }: { searchParams: Promi
         <ul className="grid gap-3 md:grid-cols-2">
           {rows.map(({ thesis: t, instrument, author }) => (
             <li key={t.id}>
-              <Link href={`/theses/${t.id}`} className="glass-1 group block h-full rounded-[var(--radius-xl)] p-5 transition-[border-color,transform] duration-[var(--dur)] hover:-translate-y-0.5 hover:border-line-strong">
+              <Link
+                href={`/theses/${t.id}`}
+                className="glass-1 group block h-full rounded-[var(--radius-xl)] p-5 transition-[border-color,transform] duration-[var(--dur)] hover:-translate-y-0.5 hover:border-line-strong"
+              >
                 <div className="flex items-start justify-between gap-3">
                   <h2 className="text-[1rem] font-semibold text-fg group-hover:underline">{t.title}</h2>
                   <Badge tone={STATUS_TONE[t.status]}>{STATUS_LABEL[t.status]}</Badge>
@@ -98,6 +114,12 @@ export default async function ThesesPage({ searchParams }: { searchParams: Promi
                   )}
                   {instrument ? <span className="font-medium text-fg-muted">{instrument.symbol}</span> : null}
                   <span>Rev {t.currentRevision}</span>
+                  {view === "mine" && reviewState(t.reviewOn, t.status, today) !== "none" ? (
+                    <span className={`inline-flex items-center gap-1 ${reviewState(t.reviewOn, t.status, today) === "due" ? "font-medium text-warning" : ""}`}>
+                      <CalendarClock className="size-3" aria-hidden />
+                      {reviewState(t.reviewOn, t.status, today) === "due" ? "Revisit due" : `Revisit ${formatDate(t.reviewOn, { withYear: false })}`}
+                    </span>
+                  ) : null}
                   <span>updated {relativeTime(t.updatedAt)}</span>
                   {t.tags.slice(0, 3).map((tag) => (
                     <span key={tag}>#{tag}</span>

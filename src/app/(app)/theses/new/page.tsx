@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { PageHeader, Panel } from "@/components/ui/panel";
+import { utcToday } from "@/domain/review";
 import { getInstrument } from "@/server/services/market";
 import { getPrivacy } from "@/server/services/profile";
 import { myGuilds } from "@/server/services/guilds";
@@ -25,6 +26,7 @@ export default async function NewThesisPage({ searchParams }: { searchParams: Pr
       <PageHeader title="New thesis" description="Only the title is required. Fill in the rest as your research develops." />
       <Panel>
         <ThesisForm
+          today={utcToday()}
           guilds={guilds.map((g) => ({ id: g.guild.id, name: g.guild.name }))}
           draft={{
             title: "",
@@ -44,6 +46,7 @@ export default async function NewThesisPage({ searchParams }: { searchParams: Pr
             valuation: "",
             invalidationCriteria: "",
             sources: [],
+            reviewOn: null,
           }}
         />
       </Panel>

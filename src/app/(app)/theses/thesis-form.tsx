@@ -1,7 +1,8 @@
 "use client";
 
 import { useActionState, useState } from "react";
-import { Plus, ShieldAlert, X } from "lucide-react";
+import { CalendarClock, Plus, ShieldAlert, X } from "lucide-react";
+import { addMonths } from "@/domain/review";
 import { InstrumentPicker, type PickedInstrument } from "@/components/forms/instrument-picker";
 import { fieldError } from "@/components/forms/use-result";
 import { Button } from "@/components/ui/button";
@@ -28,6 +29,7 @@ export type ThesisDraft = {
   valuation: string;
   invalidationCriteria: string;
   sources: { label: string; url: string }[];
+  reviewOn: string | null;
 };
 
 const STATUSES = [
@@ -39,14 +41,23 @@ const STATUSES = [
   ["archived", "Archived"],
 ] as const;
 
-export function ThesisForm({ draft, guilds }: { draft: ThesisDraft; guilds: { id: string; name: string }[] }) {
+const QUICK_PICKS = [
+  [3, "In 3 months"],
+  [6, "In 6 months"],
+  [12, "In a year"],
+] as const;
+
+export function ThesisForm({ draft, guilds, today }: { draft: ThesisDraft; guilds: { id: string; name: string }[]; today: string }) {
   const [state, action, pending] = useActionState(saveThesisAction, null);
   const [visibility, setVisibility] = useState(draft.visibility);
   const [status, setStatus] = useState(draft.status);
   const [sources, setSources] = useState(draft.sources.length ? draft.sources : [{ label: "", url: "" }]);
+  const [reviewOn, setReviewOn] = useState(draft.reviewOn ?? "");
   const e = (k: string) => fieldError(state, k);
   const editing = !!draft.id;
   const closing = status === "validated" || status === "invalidated";
+  const open = status === "researching" || status === "active" || status === "under_review";
+  const passed = !!reviewOn && reviewOn < today && reviewOn === draft.reviewOn;
 
   return (
     <form action={action} className="space-y-8">
@@ -57,10 +68,22 @@ export function ThesisForm({ draft, guilds }: { draft: ThesisDraft; guilds: { id
           The idea
         </h2>
         <Field label="Title" error={e("title")} hint="A claim you could be wrong about, not a ticker.">
-          {(p) => <Input {...p} name="title" defaultValue={draft.title} required minLength={3} maxLength={120} placeholder="e.g. Lithography stays a one-supplier market" />}
+          {(p) => (
+            <Input
+              {...p}
+              name="title"
+              defaultValue={draft.title}
+              required
+              minLength={3}
+              maxLength={120}
+              placeholder="e.g. Lithography stays a one-supplier market"
+            />
+          )}
         </Field>
         <Field label="Summary" optional error={e("summary")}>
-          {(p) => <Textarea {...p} name="summary" defaultValue={draft.summary} maxLength={400} className="min-h-16" placeholder="The thesis in two sentences." />}
+          {(p) => (
+            <Textarea {...p} name="summary" defaultValue={draft.summary} maxLength={400} className="min-h-16" placeholder="The thesis in two sentences." />
+          )}
         </Field>
         <div className="grid gap-4 sm:grid-cols-2">
           <Field label="Security" optional hint="Leave empty for a theme or macro view.">
@@ -123,7 +146,15 @@ export function ThesisForm({ draft, guilds }: { draft: ThesisDraft; guilds: { id
             hint="Specific and observable. This is the most important field on the page."
             error={e("invalidationCriteria")}
           >
-            {(p) => <Textarea {...p} name="invalidationCriteria" defaultValue={draft.invalidationCriteria} maxLength={2000} placeholder="e.g. EUV order intake falls for two consecutive quarters while customers guide capex up." />}
+            {(p) => (
+              <Textarea
+                {...p}
+                name="invalidationCriteria"
+                defaultValue={draft.invalidationCriteria}
+                maxLength={2000}
+                placeholder="e.g. EUV order intake falls for two consecutive quarters while customers guide capex up."
+              />
+            )}
           </Field>
         </div>
       </section>
@@ -135,9 +166,21 @@ export function ThesisForm({ draft, guilds }: { draft: ThesisDraft; guilds: { id
         <p className="text-sm text-fg-muted">Link the filings, articles and data you relied on. Only https links.</p>
         {sources.map((s, i) => (
           <div key={i} className="grid gap-2 sm:grid-cols-[1fr_1.4fr_auto]">
-            <Input name="sourceLabel" aria-label={`Source ${i + 1} label`} defaultValue={s.label} placeholder="Label, e.g. Annual report 2025" maxLength={120} />
+            <Input
+              name="sourceLabel"
+              aria-label={`Source ${i + 1} label`}
+              defaultValue={s.label}
+              placeholder="Label, e.g. Annual report 2025"
+              maxLength={120}
+            />
             <Input name="sourceUrl" aria-label={`Source ${i + 1} link`} type="url" defaultValue={s.url} placeholder="https://" pattern="https://.*" />
-            <Button type="button" variant="ghost" size="icon" aria-label={`Remove source ${i + 1}`} onClick={() => setSources(sources.filter((_, j) => j !== i))}>
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              aria-label={`Remove source ${i + 1}`}
+              onClick={() => setSources(sources.filter((_, j) => j !== i))}
+            >
               <X className="size-4" />
             </Button>
           </div>
@@ -149,6 +192,59 @@ export function ThesisForm({ draft, guilds }: { draft: ThesisDraft; guilds: { id
           </Button>
         ) : null}
       </section>
+
+      {open ? (
+        <section className="space-y-3" aria-labelledby="revisit">
+          <h2 id="revisit" className="flex items-center gap-2 text-[0.9375rem] font-semibold text-fg">
+            <CalendarClock className="size-4 text-accent" aria-hidden /> When to look again
+          </h2>
+          <p className="text-sm text-fg-muted">Pick a day to come back to this thesis. You&apos;ll get a reminder, and only you can see the date.</p>
+          <div className="flex flex-wrap items-end gap-3">
+            <Field
+              label="Revisit on"
+              optional
+              error={e("reviewOn")}
+              hint={passed ? "This day has passed. Saving the revision counts as revisiting, so it clears unless you pick a new date." : undefined}
+            >
+              {(p) => (
+                <Input
+                  {...p}
+                  type="date"
+                  name="reviewOn"
+                  value={reviewOn}
+                  min={passed ? undefined : today}
+                  max="2100-12-31"
+                  onChange={(ev) => setReviewOn(ev.target.value)}
+                  className="w-48"
+                />
+              )}
+            </Field>
+            <div role="group" aria-label="Quick picks" className="flex flex-wrap gap-1.5 pb-0.5">
+              {QUICK_PICKS.map(([months, label]) => {
+                const day = addMonths(today, months);
+                return (
+                  <Button
+                    key={months}
+                    type="button"
+                    size="sm"
+                    variant="secondary"
+                    aria-pressed={reviewOn === day}
+                    onClick={() => setReviewOn(day)}
+                    className="aria-pressed:border-primary aria-pressed:bg-selected aria-pressed:text-fg"
+                  >
+                    {label}
+                  </Button>
+                );
+              })}
+              {reviewOn ? (
+                <Button type="button" size="sm" variant="ghost" onClick={() => setReviewOn("")}>
+                  No date
+                </Button>
+              ) : null}
+            </div>
+          </div>
+        </section>
+      ) : null}
 
       <section className="space-y-4" aria-labelledby="sharing">
         <h2 id="sharing" className="text-[0.9375rem] font-semibold text-fg">
@@ -187,7 +283,11 @@ export function ThesisForm({ draft, guilds }: { draft: ThesisDraft; guilds: { id
         <Field
           label={closing ? "What happened, and what you learned" : "What changed in this revision"}
           optional={!closing}
-          hint={closing ? "Required when closing a thesis. Process over outcome: was the reasoning sound?" : "Saved with the revision so you can see how your thinking moved."}
+          hint={
+            closing
+              ? "Required when closing a thesis. Process over outcome: was the reasoning sound?"
+              : "Saved with the revision so you can see how your thinking moved."
+          }
           error={e("changeNote")}
         >
           {(p) => <Textarea {...p} name="changeNote" maxLength={1000} required={closing} />}

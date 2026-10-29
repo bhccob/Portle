@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Bell, Gem, MessageSquare, UserPlus, Users, FlaskConical } from "lucide-react";
+import { Bell, CalendarClock, FlaskConical, Gem, MessageSquare, UserPlus, Users } from "lucide-react";
 import { revalidatePath } from "next/cache";
 import { Button } from "@/components/ui/button";
 import { PageHeader, Panel } from "@/components/ui/panel";
@@ -21,6 +21,7 @@ const ICON: Record<string, typeof Bell> = {
   guild_joined: Users,
   relic: Gem,
   paper_fill: FlaskConical,
+  thesis_review: CalendarClock,
 };
 
 async function markAll() {
@@ -38,7 +39,7 @@ export default async function NotificationsPage() {
     <>
       <PageHeader
         title="Notifications"
-        description="Friend requests, replies to your reasoning, Guild activity and Relics. No engagement nudges."
+        description="Friend requests, replies to your reasoning, Guild activity, Relics, and the revisit dates you set yourself. No engagement nudges."
         actions={
           unread ? (
             <form action={markAll}>
@@ -60,7 +61,12 @@ export default async function NotificationsPage() {
               const Icon = ICON[n.kind] ?? Bell;
               const body = (
                 <>
-                  <span className={cn("grid size-9 shrink-0 place-items-center rounded-full border border-line", n.readAt ? "text-fg-subtle" : "bg-selected text-accent")}>
+                  <span
+                    className={cn(
+                      "grid size-9 shrink-0 place-items-center rounded-full border border-line",
+                      n.readAt ? "text-fg-subtle" : "bg-selected text-accent",
+                    )}
+                  >
                     <Icon className="size-4" aria-hidden />
                   </span>
                   <span className="min-w-0 flex-1">

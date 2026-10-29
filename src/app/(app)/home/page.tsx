@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowRight, CheckCircle2, Circle, FlaskConical, Gem, NotebookPen, ScrollText, ShieldAlert } from "lucide-react";
+import { ArrowRight, CalendarClock, CheckCircle2, Circle, FlaskConical, Gem, NotebookPen, ScrollText, ShieldAlert } from "lucide-react";
 import { LineChart } from "@/components/charts/line-chart";
 import { Avatar } from "@/components/ui/avatar";
 import { Badge, SourceBadge } from "@/components/ui/badge";
@@ -8,6 +8,7 @@ import { Change } from "@/components/ui/finance";
 import { Panel } from "@/components/ui/panel";
 import { PrivateNote } from "@/components/ui/states";
 import { d } from "@/domain/money";
+import { reviewState, utcToday } from "@/domain/review";
 import { formatDate, formatMoney, relativeTime } from "@/lib/format";
 import { listEntries, REFLECTION_PROMPTS } from "@/server/services/journal";
 import { getPrices, listWatchlists } from "@/server/services/market";
@@ -48,8 +49,16 @@ export default async function HomePage() {
     .filter((m) => m.chg)
     .sort((a, b) => b.chg!.abs().cmp(a.chg!.abs()))
     .slice(0, 5);
-  const attention = theses.filter((t) => t.thesis.status === "under_review" || (t.thesis.status === "active" && olderThanDays(t.thesis.updatedAt, 90))).slice(0, 3);
-  const today = new Date().toISOString().slice(0, 10);
+  const today = utcToday();
+  const revisits = theses
+    .map((t) => ({ t, state: reviewState(t.thesis.reviewOn, t.thesis.status, today) }))
+    .filter((r) => r.state === "due" || r.state === "soon")
+    .sort((a, b) => a.t.thesis.reviewOn!.localeCompare(b.t.thesis.reviewOn!))
+    .slice(0, 3);
+  const attention = theses
+    .filter((t) => !revisits.some((r) => r.t.thesis.id === t.thesis.id))
+    .filter((t) => t.thesis.status === "under_review" || (t.thesis.status === "active" && !t.thesis.reviewOn && olderThanDays(t.thesis.updatedAt, 90)))
+    .slice(0, Math.max(0, 3 - revisits.length));
   const wroteToday = journal.some((j) => j.entry.entryDate === today);
   const prompt = REFLECTION_PROMPTS[new Date().getUTCDate() % REFLECTION_PROMPTS.length];
   const next = relics.filter((r) => !r.earned).sort((a, b) => b.progress.value / b.progress.threshold - a.progress.value / a.progress.threshold)[0];
@@ -80,7 +89,11 @@ export default async function HomePage() {
             {steps.map((s) => (
               <li key={s.label}>
                 <Link href={s.href} className="flex items-center gap-2.5 rounded-[var(--radius-md)] px-2 py-1.5 text-sm hover:bg-field">
-                  {s.done ? <CheckCircle2 className="size-4 shrink-0 text-positive" aria-label="Done" /> : <Circle className="size-4 shrink-0 text-fg-subtle" aria-label="To do" />}
+                  {s.done ? (
+                    <CheckCircle2 className="size-4 shrink-0 text-positive" aria-label="Done" />
+                  ) : (
+                    <Circle className="size-4 shrink-0 text-fg-subtle" aria-label="To do" />
+                  )}
                   <span className={s.done ? "text-fg-subtle line-through" : "text-fg"}>{s.label}</span>
                 </Link>
               </li>
@@ -116,7 +129,16 @@ export default async function HomePage() {
                     {perf.available ? <Change percent={perf.twr} size="md" /> : <span className="text-fg-subtle">—</span>}
                   </div>
                 </div>
-                {perf.available ? <LineChart points={perf.points.map((p) => ({ date: p.date, value: Number(p.value) }))} mode="money" currency={base} label="Holdings value, 3 months" height={120} className="mt-4" /> : null}
+                {perf.available ? (
+                  <LineChart
+                    points={perf.points.map((p) => ({ date: p.date, value: Number(p.value) }))}
+                    mode="money"
+                    currency={base}
+                    label="Holdings value, 3 months"
+                    height={120}
+                    className="mt-4"
+                  />
+                ) : null}
                 {v.usesDemoPrices ? <SourceBadge kind="demo" className="mt-3" detail="Valued with demo prices" /> : null}
               </>
             ) : (
@@ -129,7 +151,14 @@ export default async function HomePage() {
             )}
           </Panel>
 
-          <Panel title="Theses" actions={<Link href="/theses" className="text-sm text-accent hover:underline">All theses</Link>}>
+          <Panel
+            title="Theses"
+            actions={
+              <Link href="/theses" className="text-sm text-accent hover:underline">
+                All theses
+              </Link>
+            }
+          >
             {theses.length === 0 ? (
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <p className="text-sm text-fg-muted">Write down why you own something before the market tells you what to think.</p>
@@ -139,13 +168,32 @@ export default async function HomePage() {
               </div>
             ) : (
               <>
-                {attention.length ? (
+                {revisits.length || attention.length ? (
                   <div className="mb-4 space-y-2">
+                    {revisits.map(({ t, state }) => (
+                      <Link
+                        key={t.thesis.id}
+                        href={`/theses/${t.thesis.id}`}
+                        className={`flex items-center gap-3 rounded-[var(--radius-md)] border border-line px-3 py-2 text-sm hover:border-line-strong ${state === "due" ? "bg-warning-soft" : "bg-selected/50"}`}
+                      >
+                        <CalendarClock className={`size-4 shrink-0 ${state === "due" ? "text-warning" : "text-accent"}`} aria-hidden />
+                        <span className="min-w-0 flex-1 truncate text-fg">{t.thesis.title}</span>
+                        <span className="shrink-0 text-xs text-fg-muted">
+                          {state === "due" ? "Time to revisit" : `Revisit ${formatDate(t.thesis.reviewOn, { withYear: false })}`}
+                        </span>
+                      </Link>
+                    ))}
                     {attention.map((t) => (
-                      <Link key={t.thesis.id} href={`/theses/${t.thesis.id}`} className="flex items-center gap-3 rounded-[var(--radius-md)] border border-line bg-warning-soft px-3 py-2 text-sm hover:border-line-strong">
+                      <Link
+                        key={t.thesis.id}
+                        href={`/theses/${t.thesis.id}`}
+                        className="flex items-center gap-3 rounded-[var(--radius-md)] border border-line bg-warning-soft px-3 py-2 text-sm hover:border-line-strong"
+                      >
                         <ShieldAlert className="size-4 shrink-0 text-warning" aria-hidden />
                         <span className="min-w-0 flex-1 truncate text-fg">{t.thesis.title}</span>
-                        <span className="shrink-0 text-xs text-fg-muted">{t.thesis.status === "under_review" ? "Under review" : "Not revisited in 90 days"}</span>
+                        <span className="shrink-0 text-xs text-fg-muted">
+                          {t.thesis.status === "under_review" ? "Under review" : "Not revisited in 90 days"}
+                        </span>
                       </Link>
                     ))}
                   </div>
@@ -164,7 +212,14 @@ export default async function HomePage() {
             )}
           </Panel>
 
-          <Panel title="From your circle" actions={<Link href="/feed" className="text-sm text-accent hover:underline">Feed</Link>}>
+          <Panel
+            title="From your circle"
+            actions={
+              <Link href="/feed" className="text-sm text-accent hover:underline">
+                Feed
+              </Link>
+            }
+          >
             {feed.length === 0 ? (
               <p className="text-sm text-fg-muted">
                 Quiet so far.{" "}
@@ -184,7 +239,8 @@ export default async function HomePage() {
                     <Avatar name={p.author.displayName} hue={p.author.avatarHue} size="sm" />
                     <div className="min-w-0 text-sm">
                       <p>
-                        <span className="font-medium text-fg">{p.author.displayName}</span> <span className="text-xs text-fg-subtle">{relativeTime(p.post.createdAt)}</span>
+                        <span className="font-medium text-fg">{p.author.displayName}</span>{" "}
+                        <span className="text-xs text-fg-subtle">{relativeTime(p.post.createdAt)}</span>
                       </p>
                       <Link href={`/feed/${p.post.id}`} className="line-clamp-2 text-fg-muted hover:text-fg">
                         {p.post.body}
@@ -218,7 +274,14 @@ export default async function HomePage() {
             ) : null}
           </Panel>
 
-          <Panel title="Watchlist movers" actions={<Link href="/markets" className="text-sm text-accent hover:underline">Markets</Link>}>
+          <Panel
+            title="Watchlist movers"
+            actions={
+              <Link href="/markets" className="text-sm text-accent hover:underline">
+                Markets
+              </Link>
+            }
+          >
             {movers.length === 0 ? (
               <p className="text-sm text-fg-muted">Add securities you&apos;re studying to a watchlist to see their moves here.</p>
             ) : (
