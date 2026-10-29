@@ -4,7 +4,7 @@ import * as s from "../db/schema";
 import { audit } from "../audit";
 
 /**
- * Everything Porfael stores about a user, in a portable JSON document (GDPR
+ * Everything Portle stores about a user, in a portable JSON document (GDPR
  * Art. 20). Excludes password hashes, session tokens and encrypted provider secrets.
  */
 export async function exportUserData(userId: string) {
@@ -18,7 +18,7 @@ export async function exportUserData(userId: string) {
 
   const data = {
     exportedAt: new Date().toISOString(),
-    format: "porfael-export/1",
+    format: "portle-export/1",
     user: u,
     profile: (await db.select().from(s.profiles).where(eq(s.profiles.userId, userId)))[0] ?? null,
     privacy: (await db.select().from(s.privacySettings).where(eq(s.privacySettings.userId, userId)))[0] ?? null,

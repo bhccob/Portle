@@ -1,50 +1,45 @@
 import { cn } from "@/lib/cn";
 
 /**
- * The Porfael mark: a P cut like a faceted stone, its bowl a vault with a
- * locked counter. Monochrome by default (currentColor); `facets` adds the
- * two-tone cut for brand surfaces. Legible down to 16px.
+ * The Portle symbol: a P whose bowl is a portfolio dial (segmented arcs from
+ * violet through sky to cyan) around a warm core. Source artwork:
+ * .impeccable/brand/portle-symbol.source.svg. `compact` drops the thin outer
+ * arcs and the inner ring so the mark stays crisp below about 28px.
  */
-export function PorfaelMark({ className, facets = true, title }: { className?: string; facets?: boolean; title?: string }) {
+export function PortleMark({ className, title, compact = false }: { className?: string; title?: string; compact?: boolean }) {
   return (
-    <svg viewBox="0 0 32 32" className={cn("shrink-0", className)} role={title ? "img" : undefined} aria-hidden={title ? undefined : true}>
+    <svg viewBox="0 0 256 256" className={cn("shrink-0", className)} role={title ? "img" : undefined} aria-hidden={title ? undefined : true}>
       {title ? <title>{title}</title> : null}
-      <path fillRule="evenodd" fill="currentColor" d="M6 3h14.2L27 9.4v6.2L20.2 22H13v7.2L6 26.4V3Zm7 6.2v6.6h5.4l2.2-2.1V11.3l-2.2-2.1H13Z" />
-      {facets ? (
-        <>
-          <path fill="currentColor" opacity="0.38" d="M20.2 3 27 9.4h-6.4l-2.2-2.1L20.2 3Z" />
-          <path fill="currentColor" opacity="0.22" d="M13 22v7.2L6 26.4l7-4.4Z" />
-          <path fill="var(--bg, #171320)" opacity="0.55" d="M15 11.6h3.2l.9.9v1.4l-.9.9H15v-3.2Z" />
-        </>
-      ) : null}
+      <g transform="translate(-24.07 -19.43) scale(1.24)">
+        <path d="M128 214A96 96 0 0 1 52.35 58.9L80.72 81.06A60 60 0 0 0 128 178Z" fill="#5146E1" />
+        <path d="M68.29 60.34A83 83 0 0 1 130.9 35.05L130.09 58.04A60 60 0 0 0 84.84 76.32Z" fill="#7B6FF5" />
+        <path d="M138.99 39.77A79 79 0 0 1 184.83 63.12L171.16 76.32A60 60 0 0 0 136.35 58.58Z" fill="#B9ADFA" />
+        <path d="M187.1 71.83A75 75 0 0 1 202.95 115.38L187.96 115.91A60 60 0 0 0 175.28 81.06Z" fill="#8FA6FF" />
+        <path d="M198.83 122.95A71 71 0 0 1 183.95 161.71L175.28 154.94A60 60 0 0 0 187.85 122.19Z" fill="#56B8F5" />
+        <path d="M176.2 164.54A67 67 0 0 1 135 184.63L134.27 177.67A60 60 0 0 0 171.16 159.68Z" fill="#25D0EE" />
+        {compact ? null : (
+          <>
+            <path d="M61.07 52A94 94 0 0 1 130.3 24.03L130.1 32.03A86 86 0 0 0 66.77 57.61Z" fill="#B6AFF9" />
+            <path d="M141.46 29.01A90 90 0 0 1 192.08 54.81L186.39 60.42A82 82 0 0 0 140.26 36.92Z" fill="#D8D1FC" />
+            <path d="M196.32 65.77A86 86 0 0 1 213.91 114.1L205.92 114.46A78 78 0 0 0 189.96 70.62Z" fill="#C1CEFF" />
+            <path d="M209.74 124.58A82 82 0 0 1 193.14 167.8L186.79 162.95A74 74 0 0 0 201.76 123.93Z" fill="#A2D7F9" />
+            <path d="M183.54 172.77A78 78 0 0 1 136.97 195.48L136.05 187.54A70 70 0 0 0 177.84 167.15Z" fill="#87E5F5" />
+          </>
+        )}
+        <path d="M32 118V174A40 40 0 0 0 72 214H128V178A60 60 0 0 1 68 118Z" fill="#5146E1" />
+        {compact ? null : <circle cx="128" cy="118" r="47" fill="none" stroke="#B9ADFA" strokeWidth="6" />}
+        <circle cx="128" cy="118" r={compact ? 31 : 27} fill="#FF9340" />
+        <circle cx={compact ? 119 : 120} cy={compact ? 108 : 109} r={compact ? 7.5 : 6.5} fill="#FFC08A" />
+      </g>
     </svg>
   );
 }
 
-/**
- * The mark fully cut: the same P split into lit and shaded facets, the light
- * falling from the upper right. For large brand surfaces (the landing page);
- * below ~24px use PorfaelMark, where the facets would muddy.
- */
-export function PorfaelGem({ className }: { className?: string }) {
-  return (
-    <svg viewBox="0 0 32 32" className={cn("shrink-0", className)} aria-hidden>
-      <path fill="#9a80dd" d="M6 3h7v13l-7 3V3Z" />
-      <path fill="#7a5fc6" d="M6 19l7-3v13.2l-7-2.8V19Z" />
-      <path fill="#c4b0f6" d="M13 3h7.2l-1.8 6.2H13V3Z" />
-      <path fill="#ddd0fb" d="M20.2 3 27 9.4l-6.4 1.9-2.2-2.1 1.8-6.2Z" />
-      <path fill="#a68de7" d="M27 9.4v6.2l-6.4-1.9v-2.4l6.4-1.9Z" />
-      <path fill="#7d63c9" d="M27 15.6 20.2 22l-1.8-6.2 2.2-2.1 6.4 1.9Z" />
-      <path fill="#8d73d3" d="M13 15.8h5.4l1.8 6.2H13v-6.2Z" />
-    </svg>
-  );
-}
-
-export function PorfaelWordmark({ className }: { className?: string }) {
+export function PortleWordmark({ className }: { className?: string }) {
   return (
     <span className={cn("inline-flex items-center gap-2 font-semibold tracking-[-0.02em]", className)}>
-      <PorfaelMark className="size-[1.35em] text-lilac" />
-      <span>Porfael</span>
+      <PortleMark compact className="size-[1.45em]" />
+      <span>Portle</span>
     </span>
   );
 }

@@ -27,7 +27,7 @@ export default async function ImportPage() {
             <li>Use your broker&apos;s <strong className="text-fg">transactions</strong> export, not a positions snapshot, so returns can be reconstructed.</li>
             <li>Re-importing the same file is safe: identical rows, or rows with the same broker ID, are skipped.</li>
             <li>Securities we can&apos;t match are kept but left out of totals until they can be priced. Nothing is guessed.</li>
-            <li>Porfael never asks for your broker password and never logs in on your behalf.</li>
+            <li>Portle never asks for your broker password and never logs in on your behalf.</li>
           </ul>
         </Panel>
       </div>

@@ -1,8 +1,10 @@
 @import "tailwindcss";
 
 /*
- * Amethyst Archive — Porfael's design tokens.
- * Brand foundation: Ink #171320 · Amethyst #49366B · Lilac #9B82D7 · Lavender #D5C6F2 · Porcelain #F3EFF8.
+ * Portle's design tokens, drawn from the Portle symbol.
+ * Brand foundation: Ink #15141F · Indigo #5146E1 · Violet #7B6FF5 · Lavender #B9ADFA
+ * · Porcelain #F2F1FB, with the symbol's Sky #56B8F5 and Cyan #25D0EE for data and
+ * its Ember #FF9340 kept for the mark's core and the rare spark.
  * Glass is a depth system, not decoration: --depth-1 (content panels), --depth-2 (overlays),
  * --depth-3 (navigation chrome). Each step raises blur and surface brightness together.
  * The full system (roles, rules, components) is recorded in DESIGN.md.
@@ -11,11 +13,14 @@
 @custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
 
 :root {
-  --ink: #171320;
-  --amethyst: #49366b;
-  --lilac: #9b82d7;
-  --lavender: #d5c6f2;
-  --porcelain: #f3eff8;
+  --ink: #15141f;
+  --indigo: #5146e1;
+  --violet: #7b6ff5;
+  --lavender: #b9adfa;
+  --porcelain: #f2f1fb;
+  --sky: #56b8f5;
+  --cyan: #25d0ee;
+  --ember: #ff9340;
 
   --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
   --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
@@ -28,17 +33,17 @@
 :root,
 [data-theme="dark"] {
   color-scheme: dark;
-  --bg: #171320;
-  --bg-elevated: #1d1828;
-  --fg: #f3eff8;
-  --fg-muted: #b7aecb;
-  --fg-subtle: #9188a8;
-  --line: rgb(213 198 242 / 0.1);
-  --line-strong: rgb(213 198 242 / 0.18);
+  --bg: #15141f;
+  --bg-elevated: #1c1b29;
+  --fg: #f2f1fb;
+  --fg-muted: #b3b0cf;
+  --fg-subtle: #8d8aac;
+  --line: rgb(196 188 251 / 0.1);
+  --line-strong: rgb(196 188 251 / 0.18);
 
-  --depth-1: rgb(38 31 54 / 0.52);
-  --depth-2: rgb(44 36 63 / 0.82);
-  --depth-3: rgb(27 22 39 / 0.7);
+  --depth-1: rgb(33 31 58 / 0.52);
+  --depth-2: rgb(39 36 68 / 0.82);
+  --depth-3: rgb(24 22 42 / 0.7);
   --blur-1: 18px;
   --blur-2: 28px;
   --blur-3: 22px;
@@ -46,17 +51,17 @@
   --shadow-1: 0 10px 30px -18px rgb(0 0 0 / 0.7);
   --shadow-2: 0 24px 60px -24px rgb(0 0 0 / 0.75);
 
-  --field: rgb(23 19 32 / 0.6);
-  --field-hover: rgb(30 25 42 / 0.7);
+  --field: rgb(21 20 34 / 0.6);
+  --field-hover: rgb(28 27 46 / 0.7);
 
-  --primary: #9b82d7;
-  --primary-hover: #ac97e0;
-  --primary-fg: #171320;
-  --brand: #49366b;
-  --brand-fg: #f3eff8;
-  --accent: #d5c6f2;
-  --selected: rgb(73 54 107 / 0.55);
-  --focus: #d5c6f2;
+  --primary: #8e84f8;
+  --primary-hover: #a39bfa;
+  --primary-fg: #14131f;
+  --brand: #5146e1;
+  --brand-fg: #ffffff;
+  --accent: #c4bcfb;
+  --selected: rgb(81 70 225 / 0.26);
+  --focus: #c4bcfb;
 
   --positive: #5fd59d;
   --positive-soft: rgb(95 213 157 / 0.12);
@@ -64,51 +69,51 @@
   --negative-soft: rgb(255 138 151 / 0.12);
   --warning: #f2bd62;
   --warning-soft: rgb(242 189 98 / 0.12);
-  --info: #8cb8ff;
-  --info-soft: rgb(140 184 255 / 0.12);
-  --neutral: #a59db8;
+  --info: #8fa6ff;
+  --info-soft: rgb(143 166 255 / 0.12);
+  --neutral: #a3a0bd;
 
-  --chart-1: #b9a3f0;
-  --chart-2: #7fd3c4;
-  --chart-3: #f0b37e;
-  --chart-4: #8cb8ff;
+  --chart-1: #9d94f9;
+  --chart-2: #25d0ee;
+  --chart-3: #ff9340;
+  --chart-4: #56b8f5;
   --chart-5: #e88fbf;
   --chart-6: #c9d47c;
-  --chart-7: #8a80a3;
+  --chart-7: #8a87a8;
 
-  --glow-a: rgb(73 54 107 / 0.55);
-  --glow-b: rgb(155 130 215 / 0.16);
-  --glow-c: rgb(213 198 242 / 0.07);
+  --glow-a: rgb(64 56 196 / 0.42);
+  --glow-b: rgb(37 208 238 / 0.08);
+  --glow-c: rgb(196 188 251 / 0.06);
 }
 
 [data-theme="light"] {
   color-scheme: light;
-  --bg: #f3eff8;
+  --bg: #f4f3fb;
   --bg-elevated: #ffffff;
-  --fg: #171320;
-  --fg-muted: #574e6c;
-  --fg-subtle: #6b6381;
-  --line: rgb(73 54 107 / 0.12);
-  --line-strong: rgb(73 54 107 / 0.22);
+  --fg: #15141f;
+  --fg-muted: #55516e;
+  --fg-subtle: #6a6688;
+  --line: rgb(81 70 225 / 0.12);
+  --line-strong: rgb(81 70 225 / 0.22);
 
   --depth-1: rgb(255 255 255 / 0.62);
   --depth-2: rgb(255 255 255 / 0.86);
-  --depth-3: rgb(250 248 253 / 0.72);
+  --depth-3: rgb(249 248 254 / 0.72);
   --edge: inset 0 1px 0 rgb(255 255 255 / 0.9);
-  --shadow-1: 0 12px 32px -20px rgb(73 54 107 / 0.35);
-  --shadow-2: 0 28px 64px -28px rgb(73 54 107 / 0.45);
+  --shadow-1: 0 12px 32px -20px rgb(64 56 196 / 0.3);
+  --shadow-2: 0 28px 64px -28px rgb(64 56 196 / 0.4);
 
   --field: rgb(255 255 255 / 0.75);
   --field-hover: rgb(255 255 255 / 0.95);
 
-  --primary: #49366b;
-  --primary-hover: #5a4583;
+  --primary: #4a40d6;
+  --primary-hover: #3d33c0;
   --primary-fg: #ffffff;
-  --brand: #49366b;
+  --brand: #4a40d6;
   --brand-fg: #ffffff;
-  --accent: #6f55a6;
-  --selected: rgb(155 130 215 / 0.2);
-  --focus: #49366b;
+  --accent: #5146e1;
+  --selected: rgb(81 70 225 / 0.12);
+  --focus: #4a40d6;
 
   --positive: #0b7a49;
   --positive-soft: rgb(11 122 73 / 0.1);
@@ -116,64 +121,66 @@
   --negative-soft: rgb(183 40 63 / 0.09);
   --warning: #8f5400;
   --warning-soft: rgb(196 125 10 / 0.12);
-  --info: #1d5fbf;
-  --info-soft: rgb(29 95 191 / 0.1);
-  --neutral: #6b6381;
+  --info: #3651c9;
+  --info-soft: rgb(54 81 201 / 0.1);
+  --neutral: #6a6688;
 
-  --chart-1: #6f55a6;
-  --chart-2: #1f8f7e;
-  --chart-3: #c26a1d;
-  --chart-4: #2f6fd1;
+  --chart-1: #5146e1;
+  --chart-2: #0e8fa8;
+  --chart-3: #c25f12;
+  --chart-4: #2a7fc0;
   --chart-5: #b4417f;
   --chart-6: #7f8c1e;
-  --chart-7: #8a80a3;
+  --chart-7: #8a87a8;
 
-  --glow-a: rgb(155 130 215 / 0.35);
-  --glow-b: rgb(213 198 242 / 0.6);
+  --glow-a: rgb(123 111 245 / 0.28);
+  --glow-b: rgb(37 208 238 / 0.18);
   --glow-c: rgb(255 255 255 / 0.7);
 }
 
 @media (prefers-color-scheme: light) {
   :root:not([data-theme]) {
     color-scheme: light;
-    --bg: #f3eff8;
+    --bg: #f4f3fb;
     --bg-elevated: #ffffff;
-    --fg: #171320;
-    --fg-muted: #574e6c;
-    --fg-subtle: #6b6381;
-    --line: rgb(73 54 107 / 0.12);
-    --line-strong: rgb(73 54 107 / 0.22);
+    --fg: #15141f;
+    --fg-muted: #55516e;
+    --fg-subtle: #6a6688;
+    --line: rgb(81 70 225 / 0.12);
+    --line-strong: rgb(81 70 225 / 0.22);
     --depth-1: rgb(255 255 255 / 0.62);
     --depth-2: rgb(255 255 255 / 0.86);
-    --depth-3: rgb(250 248 253 / 0.72);
+    --depth-3: rgb(249 248 254 / 0.72);
     --edge: inset 0 1px 0 rgb(255 255 255 / 0.9);
-    --shadow-1: 0 12px 32px -20px rgb(73 54 107 / 0.35);
-    --shadow-2: 0 28px 64px -28px rgb(73 54 107 / 0.45);
+    --shadow-1: 0 12px 32px -20px rgb(64 56 196 / 0.3);
+    --shadow-2: 0 28px 64px -28px rgb(64 56 196 / 0.4);
     --field: rgb(255 255 255 / 0.75);
     --field-hover: rgb(255 255 255 / 0.95);
-    --primary: #49366b;
-    --primary-hover: #5a4583;
+    --primary: #4a40d6;
+    --primary-hover: #3d33c0;
     --primary-fg: #ffffff;
-    --accent: #6f55a6;
-    --selected: rgb(155 130 215 / 0.2);
-    --focus: #49366b;
+    --brand: #4a40d6;
+    --brand-fg: #ffffff;
+    --accent: #5146e1;
+    --selected: rgb(81 70 225 / 0.12);
+    --focus: #4a40d6;
     --positive: #0b7a49;
     --positive-soft: rgb(11 122 73 / 0.1);
     --negative: #b7283f;
     --negative-soft: rgb(183 40 63 / 0.09);
     --warning: #8f5400;
     --warning-soft: rgb(196 125 10 / 0.12);
-    --info: #1d5fbf;
-    --info-soft: rgb(29 95 191 / 0.1);
-    --neutral: #6b6381;
-    --chart-1: #6f55a6;
-    --chart-2: #1f8f7e;
-    --chart-3: #c26a1d;
-    --chart-4: #2f6fd1;
+    --info: #3651c9;
+    --info-soft: rgb(54 81 201 / 0.1);
+    --neutral: #6a6688;
+    --chart-1: #5146e1;
+    --chart-2: #0e8fa8;
+    --chart-3: #c25f12;
+    --chart-4: #2a7fc0;
     --chart-5: #b4417f;
     --chart-6: #7f8c1e;
-    --glow-a: rgb(155 130 215 / 0.35);
-    --glow-b: rgb(213 198 242 / 0.6);
+    --glow-a: rgb(123 111 245 / 0.28);
+    --glow-b: rgb(37 208 238 / 0.18);
     --glow-c: rgb(255 255 255 / 0.7);
   }
 }
@@ -205,10 +212,13 @@
   --color-info-soft: var(--info-soft);
   --color-neutral: var(--neutral);
   --color-ink: var(--ink);
-  --color-amethyst: var(--amethyst);
-  --color-lilac: var(--lilac);
+  --color-indigo: var(--indigo);
+  --color-violet: var(--violet);
   --color-lavender: var(--lavender);
   --color-porcelain: var(--porcelain);
+  --color-sky: var(--sky);
+  --color-cyan: var(--cyan);
+  --color-ember: var(--ember);
 
   --font-sans: var(--font-ui), ui-sans-serif, system-ui, sans-serif;
   --font-display: var(--font-display-face), var(--font-ui), ui-sans-serif, sans-serif;
@@ -248,7 +258,7 @@
     text-wrap: pretty;
   }
   ::selection {
-    background: rgb(155 130 215 / 0.38);
+    background: rgb(123 111 245 / 0.38);
     color: var(--fg);
   }
   :focus-visible {

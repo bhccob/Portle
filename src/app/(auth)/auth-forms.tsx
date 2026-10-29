@@ -64,7 +64,7 @@ export function SignUpForm() {
     <form onSubmit={onSubmit} className="space-y-4" noValidate={false}>
       <div>
         <h1 className="text-xl font-semibold text-fg">Open your archive</h1>
-        <p className="mt-1 text-sm text-fg-muted">Free while Porfael is in early access.</p>
+        <p className="mt-1 text-sm text-fg-muted">Free while Portle is in early access.</p>
       </div>
       <Field label="Your name">{(p) => <Input {...p} name="name" autoComplete="name" required maxLength={40} />}</Field>
       <Field label="Email">{(p) => <Input {...p} name="email" type="email" autoComplete="email" required defaultValue={prefill} />}</Field>

@@ -162,7 +162,7 @@ export default async function MarketsPage({ searchParams }: { searchParams: Prom
 
           <Panel title="Earnings calendar">
             <EmptyState icon={CalendarClock} title="Needs a licensed data source" className="py-4">
-              Earnings dates aren&apos;t part of the demo data, and Porfael won&apos;t show dates it can&apos;t source. This appears once a provider with corporate-event data is configured.
+              Earnings dates aren&apos;t part of the demo data, and Portle won&apos;t show dates it can&apos;t source. This appears once a provider with corporate-event data is configured.
             </EmptyState>
           </Panel>
         </div>

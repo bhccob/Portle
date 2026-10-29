@@ -59,7 +59,7 @@ export default async function PrivacyPage() {
       <Callout tone="neutral" icon={Lock} title="Never shared, under any setting">
         Account balances, position values, quantities, cost basis, transactions, account names, broker details and private notes.
       </Callout>
-      <Panel title="Who can see what" description="“All members” means signed-in Porfael members. Nothing is ever shown to logged-out visitors.">
+      <Panel title="Who can see what" description="“All members” means signed-in Portle members. Nothing is ever shown to logged-out visitors.">
         <PrivacyForm privacy={privacy as unknown as Record<string, string | boolean>} />
       </Panel>
       <Panel title="Preview" description="Rendered with the same code other members' requests use, so it can't drift from reality.">

@@ -48,8 +48,8 @@
   margin-top: 1px;
   padding: 4px;
   border-radius: 50%;
-  background: rgb(155 130 215 / 0.18);
-  color: #c9b6f6;
+  background: rgb(123 111 245 / 0.18);
+  color: #c4bcfb;
 }
 
 /* ---------- How it works: the panel the first viewport opens ---------- */
@@ -82,7 +82,7 @@
   left: 22px;
   right: calc(33.333% - 22px);
   top: 21px;
-  border-top: 2px dashed rgb(155 130 215 / 0.35);
+  border-top: 2px dashed rgb(123 111 245 / 0.35);
 }
 .l-step {
   position: relative;
@@ -97,7 +97,7 @@
   width: 44px;
   height: 44px;
   border-radius: 50%;
-  background: #9877e1;
+  background: #6157ea;
   box-shadow: 0 0 0 6px var(--l-raised);
   color: #fff;
   font-size: 19px;
@@ -139,7 +139,7 @@
 .l-mini-file svg {
   width: 22px;
   height: 22px;
-  color: #c9b6f6;
+  color: #c4bcfb;
 }
 .l-mini-bar {
   height: 6px;
@@ -153,7 +153,7 @@
   width: 100%;
   height: 100%;
   border-radius: inherit;
-  background: linear-gradient(90deg, #9877e1, #c6acf5);
+  background: linear-gradient(90deg, #6157ea, #b9adfa);
 }
 .l-mini-ok {
   display: flex;
@@ -177,7 +177,7 @@
   color: #dddbf0;
 }
 .l-mini-note b {
-  color: #c9b6f6;
+  color: #c4bcfb;
   font-weight: 600;
 }
 .l-mini-rail {
@@ -194,7 +194,7 @@
   right: 30%;
   top: 25px;
   height: 2px;
-  background: rgb(155 130 215 / 0.4);
+  background: rgb(123 111 245 / 0.4);
 }
 .l-mini-rail li {
   position: relative;
@@ -212,13 +212,13 @@
   height: 12px;
   border-radius: 50%;
   background: #2a2b32;
-  box-shadow: inset 0 0 0 2px #b9a3ef;
+  box-shadow: inset 0 0 0 2px #b9adfa;
 }
 .l-mini-rail li.is-now::before {
-  background: #9877e1;
+  background: #6157ea;
   box-shadow:
-    0 0 0 4px rgb(152 119 225 / 0.25),
-    inset 0 0 0 2px #c9b6f6;
+    0 0 0 4px rgb(97 87 234 / 0.25),
+    inset 0 0 0 2px #c4bcfb;
 }
 .l-mini-rail b {
   display: block;
@@ -315,7 +315,7 @@
   margin: 0;
   padding: 14px 18px;
   border-radius: 14px;
-  background: #b096ec;
+  background: #b9adfa;
   color: var(--l-label-ink);
   font-size: 16px;
   font-weight: 600;
@@ -361,7 +361,7 @@
   width: 34px;
   height: 34px;
   border-radius: 50%;
-  background: #c6acf5;
+  background: #b9adfa;
   color: var(--l-label-ink);
   font-size: 14px;
   font-weight: 700;
@@ -372,11 +372,11 @@
 }
 .l-faces span:nth-child(2),
 .l-face.is-b {
-  background: #9877e1;
+  background: #6157ea;
   color: #fff;
 }
 .l-faces span:nth-child(3) {
-  background: #e3d8fb;
+  background: #d8d1fc;
 }
 .l-faces span:last-child {
   background: #3a3a44;
@@ -406,10 +406,10 @@
 }
 .l-mix i {
   border-radius: 6px;
-  background: #c6acf5;
+  background: #b9adfa;
 }
 .l-mix i:nth-child(2) {
-  background: #9877e1;
+  background: #6157ea;
 }
 .l-mix i:nth-child(3) {
   background: #55516a;
@@ -547,7 +547,7 @@
   flex: none;
   width: 22px;
   height: 22px;
-  color: #c9b6f6;
+  color: #c4bcfb;
   transition: rotate 220ms var(--ease);
 }
 .l-faq details[open] summary svg {
@@ -603,6 +603,7 @@
   font-size: 16px;
 }
 .l-desk {
+  filter: hue-rotate(-13deg) saturate(1.08);
   width: 112%;
   height: auto;
   margin: -4% -6% -10% 0;
@@ -651,7 +652,7 @@
 .l-foot a:hover {
   color: var(--l-ink);
   text-decoration: underline;
-  text-decoration-color: rgb(213 198 242 / 0.4);
+  text-decoration-color: rgb(196 188 251 / 0.4);
 }
 
 /* ---------- Tablet and phone ---------- */

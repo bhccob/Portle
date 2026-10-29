@@ -107,7 +107,7 @@ export default async function InstrumentPage({ params, searchParams }: { params:
             </dl>
           ) : null}
           <p className="mt-4 text-xs text-fg-subtle">
-            Fundamentals and company news appear when a licensed data provider is configured. Porfael doesn&apos;t display figures it can&apos;t source.
+            Fundamentals and company news appear when a licensed data provider is configured. Portle doesn&apos;t display figures it can&apos;t source.
           </p>
         </Panel>
 

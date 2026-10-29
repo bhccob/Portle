@@ -3,7 +3,7 @@ import Link from "next/link";
 import { Gabarito } from "next/font/google";
 import { redirect } from "next/navigation";
 import { Eye, LockKeyhole, Sprout } from "lucide-react";
-import { PorfaelGem } from "@/components/brand/logo";
+import { PortleMark } from "@/components/brand/logo";
 import { getSession } from "@/server/session";
 import { NotesMotion } from "./landing-motion";
 import { LandingFooter, LandingSections } from "./landing-sections";
@@ -12,7 +12,7 @@ import "./landing.css";
 const landingFace = Gabarito({ subsets: ["latin", "latin-ext"], variable: "--font-landing", display: "swap" });
 
 export const metadata = {
-  title: { absolute: "Porfael · Know why you own what you own" },
+  title: { absolute: "Portle · Know why you own what you own" },
   description: "Track every account in one place and jot down the reasons behind each investment. Private by default, free while in early access.",
 };
 
@@ -30,9 +30,9 @@ export default async function Landing() {
     <div className={`landing ${landingFace.variable}`}>
       <main>
         <section className="l-frame" aria-labelledby="l-title">
-          <Link href="/" className="l-brand" aria-label="Porfael home">
-            <PorfaelGem />
-            <span>Porfael</span>
+          <Link href="/" className="l-brand" aria-label="Portle home">
+            <PortleMark />
+            <span>Portle</span>
           </Link>
           <nav aria-label="Product">
             <ul className="l-nav">
@@ -154,7 +154,7 @@ export default async function Landing() {
           {/* The top of the next section, which the first viewport shows. */}
           <div className="l-panel">
             <h2 id="how-title" className="l-how">
-              How Porfael works
+              How Portle works
             </h2>
           </div>
         </section>

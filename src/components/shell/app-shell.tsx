@@ -6,7 +6,7 @@ import { useState, useTransition } from "react";
 import { Dialog as D } from "radix-ui";
 import { LogOut, Menu as MenuIcon, Monitor, Moon, Sun, UserRound, X } from "lucide-react";
 import { setThemeAction, signOutAction } from "@/app/actions/session";
-import { PorfaelMark } from "@/components/brand/logo";
+import { PortleMark } from "@/components/brand/logo";
 import { Avatar } from "@/components/ui/avatar";
 import { Menu, MenuItem, MenuLabel, MenuSeparator } from "@/components/ui/overlay";
 import { cn } from "@/lib/cn";
@@ -111,8 +111,8 @@ export function AppShell({ me, unread, children }: { me: Me; unread: number; chi
       {/* Desktop sidebar */}
       <aside className="glass-3 sticky top-0 hidden h-dvh flex-col border-r border-line lg:flex">
         <Link href="/home" className="flex h-16 items-center gap-2.5 px-5 text-[1.0625rem] font-semibold tracking-[-0.02em] text-fg">
-          <PorfaelMark className="size-7 text-lilac" />
-          Porfael
+          <PortleMark compact className="size-7" />
+          Portle
         </Link>
         <nav aria-label="Primary" className="flex-1 space-y-5 overflow-y-auto px-3 py-2">
           {NAV_GROUPS.map((g, i) => (
@@ -139,8 +139,8 @@ export function AppShell({ me, unread, children }: { me: Me; unread: number; chi
       {/* Mobile top bar */}
       <header className="glass-3 sticky top-0 z-40 flex h-14 items-center justify-between border-b border-line px-4 pt-[env(safe-area-inset-top)] lg:hidden">
         <Link href="/home" className="flex items-center gap-2 font-semibold text-fg">
-          <PorfaelMark className="size-6 text-lilac" />
-          Porfael
+          <PortleMark compact className="size-6" />
+          Portle
         </Link>
         <div className="flex items-center gap-1">
           <Link href="/notifications" className="relative grid size-10 place-items-center rounded-[var(--radius-md)] text-fg-muted hover:bg-field" aria-label={`Notifications${unread ? `, ${unread} unread` : ""}`}>
@@ -185,7 +185,7 @@ export function AppShell({ me, unread, children }: { me: Me; unread: number; chi
                     <X className="size-5" />
                   </D.Close>
                 </div>
-                <D.Description className="sr-only">Every section of Porfael</D.Description>
+                <D.Description className="sr-only">Every section of Portle</D.Description>
                 <div className="grid grid-cols-2 gap-1">
                   {all.map((item) => (
                     <NavLink key={item.href} item={item} pathname={pathname} onNavigate={() => setMoreOpen(false)} badge={item.href === "/notifications" ? unread : undefined} />

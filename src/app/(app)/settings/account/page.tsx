@@ -18,7 +18,7 @@ export default async function AccountPage() {
   ]);
   return (
     <div className="space-y-5">
-      <Panel title="Your data" description="Everything Porfael stores about you, as a JSON file you can keep or move elsewhere.">
+      <Panel title="Your data" description="Everything Portle stores about you, as a JSON file you can keep or move elsewhere.">
         <a href="/api/export" download className="inline-flex h-10 items-center gap-2 rounded-[var(--radius-md)] bg-primary px-4 text-sm font-medium text-primary-fg hover:bg-primary-hover">
           <Download className="size-4" aria-hidden /> Download my data
         </a>
@@ -49,7 +49,7 @@ export default async function AccountPage() {
         </ul>
       </Panel>
 
-      <Panel title="Delete account" description="Removes your data from Porfael. Backups expire on their normal schedule.">
+      <Panel title="Delete account" description="Removes your data from Portle. Backups expire on their normal schedule.">
         <DeleteAccountDialog />
       </Panel>
     </div>

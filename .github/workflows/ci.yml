@@ -34,7 +34,7 @@ jobs:
     env:
       BETTER_AUTH_SECRET: ci-only-secret-ci-only-secret-ci-only-000
       BETTER_AUTH_URL: http://localhost:3000
-      PORFAEL_ENCRYPTION_KEY: Y2ktb25seS1rZXktY2ktb25seS1rZXktY2ktMDAwMDA=
+      PORTLE_ENCRYPTION_KEY: Y2ktb25seS1rZXktY2ktb25seS1rZXktY2ktMDAwMDA=
       MARKET_DATA_PROVIDER: demo
       FX_PROVIDER: demo
       AUTH_RATE_LIMIT: "off"

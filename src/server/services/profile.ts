@@ -12,7 +12,7 @@ import { ensurePaperAccount } from "./paper";
 import { ensurePortfolio, getValuation } from "./portfolio";
 
 export const TERMS_VERSION = "2026-10";
-const RESERVED = new Set(["admin", "porfael", "support", "help", "settings", "api", "root", "system", "me", "guild", "guilds", "relics"]);
+const RESERVED = new Set(["admin", "portle", "porfael", "support", "help", "settings", "api", "root", "system", "me", "guild", "guilds", "relics"]);
 
 export const handleSchema = z
   .string()

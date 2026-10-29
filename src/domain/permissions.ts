@@ -13,7 +13,7 @@ export type Resource = { ownerId: string; audience: Audience; guildId?: string |
 
 /**
  * The single visibility rule for user content. "public" means every signed-in
- * member; Porfael never serves user content to anonymous visitors.
+ * member; Portle never serves user content to anonymous visitors.
  */
 export function canView(viewer: Viewer | null, resource: Resource): boolean {
   if (!viewer) return false;

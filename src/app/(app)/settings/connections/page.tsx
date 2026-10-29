@@ -20,7 +20,7 @@ export default async function ConnectionsPage() {
   return (
     <div className="space-y-5">
       <Callout tone="neutral" icon={ShieldCheck} title="How broker connections work">
-        Porfael never asks for your broker password and never logs in on your behalf. Automatic sync runs through a licensed aggregator&apos;s own sign-in page; access tokens are encrypted and stay on our servers, and you can revoke them here at any time.
+        Portle never asks for your broker password and never logs in on your behalf. Automatic sync runs through a licensed aggregator&apos;s own sign-in page; access tokens are encrypted and stay on our servers, and you can revoke them here at any time.
       </Callout>
 
       <Panel title="Automatic sync">

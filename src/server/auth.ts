@@ -10,7 +10,7 @@ import { handOverOwnedGuilds } from "./services/guilds";
 const isProd = process.env.NODE_ENV === "production";
 
 export const auth = betterAuth({
-  appName: "Porfael",
+  appName: "Portle",
   baseURL: process.env.BETTER_AUTH_URL,
   secret: process.env.BETTER_AUTH_SECRET,
   database: drizzleAdapter(getDb(), {
@@ -26,8 +26,8 @@ export const auth = betterAuth({
     async sendResetPassword({ user, url }) {
       await sendMail({
         to: user.email,
-        subject: "Reset your Porfael password",
-        text: `Someone asked to reset the password for your Porfael account.\n\nReset it here (valid for one hour): ${url}\n\nIf this wasn't you, ignore this email; your password stays the same.`,
+        subject: "Reset your Portle password",
+        text: `Someone asked to reset the password for your Portle account.\n\nReset it here (valid for one hour): ${url}\n\nIf this wasn't you, ignore this email; your password stays the same.`,
       });
     },
   },
@@ -38,8 +38,8 @@ export const auth = betterAuth({
     async sendVerificationEmail({ user, url }) {
       await sendMail({
         to: user.email,
-        subject: "Confirm your email for Porfael",
-        text: `Welcome to Porfael.\n\nConfirm your email to open your archive: ${url}\n\nThe link is valid for 24 hours.`,
+        subject: "Confirm your email for Portle",
+        text: `Welcome to Portle.\n\nConfirm your email to open your archive: ${url}\n\nThe link is valid for 24 hours.`,
       });
     },
   },

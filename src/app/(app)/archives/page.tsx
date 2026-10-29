@@ -31,7 +31,7 @@ export default async function ArchivesPage() {
                 <BookOpen className="mb-3 size-5 text-accent" aria-hidden />
                 <span className="font-semibold text-fg group-hover:underline">{g.title}</span>
                 <span className="mt-1 text-sm text-fg-muted">{g.summary}</span>
-                <span className="mt-auto pt-3 text-xs text-fg-subtle">{g.minutes} min read · Porfael guide</span>
+                <span className="mt-auto pt-3 text-xs text-fg-subtle">{g.minutes} min read · Portle guide</span>
               </Link>
             </li>
           ))}

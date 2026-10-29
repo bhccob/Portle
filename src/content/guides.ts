@@ -1,18 +1,18 @@
 /**
- * Porfael's own editorial guides (original text). Educational only, not advice.
+ * Portle's own editorial guides (original text). Educational only, not advice.
  */
 export type Guide = { slug: string; title: string; summary: string; minutes: number; body: string };
 
 export const GUIDES: Guide[] = [
   {
     slug: "returns",
-    title: "How Porfael measures returns",
+    title: "How Portle measures returns",
     summary: "Unrealized, realized, time-weighted and money-weighted returns, and why a rising balance isn't always performance.",
     minutes: 5,
-    body: `Your account balance can go up because markets rose or because you added money. Only the first is performance. Porfael keeps the two apart.
+    body: `Your account balance can go up because markets rose or because you added money. Only the first is performance. Portle keeps the two apart.
 
 ## Cost basis
-Porfael uses the **average-cost method**. Each purchase adds its price and fees to the position's cost; a sale removes cost in proportion to the shares sold. If a position arrived without a known cost (for example a transfer you didn't price), its cost basis is marked *unknown* and it is left out of profit figures rather than guessed.
+Portle uses the **average-cost method**. Each purchase adds its price and fees to the position's cost; a sale removes cost in proportion to the shares sold. If a position arrived without a known cost (for example a transfer you didn't price), its cost basis is marked *unknown* and it is left out of profit figures rather than guessed.
 
 ## Unrealized and realized
 - **Unrealized P/L** is the difference between what your open positions are worth now and what they cost.
@@ -28,7 +28,7 @@ A money-weighted return (an internal rate of return) also rewards or penalises *
 ## Currencies
 Totals are converted into your base currency using the latest European Central Bank reference rates (or clearly labelled demo rates). Cost basis is converted at today's rate too, so unrealized P/L in your base currency includes currency movements.
 
-## What Porfael won't do
+## What Portle won't do
 It won't show a price it can't source, estimate a missing value, or call a deposit a gain.`,
   },
   {
@@ -47,7 +47,7 @@ It won't show a price it can't source, estimate a missing value, or call a depos
 6. **What would prove you wrong.** Specific and observable: a number, a date, an event.
 
 ## Revisions are the point
-When the evidence changes, revise the thesis and say what changed. Porfael keeps every revision, so later you can see what you believed *at the time*, not what you remember believing.
+When the evidence changes, revise the thesis and say what changed. Portle keeps every revision, so later you can see what you believed *at the time*, not what you remember believing.
 
 ## Judge the process
 A profitable trade doesn't prove a thesis was sound, and a losing one doesn't prove it was foolish. When you close a thesis, write down whether the reasoning held up.`,

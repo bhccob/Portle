@@ -2,13 +2,14 @@ import { createCipheriv, createDecipheriv, randomBytes } from "node:crypto";
 
 /**
  * AES-256-GCM for secrets at rest (e.g. brokerage provider tokens).
- * PORFAEL_ENCRYPTION_KEY is 32 random bytes, base64-encoded.
+ * PORTLE_ENCRYPTION_KEY is 32 random bytes, base64-encoded. The pre-rename name,
+ * PORFAEL_ENCRYPTION_KEY, is still read so existing environments keep their key.
  */
 function key(): Buffer {
-  const raw = process.env.PORFAEL_ENCRYPTION_KEY;
-  if (!raw) throw new Error("PORFAEL_ENCRYPTION_KEY is not set.");
+  const raw = process.env.PORTLE_ENCRYPTION_KEY ?? process.env.PORFAEL_ENCRYPTION_KEY;
+  if (!raw) throw new Error("PORTLE_ENCRYPTION_KEY is not set.");
   const buf = Buffer.from(raw, "base64");
-  if (buf.length !== 32) throw new Error("PORFAEL_ENCRYPTION_KEY must decode to 32 bytes.");
+  if (buf.length !== 32) throw new Error("PORTLE_ENCRYPTION_KEY must decode to 32 bytes.");
   return buf;
 }
 

@@ -11,7 +11,7 @@ export type Tx = Parameters<Parameters<Db["transaction"]>[0]>[0];
 export type DbOrTx = Db | Tx;
 
 declare global {
-  var __porfaelDb: Db | undefined;
+  var __portleDb: Db | undefined;
 }
 
 /**
@@ -31,13 +31,13 @@ export function createDb(): Db {
 
 /** One instance per process, shared across Next.js module graphs via globalThis. */
 export function getDb(): Db {
-  globalThis.__porfaelDb ??= createDb();
-  return globalThis.__porfaelDb;
+  globalThis.__portleDb ??= createDb();
+  return globalThis.__portleDb;
 }
 
 /** Test hook: swap the process-wide database (e.g. for an in-memory PGlite). */
 export function setDb(db: Db | undefined) {
-  globalThis.__porfaelDb = db;
+  globalThis.__portleDb = db;
 }
 
 export { schema };

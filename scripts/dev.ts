@@ -13,7 +13,8 @@ import EmbeddedPostgres from "embedded-postgres";
 import postgres from "postgres";
 import { setupDatabase } from "./db-setup";
 
-const PORT = Number(process.env.PORFAEL_DEV_PG_PORT ?? 54329);
+// The local database keeps its pre-rename "porfael" name and user so existing dev data stays put.
+const PORT = Number(process.env.PORTLE_DEV_PG_PORT ?? process.env.PORFAEL_DEV_PG_PORT ?? 54329);
 // Loopback-only development database; not a secret and never used outside this machine.
 const LOCAL_URL = `postgres://porfael:porfael-local-dev@localhost:${PORT}/porfael`;
 

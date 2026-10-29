@@ -15,12 +15,12 @@
   --l-body: #bcb9d8;
   --l-muted: #9a98b6;
   --l-subtle: #77758f;
-  --l-lilac: #9b82d7;
-  --l-lavender: #d5c6f2;
-  --l-cta: #9877e1;
-  --l-cta-hover: #a68aea;
+  --l-violet: #8e84f8;
+  --l-lavender: #c4bcfb;
+  --l-cta: #6157ea;
+  --l-cta-hover: #5146e1;
   --l-gain: #7fd6a0;
-  --l-label-ink: #2a1d52;
+  --l-label-ink: #1d1850;
   --l-line: rgb(255 255 255 / 0.09);
   --l-line-soft: rgb(255 255 255 / 0.06);
   --ease: cubic-bezier(0.22, 1, 0.36, 1);
@@ -40,7 +40,7 @@
 }
 
 .landing ::selection {
-  background: rgb(152 119 225 / 0.45);
+  background: rgb(97 87 234 / 0.45);
   color: #fff;
 }
 
@@ -71,7 +71,7 @@
   transition: border-color 160ms var(--ease);
 }
 .l-field:focus-within {
-  border-color: var(--l-lilac);
+  border-color: var(--l-violet);
 }
 .l-field svg {
   flex: none;
@@ -85,7 +85,7 @@
   background: transparent;
   color: var(--l-ink);
   font: inherit;
-  caret-color: var(--l-lilac);
+  caret-color: var(--l-violet);
   outline: none;
 }
 .l-field input::placeholder {
@@ -99,7 +99,7 @@
 .l-btn {
   border: 0;
   border-radius: 999px;
-  background: #8462d6; /* white text at 4.6:1 at any size */
+  background: var(--l-cta); /* white text at 5.2:1 at any size */
   color: #fff;
   font: inherit;
   font-weight: 600;
@@ -110,7 +110,7 @@
     transform 160ms var(--ease);
 }
 .l-btn:hover {
-  background: #7653cb;
+  background: #5146e1;
 }
 .l-btn:active {
   transform: scale(0.98);
@@ -123,7 +123,7 @@
   height: 24px;
   padding: 0 10px;
   border-radius: 999px;
-  background: rgb(155 130 215 / 0.16);
+  background: rgb(123 111 245 / 0.16);
   color: #d9cdf8;
   font-size: 12.5px;
   font-weight: 600;
@@ -132,12 +132,12 @@
   font-variant-numeric: tabular-nums;
 }
 .l-tag.is-lit {
-  background: #b096ec;
+  background: #b9adfa;
   color: var(--l-label-ink);
 }
 .l-tag.is-paper {
   background: transparent;
-  box-shadow: inset 0 0 0 1px rgb(213 198 242 / 0.35);
+  box-shadow: inset 0 0 0 1px rgb(196 188 251 / 0.35);
 }
 
 /* ---------- First viewport (comp frame) ---------- */
@@ -163,9 +163,12 @@
   font-weight: 600;
   letter-spacing: -0.01em;
 }
+/* The Portle symbol fills about 92% of its viewBox; size it so the ink spans
+   the comp's 88px mark. */
 .l-brand svg {
-  width: 4.018cqw;
-  height: 4.018cqw;
+  width: 3.557cqw;
+  height: 3.557cqw;
+  margin-right: 0.6cqw;
 }
 
 .l-nav {
@@ -183,7 +186,7 @@
 }
 .l-nav a,
 .l-signin {
-  color: #bdbcd8;
+  color: #bcbbd8;
   text-decoration: none;
   font-size: max(13px, 1.265cqw); /* 34px at 2688 */
   line-height: 1;
@@ -251,7 +254,7 @@
   transition: border-color 160ms var(--ease);
 }
 .l-email:focus-within {
-  border-color: var(--l-lilac);
+  border-color: var(--l-violet);
 }
 .landing .l-email:has(input:focus-visible) {
   outline: 2px solid var(--l-lavender);
@@ -265,7 +268,7 @@
   color: var(--l-ink);
   font: inherit;
   font-size: max(16px, 1.414cqw); /* 38px at 2688 */
-  caret-color: var(--l-lilac);
+  caret-color: var(--l-violet);
   outline: none;
 }
 .l-email input::placeholder {
@@ -280,7 +283,7 @@
   padding: 0;
   border: 0;
   border-radius: 999px;
-  background: var(--l-cta); /* the comp's lilac; its 20px+ semibold label counts as large text */
+  background: var(--l-cta); /* white text at 5.2:1 at any size */
   color: #fff;
   font: inherit;
   font-size: max(15px, 1.414cqw); /* 38px at 2688 */
@@ -324,7 +327,7 @@
   width: 1.711cqw;
   height: 1.711cqw;
   flex: none;
-  color: #cdc9ee;
+  color: #cac6f0;
 }
 .l-assure .l-assure-sep {
   /* A one-pixel rule with soft edges, as the comp draws it. */
@@ -409,7 +412,7 @@
   display: grid;
   place-items: center;
   border-radius: 999px;
-  background: #b096ec;
+  background: #b9adfa;
   color: var(--l-label-ink);
   font-size: 4.333cqw;
   font-weight: 600;
@@ -423,10 +426,10 @@
   aspect-ratio: 1;
   border-radius: 50%;
   background: conic-gradient(
-    #c6acf5 0 32.4%,
-    #9b7be6 32.4% 61.1%,
-    #a99cd1 61.1% 82.4%,
-    #4f4b5e 82.4% 100%
+    #b9adfa 0 32.4%,
+    #7b6ff5 32.4% 61.1%,
+    #56b8f5 61.1% 82.4%,
+    #25d0ee 82.4% 100%
   );
   -webkit-mask: radial-gradient(circle closest-side, transparent 46%, #000 47%);
   mask: radial-gradient(circle closest-side, transparent 46%, #000 47%);
@@ -493,7 +496,7 @@
   width: 2.667cqw;
   height: 2.667cqw;
   border-radius: 50%;
-  background: #9b7be7;
+  background: #7b6ff5;
 }
 .l-pf-mark {
   position: absolute;
@@ -567,7 +570,7 @@
   width: 2.041cqw;
   height: 2.041cqw;
   border-radius: 50%;
-  background: #9b7be7;
+  background: #7b6ff5;
 }
 .l-th-tag {
   left: 8.503cqw;
@@ -577,13 +580,15 @@
   display: grid;
   place-items: center;
   border-radius: 999px;
-  background: #a385ec;
+  background: #a99ef9;
   color: var(--l-label-ink);
   font-size: 4.592cqw;
   font-weight: 500;
   line-height: 1;
 }
+/* The lilac plates sit ~13° warmer than the Portle violet; turn them, not the files. */
 .l-gem {
+  filter: hue-rotate(-13deg) saturate(1.08);
   left: 80.07cqw;
   top: -6.6cqw;
   width: 13.6cqw;
@@ -619,7 +624,7 @@
 .l-comment b {
   display: block;
   font-weight: 600;
-  color: #b48ff0;
+  color: #a99ef9;
 }
 
 /* ---------- The start of the next section ---------- */
@@ -650,7 +655,7 @@
   width: 3.348cqw;
   height: 0.112cqw;
   border-radius: 1px;
-  background: #7a64ad;
+  background: #6157ea;
 }
 
 /* ---------- Tablet and phone ---------- */
@@ -671,9 +676,9 @@
     font-size: 24px;
   }
   .l-brand svg {
-    width: 44px;
-    height: 44px;
-    margin-left: -8px;
+    width: 40px;
+    height: 40px;
+    margin: 0 8px 0 -2px;
   }
   .l-nav {
     left: 50%;
@@ -732,10 +737,6 @@
   .l-cta {
     width: 180px;
     font-size: 16px;
-    background: #8462d6; /* below 18px the label needs 4.5:1 */
-  }
-  .l-cta:hover {
-    background: #7653cb;
   }
   .l-assure {
     height: auto;

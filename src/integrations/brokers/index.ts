@@ -21,7 +21,7 @@ export type ProviderStatus = { id: string; label: string; configured: boolean; n
 
 export interface BrokerProvider {
   status(): ProviderStatus;
-  /** Starts the provider's hosted connection flow. Porfael never asks for broker passwords. */
+  /** Starts the provider's hosted connection flow. Portle never asks for broker passwords. */
   createConnectionUrl(userRef: string, redirectUrl: string): Promise<{ url: string }>;
   listAccounts(secret: string): Promise<BrokerAccount[]>;
   listActivities(secret: string, since: string): Promise<BrokerActivity[]>;
@@ -30,7 +30,7 @@ export interface BrokerProvider {
 
 class NotConfiguredError extends Error {
   constructor() {
-    super("This brokerage provider isn't configured on this Porfael instance.");
+    super("This brokerage provider isn't configured on this Portle instance.");
   }
 }
 

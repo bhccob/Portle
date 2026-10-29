@@ -2,7 +2,7 @@ import { cn } from "@/lib/cn";
 
 /**
  * Original Relic glyphs on a 24px grid, 1.5px stroke, drawn to match the
- * faceted Porfael mark. Each sits in a hexagonal specimen frame whose finish
+ * Portle mark. Each sits in a hexagonal specimen frame whose finish
  * encodes the tier (common, rare, epic); the tier is also given in text.
  */
 const GLYPHS: Record<string, React.ReactNode> = {
@@ -63,25 +63,25 @@ export function RelicIcon({
         <linearGradient id={id} x1="0" y1="0" x2="1" y2="1">
           {tier === "epic" ? (
             <>
-              <stop offset="0" stopColor="#7a5bb8" />
-              <stop offset="1" stopColor="#2d2145" />
+              <stop offset="0" stopColor="#6157ea" />
+              <stop offset="1" stopColor="#241f66" />
             </>
           ) : tier === "rare" ? (
             <>
-              <stop offset="0" stopColor="#4b3a6e" />
-              <stop offset="1" stopColor="#241c35" />
+              <stop offset="0" stopColor="#3c3592" />
+              <stop offset="1" stopColor="#1d1a3c" />
             </>
           ) : (
             <>
-              <stop offset="0" stopColor="#3a3052" />
-              <stop offset="1" stopColor="#1d1828" />
+              <stop offset="0" stopColor="#2f2c55" />
+              <stop offset="1" stopColor="#1a1930" />
             </>
           )}
         </linearGradient>
       </defs>
-      <path d="M24 2.5l18.6 10.75v21.5L24 45.5 5.4 34.75v-21.5L24 2.5z" fill={`url(#${id})`} stroke={locked ? "#6f6488" : tier === "common" ? "#9b82d7" : "#d5c6f2"} strokeOpacity={locked ? 0.6 : 0.85} />
+      <path d="M24 2.5l18.6 10.75v21.5L24 45.5 5.4 34.75v-21.5L24 2.5z" fill={`url(#${id})`} stroke={locked ? "#6d6a8c" : tier === "common" ? "#8e84f8" : "#c4bcfb"} strokeOpacity={locked ? 0.6 : 0.85} />
       <path d="M24 2.5l18.6 10.75L24 24 5.4 13.25 24 2.5z" fill="#ffffff" opacity={tier === "epic" ? 0.12 : 0.06} />
-      <g transform="translate(12 12)" fill="none" stroke={locked ? "#a59db8" : "#f3eff8"} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+      <g transform="translate(12 12)" fill="none" stroke={locked ? "#a3a0bd" : "#f2f1fb"} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
         {GLYPHS[relicKey] ?? GLYPHS["first-specimen"]}
       </g>
     </svg>

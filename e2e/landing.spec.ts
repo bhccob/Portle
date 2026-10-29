@@ -34,7 +34,7 @@ test.describe("landing page", () => {
   test("the FAQ answers open and close", async ({ page }) => {
     await page.goto("/");
     const question = page.getByText("Do I need to connect my broker?");
-    const answer = page.getByText("Porfael never asks for your broker password.");
+    const answer = page.getByText("Portle never asks for your broker password.");
     await expect(answer).toBeHidden();
     await question.click();
     await expect(answer).toBeVisible();

@@ -1,8 +1,8 @@
-# Porfael
+# Portle
 
 A private archive for your portfolio, your investment theses, and the friends you trust with them.
 
-Porfael combines a multi-account portfolio tracker, an investment-thesis archive with immutable revisions, a paper trading lab on a separate ledger, a reflective journal, and a friends-first social layer with Guilds and Relics. Exact values are private by default and enforced on the server; others only ever see the percentages and writing you choose to share.
+Portle combines a multi-account portfolio tracker, an investment-thesis archive with immutable revisions, a paper trading lab on a separate ledger, a reflective journal, and a friends-first social layer with Guilds and Relics. Exact values are private by default and enforced on the server; others only ever see the percentages and writing you choose to share.
 
 > Early access. Market data runs in a clearly labelled **demo mode** (synthetic prices) until a licensed provider is configured. FX uses live ECB reference rates. Broker sync is not enabled yet; CSV import is supported.
 
@@ -18,7 +18,7 @@ pnpm install
 cp .env.example .env.local
 ```
 
-Fill `BETTER_AUTH_SECRET` and `PORFAEL_ENCRYPTION_KEY` with 32 random bytes each, base64-encoded:
+Fill `BETTER_AUTH_SECRET` and `PORTLE_ENCRYPTION_KEY` with 32 random bytes each, base64-encoded:
 
 ```bash
 node -e "console.log(require('crypto').randomBytes(32).toString('base64'))"
@@ -61,7 +61,7 @@ pnpm lint
 
 ## Configuration
 
-See `.env.example`. Production needs `DATABASE_URL` (PostgreSQL), `BETTER_AUTH_SECRET`, `BETTER_AUTH_URL`, `PORFAEL_ENCRYPTION_KEY` and `RESEND_API_KEY`. Real quotes need `MARKET_DATA_PROVIDER=finnhub` and `FINNHUB_API_KEY` (check the licence terms for your use).
+See `.env.example`. Production needs `DATABASE_URL` (PostgreSQL), `BETTER_AUTH_SECRET`, `BETTER_AUTH_URL`, `PORTLE_ENCRYPTION_KEY` and `RESEND_API_KEY`. Real quotes need `MARKET_DATA_PROVIDER=finnhub` and `FINNHUB_API_KEY` (check the licence terms for your use).
 
 ## Documentation
 
@@ -76,4 +76,4 @@ See `.env.example`. Production needs `DATABASE_URL` (PostgreSQL), `BETTER_AUTH_S
 
 Next.js 16 (App Router), React 19, TypeScript, Tailwind CSS 4, Drizzle ORM, PostgreSQL, Better Auth, decimal.js, Zod, Radix UI, Vitest, Playwright.
 
-Porfael is for education and record-keeping. It is not a broker and does not give financial advice.
+Portle is for education and record-keeping. It is not a broker and does not give financial advice.

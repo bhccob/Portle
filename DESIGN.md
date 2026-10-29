@@ -1,30 +1,34 @@
 ---
-name: Porfael
+name: Portle
 description: A friendly, private place to track your investments and write down why you bought each one.
 colors:
-  ink: "#171320"
-  amethyst: "#49366b"
-  lilac: "#9b82d7"
-  lilac-bright: "#ac97e0"
-  lavender: "#d5c6f2"
-  porcelain: "#f3eff8"
-  muted-heather: "#b7aecb"
+  ink: "#15141f"
+  indigo: "#5146e1"
+  violet: "#7b6ff5"
+  violet-bright: "#8e84f8"
+  violet-light: "#a39bfa"
+  lavender: "#b9adfa"
+  lavender-soft: "#c4bcfb"
+  porcelain: "#f2f1fb"
+  mist: "#b3b0cf"
+  sky: "#56b8f5"
+  cyan: "#25d0ee"
+  ember: "#ff9340"
   charcoal: "#1c1c20"
   charcoal-raised: "#212128"
   charcoal-card: "#25262d"
   charcoal-field: "#26262d"
   charcoal-rule: "#383843"
-  action-lilac: "#9877e1"
-  action-lilac-bright: "#a68aea"
-  action-lilac-deep: "#8462d6"
-  pill-lilac: "#b096ec"
-  label-ink: "#2a1d52"
+  action-indigo: "#6157ea"
+  action-indigo-deep: "#5146e1"
+  pill-lavender: "#b9adfa"
+  label-ink: "#1d1850"
   soft-text: "#bcb9d8"
   quiet-text: "#9a98b6"
   warm-white: "#f6f4fc"
   gain: "#7fd6a0"
-  glass-depth-1: "rgb(38 31 54 / 0.52)"
-  glass-depth-2: "rgb(44 36 63 / 0.82)"
+  glass-depth-1: "rgb(33 31 58 / 0.52)"
+  glass-depth-2: "rgb(39 36 68 / 0.82)"
   hairline: "rgb(255 255 255 / 0.09)"
   positive: "#5fd59d"
   negative: "#ff8a97"
@@ -82,26 +86,21 @@ spacing:
   section: "clamp(96px, 10vw, 152px)"
 components:
   button-primary:
-    backgroundColor: "{colors.lilac}"
+    backgroundColor: "{colors.violet-bright}"
     textColor: "{colors.ink}"
     rounded: "{rounded.md}"
     height: "40px"
     padding: "0 16px"
   button-primary-hover:
-    backgroundColor: "{colors.lilac-bright}"
+    backgroundColor: "{colors.violet-light}"
   button-start:
-    backgroundColor: "{colors.action-lilac}"
+    backgroundColor: "{colors.action-indigo}"
     textColor: "{colors.warm-white}"
     rounded: "{rounded.pill}"
     height: "56px"
     padding: "0 24px"
   button-start-hover:
-    backgroundColor: "{colors.action-lilac-bright}"
-  button-start-small:
-    backgroundColor: "{colors.action-lilac-deep}"
-    textColor: "{colors.warm-white}"
-    rounded: "{rounded.pill}"
-    height: "56px"
+    backgroundColor: "{colors.action-indigo-deep}"
   input-start:
     backgroundColor: "{colors.charcoal-field}"
     textColor: "{colors.warm-white}"
@@ -109,7 +108,7 @@ components:
     height: "56px"
     padding: "0 22px"
   pill-tag:
-    backgroundColor: "{colors.pill-lilac}"
+    backgroundColor: "{colors.pill-lavender}"
     textColor: "{colors.label-ink}"
     typography: "{typography.label}"
     rounded: "{rounded.pill}"
@@ -125,18 +124,18 @@ components:
     rounded: "{rounded.xl}"
 ---
 
-# Design System: Porfael
+# Design System: Portle
 
 ## Overview
 
 **Creative North Star: "The Notebook on a Calm Desk"**
 
-Investing feels calmer when your reasons are written down. Porfael looks like a tidy desk at night: a neutral charcoal surface, a few cards of your own lying on it at small angles (a portfolio, a note saying why you bought something, a comment from a friend), and one soft lilac lamp of colour. It is friendly before it is clever. A first-time investor should feel welcome and unhurried; nothing on the page should look like a trading terminal.
+Investing feels calmer when your reasons are written down. Portle looks like a tidy desk at night: a neutral charcoal surface, a few cards of your own lying on it at small angles (a portfolio, a note saying why you bought something, a comment from a friend), and one soft violet lamp of colour. It is friendly before it is clever. A first-time investor should feel welcome and unhurried; nothing on the page should look like a trading terminal.
 
-The system has two rooms that share one palette of lilac light. The public landing page is the friendly front room: charcoal, roomy, rounded, with the product's own cards shown as tilted notes and a hand-drawn desk illustration to close. The signed-in app is the workroom: an ink-and-amethyst glass shell with denser panels, tabular numerals and familiar controls. Both keep the faceted P, the lilac action, the private-by-default promise and Gabarito for display type.
+The system has two rooms that share one palette of violet light, taken from the Portle symbol. The public landing page is the friendly front room: charcoal, roomy, rounded, with the product's own cards shown as tilted notes and a hand-drawn desk illustration to close. The signed-in app is the workroom: an ink-and-indigo glass shell with denser panels, tabular numerals and familiar controls. Both keep the Portle symbol, the violet action, the private-by-default promise and Gabarito for display type.
 
 **Key Characteristics:**
-- Charcoal ground on the landing page; ink and amethyst glass in the app. Lilac is the only accent in both.
+- Charcoal ground on the landing page; ink and indigo glass in the app. Violet is the only accent in both; the symbol's sky, cyan and ember appear only in data and in the mark itself.
 - Show the product, not a picture of it: the hero is made of real card components with sample data, labelled "Sample" or "Example".
 - Friendly geometry: pill actions, 18–28px cards, tilts of at most about five degrees.
 - Plain, warm copy that answers beginners' worries (passwords, privacy, cost, advice).
@@ -144,33 +143,34 @@ The system has two rooms that share one palette of lilac light. The public landi
 
 ## Colors
 
-A neutral charcoal family with one lilac accent and a pale lavender highlight; the app keeps its deeper ink and amethyst.
+A neutral charcoal family with one violet accent and a pale lavender highlight, all drawn from the Portle symbol; the app keeps a deeper ink and indigo.
 
 ### Primary
-- **Action Lilac** (action-lilac): the landing page's primary action, a pill with a white Gabarito semibold label. At 20px and up the label is large text (3.5:1); on smaller buttons the fill deepens to action-lilac-deep for 4.6:1. Hover brightens one step (action-lilac-bright).
-- **Lamp Lilac** (lilac): bullet dots, rules, the step path, chart series one, the app's primary action fill.
+- **Action Indigo** (action-indigo): the landing page's primary action, a pill with a white Gabarito semibold label at 5.2:1 at any size. Hover goes one step deeper (action-indigo-deep), never lighter.
+- **Portle Violet** (violet): bullet dots, rules, the step path and focus edges on the landing page. The app's primary fill is violet-bright with ink text (6:1), hovering to violet-light.
 
 ### Secondary
-- **Pill Lilac** (pill-lilac) with **Label Ink** (label-ink): small filled pills such as "Sample", "Revisit in January" and the sticky note.
-- **Vault Amethyst** (amethyst): the app's brand plate and selected rows.
+- **Pill Lavender** (pill-lavender) with **Label Ink** (label-ink): small filled pills such as "Sample", "Revisit in January" and the sticky note (8:1).
+- **Brand Indigo** (indigo): the app's brand fills, selected rows (as a 26% tint) and the body of the symbol.
 
 ### Tertiary
-- **Lantern Lavender** (lavender): focus rings and hover text. It is light, not colour, so it is used sparingly.
+- **Lantern Lavender** (lavender-soft): focus rings, links and hover text. It is light, not colour, so it is used sparingly.
+- **Sky, Cyan and Ember** (sky, cyan, ember): the symbol's dial and core. Sky and cyan are chart series and the sample donut; ember stays in the mark and the rare spark, never on chrome.
 
 ### Neutral
 - **Charcoal** (charcoal): the landing ground, sampled from the approved comp.
-- **Charcoal Raised** (charcoal-raised): panels a step up, such as the "How Porfael works" band, the Relics shelf and the closing card.
+- **Charcoal Raised** (charcoal-raised): panels a step up, such as the "How Portle works" band, the Relics shelf and the closing card.
 - **Charcoal Card** (charcoal-card), **Field** (charcoal-field) and **Rule** (charcoal-rule): cards, inputs and their 1px edge.
 - **Warm White** (warm-white), **Soft Text** (soft-text) and **Quiet Text** (quiet-text): headings, body and captions on charcoal (body 9.6:1, captions 6.3:1).
-- **Ink** (ink), **Porcelain** (porcelain) and **Muted Heather** (muted-heather): the app's ground and text.
+- **Ink** (ink), **Porcelain** (porcelain) and **Mist** (mist): the app's ground and text.
 - **Hairline** (hairline): dividers and card edges, translucent white on charcoal.
 
 Semantic colours (positive, negative, warning, info, gain) belong to data only: returns, gains and losses, import results. They never decorate chrome.
 
 ### Named Rules
-**The One Lamp Rule.** Lilac is the only accent. A screen lights one thing (the primary action, the step number, the selected row) and leaves the rest of the desk in charcoal.
+**The One Lamp Rule.** Violet is the only accent. A screen lights one thing (the primary action, the step number, the selected row) and leaves the rest of the desk in charcoal.
 
-**The Neutral Ground Rule.** The landing ground is a true neutral charcoal, not purple-black and not pure black. Warmth comes from the lilac and the copy, not from tinting the ground.
+**The Neutral Ground Rule.** The landing ground is a true neutral charcoal, not purple-black and not pure black. Warmth comes from the violet and the copy, not from tinting the ground.
 
 ## Typography
 
@@ -198,7 +198,7 @@ Semantic colours (positive, negative, warning, info, gain) belong to data only: 
 The landing page has two modes:
 
 - **First viewport (1180px and up).** It is one frame with the approved comp's 2688×1520 proportions. Regions are placed in percentages of the frame and sized in container units (cqw), so the composition scales as one piece. Each hero card is its own container, so its contents scale with the card.
-- **Below 1180px.** One column: headline, subline, the email form (stacked below 640px), the reassurances, then the three cards stacked full width with a little of their tilt, then the "How Porfael works" band.
+- **Below 1180px.** One column: headline, subline, the email form (stacked below 640px), the reassurances, then the three cards stacked full width with a little of their tilt, then the "How Portle works" band.
 
 Sections below sit in a 1180px container with a fluid 16–56px gutter and are separated by clamp(96px, 10vw, 152px), with more space above a heading than below it. The rhythm varies on purpose: a raised band with three steps, two alternating split sections (art and copy), a centred shelf, a two-column FAQ, and a closing card with the illustration. Breakpoints are 640px, 900px (sections) and 1180px (the hero).
 
@@ -219,37 +219,37 @@ The app keeps its three glass depth steps. Depth 1 is content panels: 18px blur,
 ### Named Rules
 **The Paper-On-A-Desk Rule.** Landing cards are opaque paper, not glass: a soft offset shadow, a light edge, and a tilt of at most about five degrees. Glass belongs to the app.
 
-**The One Drawing Rule.** The hand-drawn lilac illustration appears once, to close the page. Everything else shows the real product.
+**The One Drawing Rule.** The hand-drawn violet illustration appears once, to close the page (its plate was drawn in lilac and is turned 13° toward violet in CSS). Everything else shows the real product.
 
 ## Shapes
 
-- **Logo.** The faceted P: straight cuts, a beveled bowl and a locked counter, in lilac facets.
+- **Logo.** The Portle symbol: a P whose bowl is a portfolio dial of segmented arcs (violet, lavender, periwinkle, sky, cyan) around an ember core, on an indigo stem. A compact cut without the thin outer arcs and inner ring is used below about 28px and for the favicon.
 - **Corners.** Friendly and nested: pills for actions, fields and tags; 18px for small vignettes; 24px for section cards; 28px for panels; 44px (at 2688) for the hero notes; 22px for app panels.
 - **Relic frames.** Relics sit in a hexagonal specimen frame.
-- **Lines.** 1px hairlines and short lilac rules beside centred headings; a dashed lilac path joins the three steps. No thick rules or coloured side stripes.
+- **Lines.** 1px hairlines and short violet rules beside centred headings; a dashed violet path joins the three steps. No thick rules or coloured side stripes.
 
 ## Components
 
 ### Buttons
-- **Start (landing):** a lilac pill with a white semibold label, 56px tall in flow. In the hero it is joined to the right end of the email field so the two read as one control.
-- **Primary (app):** lilac fill with ink text, 40px tall, gently rounded (12px).
+- **Start (landing):** an indigo-violet pill with a white semibold label, 56px tall in flow. In the hero it is joined to the right end of the email field so the two read as one control.
+- **Primary (app):** violet fill with ink text, 40px tall, gently rounded (12px).
 - **Hover / Focus:** hover shifts the fill one step (160ms, ease-out cubic-bezier(0.22, 1, 0.36, 1)); press scales to 0.98; focus is a 2px lavender ring offset by 3px.
 
 ### Inputs / Fields
-- **Style:** charcoal-field fill, 1px charcoal-rule edge, a pill shape, a quiet placeholder (#8f8da8) and a lilac caret.
-- **Focus:** the edge turns lilac and a 2px lavender ring wraps the whole pill.
+- **Style:** charcoal-field fill, 1px charcoal-rule edge, a pill shape, a quiet placeholder (#8f8da8) and a violet caret.
+- **Focus:** the edge turns violet and a 2px lavender ring wraps the whole pill.
 - **Size:** 56px tall with 16px text on phones so they do not zoom.
 
 ### Notes (signature)
 The hero's three cards, built from real components with sample data: the **Portfolio** card (a donut drawn from the weights, total value, all-time change, four holdings with letter tiles), the **Thesis note** ("Why I bought ASML", three bullets, a pill tag and a gem sticker) and the **Comment** (a friend's avatar, name in lilac, one line). Each is tilted a few degrees and overlaps its neighbour; on load they settle into place, and with a mouse they drift a few pixels at different depths. Neither motion runs under reduced motion.
 
 ### Pills and Tags
-- **Filled pill:** pill-lilac with label-ink text ("Sample", "Revisit in January").
-- **Soft tag:** translucent lilac with lavender text (the accession label, e.g. "ASML").
-- **Outline tag:** a lilac ring, no fill ("Practice money"), for anything on the separate Paper Lab ledger.
+- **Filled pill:** pill-lavender with label-ink text ("Sample", "Revisit in January").
+- **Soft tag:** translucent violet with lavender text (the accession label, e.g. "ASML").
+- **Outline tag:** a lavender ring, no fill ("Practice money"), for anything on the separate Paper Lab ledger.
 
 ### Steps
-Three numbered lilac circles joined by a dashed path, each with a short heading, two lines of copy and a small tilted product vignette (an import, a note, a revision rail). On phones the path is dropped and the steps stack.
+Three numbered indigo-violet circles joined by a dashed path, each with a short heading, two lines of copy and a small tilted product vignette (an import, a note, a revision rail). On phones the path is dropped and the steps stack.
 
 ### Cards / Containers
 - **Corner Style:** 24px section cards, 28px panels, 22px app panels.
@@ -258,10 +258,10 @@ Three numbered lilac circles joined by a dashed path, each with a short heading,
 - **Nesting:** cards never nest inside cards; lists and rows sit directly in the card with hairline dividers.
 
 ### FAQ
-A two-column block: the heading on the left, native disclosure rows on the right with a lilac plus that turns into a cross when open.
+A two-column block: the heading on the left, native disclosure rows on the right with a lavender plus that turns into a cross when open.
 
 ### Navigation
-- **Landing:** the faceted mark and wordmark, then Portfolio · Theses · Paper Lab · Guilds in soft text, Sign in at the right in white. Links brighten to lavender on hover. Below 640px only the brand and Sign in remain.
+- **Landing:** the Portle symbol and wordmark, then Portfolio · Theses · Paper Lab · Guilds in soft text, Sign in at the right in white. Links brighten to lavender on hover. Below 640px only the brand and Sign in remain.
 - **App:** a glass depth-3 sidebar with lucide icons at one stroke weight.
 
 ### Relic
@@ -271,10 +271,10 @@ Relics are hexagonal frames whose finish encodes the tier, with a single-stroke 
 
 ### Do:
 - **Do** show real product components with sample data in the hero, and label them "Sample" or "Example".
-- **Do** keep one lilac accent lit per screen and leave the rest in charcoal and soft text.
+- **Do** keep one violet accent lit per screen and leave the rest in charcoal and soft text.
 - **Do** answer beginners' worries in plain words (no broker passwords, only you see your numbers, free to start, not investment advice).
 - **Do** set every comparable number with tabular figures, and show money values only to their owner. Shared views use percentages.
-- **Do** keep white-on-lilac labels at 20px or larger; smaller buttons use action-lilac-deep.
+- **Do** put white labels only on indigo-violet (action-indigo or deeper); lighter violets and lavenders carry ink text.
 - **Do** draw icons from one stroke family (lucide at 1.4–1.8) or as small inline SVG.
 
 ### Don't:

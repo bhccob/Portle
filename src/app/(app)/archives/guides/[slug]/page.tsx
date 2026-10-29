@@ -23,7 +23,7 @@ export default async function GuidePage({ params }: { params: Promise<{ slug: st
         <ArrowLeft className="size-4" aria-hidden /> Archives
       </Link>
       <article className="glass-1 mx-auto max-w-[760px] rounded-[var(--radius-xl)] p-6 sm:p-10">
-        <p className="text-xs text-fg-subtle">Porfael guide · {guide.minutes} min read · educational, not financial advice</p>
+        <p className="text-xs text-fg-subtle">Portle guide · {guide.minutes} min read · educational, not financial advice</p>
         <h1 className="mt-2 text-[1.875rem] leading-tight font-semibold tracking-[-0.025em] text-fg">{guide.title}</h1>
         <p className="mt-2 text-[1.0625rem] text-fg-muted">{guide.summary}</p>
         <div className="mt-4">

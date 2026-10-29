@@ -1,15 +1,1 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
-  <defs>
-    <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0" stop-color="#5a4583"/>
-      <stop offset="1" stop-color="#2c2142"/>
-    </linearGradient>
-  </defs>
-  <rect width="64" height="64" rx="15" fill="url(#g)"/>
-  <rect x="0.5" y="0.5" width="63" height="63" rx="14.5" fill="none" stroke="#d5c6f2" stroke-opacity="0.18"/>
-  <g transform="translate(12 12) scale(1.25)">
-    <path fill-rule="evenodd" fill="#f3eff8" d="M6 3h14.2L27 9.4v6.2L20.2 22H13v7.2L6 26.4V3Zm7 6.2v6.6h5.4l2.2-2.1V11.3l-2.2-2.1H13Z"/>
-    <path fill="#9b82d7" d="M20.2 3 27 9.4h-6.4l-2.2-2.1L20.2 3Z"/>
-    <path fill="#d5c6f2" opacity="0.55" d="M13 22v7.2L6 26.4l7-4.4Z"/>
-  </g>
-</svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256"><title>Portle</title><g transform="translate(-24.07 -19.43) scale(1.24)"><path d="M128 214A96 96 0 0 1 52.35 58.9L80.72 81.06A60 60 0 0 0 128 178Z" fill="#5146E1"/><path d="M68.29 60.34A83 83 0 0 1 130.9 35.05L130.09 58.04A60 60 0 0 0 84.84 76.32Z" fill="#7B6FF5"/><path d="M138.99 39.77A79 79 0 0 1 184.83 63.12L171.16 76.32A60 60 0 0 0 136.35 58.58Z" fill="#B9ADFA"/><path d="M187.1 71.83A75 75 0 0 1 202.95 115.38L187.96 115.91A60 60 0 0 0 175.28 81.06Z" fill="#8FA6FF"/><path d="M198.83 122.95A71 71 0 0 1 183.95 161.71L175.28 154.94A60 60 0 0 0 187.85 122.19Z" fill="#56B8F5"/><path d="M176.2 164.54A67 67 0 0 1 135 184.63L134.27 177.67A60 60 0 0 0 171.16 159.68Z" fill="#25D0EE"/><path d="M32 118V174A40 40 0 0 0 72 214H128V178A60 60 0 0 1 68 118Z" fill="#5146E1"/><circle cx="128" cy="118" r="31" fill="#FF9340"/><circle cx="119" cy="108" r="7.5" fill="#FFC08A"/></g></svg>

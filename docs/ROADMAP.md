@@ -4,7 +4,7 @@ Status as of the first build. Phases follow the master prompt; adjusted to what 
 
 ## Done
 
-- **Phase 0–1:** stack, schema, migrations, design system (Amethyst Archive), auth with verification/reset, onboarding with consent, app shell (desktop sidebar, mobile tab bar), profile, privacy settings with preview, labelled demo mode.
+- **Phase 0–1:** stack, schema, migrations, design system (now the Portle palette), auth with verification/reset, onboarding with consent, app shell (desktop sidebar, mobile tab bar), profile, privacy settings with preview, labelled demo mode.
 - **Phase 2:** accounts, manual transactions, CSV import with mapping and dedupe, decimal-safe average-cost accounting, currency conversion, holdings and allocation, transaction history, TWR performance chart.
 - **Phase 3:** market-data adapter (demo + Finnhub quotes), search, instrument pages, watchlists, indices, sector moves, source/time labels.
 - **Phase 4:** theses with immutable revisions, sources, tags, notes; Paper Lab with separate ledger, market/limit orders, fees/slippage, idempotency, thesis links.

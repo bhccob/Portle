@@ -16,7 +16,7 @@ Individual retail investors who hold positions across one or more brokerages (e.
 
 ## Product Purpose
 
-Porfael combines a portfolio tracker, an investment journal, a paper-trading simulator, and a focused social network. Success is a user who keeps their holdings current, writes theses with explicit invalidation criteria, revisits them as evidence changes, and learns from both real and simulated decisions, without ever having their private financial values exposed.
+Portle combines a portfolio tracker, an investment journal, a paper-trading simulator, and a focused social network. Success is a user who keeps their holdings current, writes theses with explicit invalidation criteria, revisits them as evidence changes, and learns from both real and simulated decisions, without ever having their private financial values exposed.
 
 ## Positioning
 
@@ -41,8 +41,8 @@ The investment thesis is the centre of the product, not the trade: a thesis carr
 
 ## Brand Commitments
 
-- Name: Porfael. Design language name: Amethyst Archive.
-- Palette foundation (binding): Ink `#171320`, Amethyst `#49366B`, Lilac `#9B82D7`, Lavender `#D5C6F2`, Porcelain `#F3EFF8`, plus supporting semantic tokens.
+- Name: Portle (renamed from Porfael on 2026-10-29). Symbol: a P whose bowl is a portfolio dial around a warm core (`.impeccable/brand/portle-symbol.source.svg`).
+- Palette foundation (binding, drawn from the symbol): Ink `#15141F`, Indigo `#5146E1`, Violet `#7B6FF5`, Lavender `#B9ADFA`, Porcelain `#F2F1FB`, with Sky `#56B8F5` and Cyan `#25D0EE` for data and Ember `#FF9340` for the mark's core, plus supporting semantic tokens. The public landing page sits on neutral charcoal `#1C1C20`.
 - The user explicitly prioritises glassmorphism and minimalism, with smooth, interactive motion (overrides the brief's general caution about glass; restraint still applies to everything else).
 - Logo: an original geometric P suggesting an archive, faceted gem, or vault; readable small and in monochrome; never an emoji or stock icon.
 - Financial semantics: green positive, red negative, grey neutral, amber warning, purple brand; never colour alone.

@@ -17,7 +17,7 @@ export default defineConfig({
     env: {
       BETTER_AUTH_SECRET: "test-secret-test-secret-test-secret-0000",
       BETTER_AUTH_URL: "http://localhost:3000",
-      PORFAEL_ENCRYPTION_KEY: "dGVzdC1rZXktdGVzdC1rZXktdGVzdC1rZXktMDAwMDA=",
+      PORTLE_ENCRYPTION_KEY: "dGVzdC1rZXktdGVzdC1rZXktdGVzdC1rZXktMDAwMDA=",
       MARKET_DATA_PROVIDER: "demo",
       FX_PROVIDER: "demo",
     },

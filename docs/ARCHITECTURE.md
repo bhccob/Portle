@@ -1,6 +1,6 @@
 # Architecture
 
-Porfael is a modular monolith: one Next.js application, one PostgreSQL database, with domain logic kept out of UI components and external providers kept behind adapters.
+Portle is a modular monolith: one Next.js application, one PostgreSQL database, with domain logic kept out of UI components and external providers kept behind adapters.
 
 ```
 src/
@@ -34,7 +34,7 @@ scripts/           dev launcher, DB setup, dev seed, QA screenshots
 
 ## Key decisions
 
-**Rendering model.** Next.js 16 ships with Cache Components on; Porfael turns it off. Nearly every screen is per-user private data, and request-time rendering removes a class of bugs where private data could be cached and served to the wrong person. Pages read the session through `requireMember()`, which is `React.cache`d per request.
+**Rendering model.** Next.js 16 ships with Cache Components on; Portle turns it off. Nearly every screen is per-user private data, and request-time rendering removes a class of bugs where private data could be cached and served to the wrong person. Pages read the session through `requireMember()`, which is `React.cache`d per request.
 
 **Mutations.** Server Actions call services and return a typed `ActionResult` (never throwing to the client). Validation uses Zod in services, so the same rules apply to actions, scripts and tests. Unexpected errors are logged by name only and reported generically.
 

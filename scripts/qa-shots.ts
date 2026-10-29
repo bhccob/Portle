@@ -24,7 +24,7 @@ async function main() {
       const res = await ctx.request.post(`${base}/api/auth/sign-in/email`, { data: { email, password: TEST_PASSWORD }, headers: { origin: base } });
       if (!res.ok()) throw new Error(`sign-in failed: ${res.status()} ${await res.text()}`);
     }
-    if (theme) await ctx.addCookies([{ name: "porfael-theme", value: theme, url: base }]);
+    if (theme) await ctx.addCookies([{ name: "portle-theme", value: theme, url: base }]);
     const page = await ctx.newPage();
     for (const route of routes) {
       await page.goto(`${base}${route}`, { waitUntil: "networkidle" });

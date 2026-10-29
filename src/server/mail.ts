@@ -15,7 +15,7 @@ export async function sendMail(mail: Mail) {
       method: "POST",
       headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" },
       body: JSON.stringify({
-        from: process.env.MAIL_FROM ?? "Porfael <no-reply@porfael.app>",
+        from: process.env.MAIL_FROM ?? "Portle <no-reply@example.com>",
         to: [mail.to],
         subject: mail.subject,
         text: mail.text,

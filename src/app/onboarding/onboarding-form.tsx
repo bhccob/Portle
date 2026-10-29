@@ -102,7 +102,7 @@ export function OnboardingForm({ name, interests }: { name: string; interests: r
             <Link href="/legal/privacy" className="text-accent underline" target="_blank">
               privacy notice
             </Link>
-            . Porfael is for education and record-keeping, not financial advice.
+            . Portle is for education and record-keeping, not financial advice.
           </span>
         </label>
         {err.acceptTerms ? <p className="text-xs text-negative">{err.acceptTerms}</p> : null}

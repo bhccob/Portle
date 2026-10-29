@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { PorfaelWordmark } from "@/components/brand/logo";
+import { PortleWordmark } from "@/components/brand/logo";
 import { Markdown } from "@/components/ui/markdown";
 
 const DOCS: Record<string, { title: string; body: string }> = {
@@ -8,13 +8,13 @@ const DOCS: Record<string, { title: string; body: string }> = {
     title: "Terms of use (early access draft)",
     body: `_This is a plain-language draft for early access and has not been reviewed by a lawyer. It will be replaced before a public launch._
 
-**What Porfael is.** A tool for recording your investments, writing down your reasoning, practising with virtual money and discussing ideas with people you choose. It is for education and record-keeping.
+**What Portle is.** A tool for recording your investments, writing down your reasoning, practising with virtual money and discussing ideas with people you choose. It is for education and record-keeping.
 
-**What Porfael is not.** Not a broker, not an investment adviser and not a source of financial advice. Nothing on Porfael, including content from other members, is a recommendation to buy or sell anything. Paper Lab results are simulations and don't predict real outcomes.
+**What Portle is not.** Not a broker, not an investment adviser and not a source of financial advice. Nothing on Portle, including content from other members, is a recommendation to buy or sell anything. Paper Lab results are simulations and don't predict real outcomes.
 
 **Data accuracy.** Demo market data is synthetic and labelled as such. Figures depend on what you record or import; check them against your broker's statements.
 
-**Your content.** You own what you write. You give Porfael permission to store it and show it to the audience you choose.
+**Your content.** You own what you write. You give Portle permission to store it and show it to the audience you choose.
 
 **Conduct.** No harassment, spam, impersonation or misleading financial claims. We may remove content or accounts that break these rules.
 
@@ -47,8 +47,8 @@ export default async function LegalPage({ params }: { params: Promise<{ doc: str
   if (!doc) notFound();
   return (
     <main className="mx-auto max-w-[760px] px-4 py-10">
-      <Link href="/" aria-label="Porfael home">
-        <PorfaelWordmark className="text-lg text-fg" />
+      <Link href="/" aria-label="Portle home">
+        <PortleWordmark className="text-lg text-fg" />
       </Link>
       <article className="glass-1 mt-8 rounded-[var(--radius-xl)] p-6 sm:p-10">
         <h1 className="text-[1.75rem] font-semibold tracking-[-0.025em] text-fg">{doc.title}</h1>

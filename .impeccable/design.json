@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-10-29T08:39:22.238Z",
+  "generatedAt": "2026-10-29T09:59:24.467Z",
   "title": "Design System: Porfael",
   "extensions": {
     "colorMeta": {
@@ -29,40 +29,65 @@
         "displayName": "Charcoal Card",
         "canonical": "#25262d"
       },
-      "action-lilac": {
+      "action-indigo": {
         "role": "primary",
-        "displayName": "Action Lilac",
-        "canonical": "#9877e1",
+        "displayName": "Action Indigo",
+        "canonical": "#6157ea",
         "tonalRamp": [
-          "#24183f",
-          "#3a2866",
-          "#553c94",
-          "#7254c3",
-          "#8462d6",
-          "#9877e1",
-          "#bba5ee",
-          "#e6dcfa"
+          "#17144a",
+          "#241f74",
+          "#332ba3",
+          "#4338cc",
+          "#5146e1",
+          "#6157ea",
+          "#9d94f9",
+          "#dcd8fd"
         ]
       },
-      "lilac": {
+      "violet": {
         "role": "primary",
-        "displayName": "Lamp Lilac",
-        "canonical": "#9b82d7"
+        "displayName": "Portle Violet",
+        "canonical": "#7b6ff5"
       },
-      "pill-lilac": {
+      "violet-bright": {
+        "role": "primary",
+        "displayName": "Violet (app action)",
+        "canonical": "#8e84f8"
+      },
+      "indigo": {
         "role": "secondary",
-        "displayName": "Pill Lilac",
-        "canonical": "#b096ec"
+        "displayName": "Brand Indigo",
+        "canonical": "#5146e1"
+      },
+      "pill-lavender": {
+        "role": "secondary",
+        "displayName": "Pill Lavender",
+        "canonical": "#b9adfa"
       },
       "label-ink": {
         "role": "neutral",
         "displayName": "Label Ink",
-        "canonical": "#2a1d52"
+        "canonical": "#1d1850"
       },
-      "lavender": {
+      "lavender-soft": {
         "role": "tertiary",
         "displayName": "Lantern Lavender",
-        "canonical": "#d5c6f2"
+        "canonical": "#c4bcfb"
+      },
+      "sky": {
+        "role": "tertiary",
+        "displayName": "Sky",
+        "canonical": "#56b8f5"
+      },
+      "cyan": {
+        "role": "tertiary",
+        "displayName": "Cyan",
+        "canonical": "#25d0ee"
+      },
+      "ember": {
+        "role": "tertiary",
+        "displayName": "Ember",
+        "canonical": "#ff9340"
       },
       "warm-white": {
         "role": "neutral",
@@ -79,15 +104,10 @@
         "displayName": "Quiet Text",
         "canonical": "#9a98b6"
       },
-      "amethyst": {
-        "role": "secondary",
-        "displayName": "Vault Amethyst",
-        "canonical": "#49366b"
-      },
       "ink": {
         "role": "neutral",
         "displayName": "Ink (app ground)",
-        "canonical": "#171320"
+        "canonical": "#15141f"
       },
       "gain": {
         "role": "neutral",
@@ -192,7 +212,7 @@
       "refersTo": "button-start",
       "description": "The landing page's primary action: a lilac pill with a white semibold label.",
       "html": "<button class=\"ds-btn-start\">Start your archive</button>",
-      "css": ".ds-btn-start { height: 56px; padding: 0 26px; border: 0; border-radius: 999px; background: #9877e1; color: #fff; font: 600 20px/1 Gabarito, Onest, ui-sans-serif, sans-serif; white-space: nowrap; cursor: pointer; transition: background-color 160ms cubic-bezier(0.22, 1, 0.36, 1), transform 160ms cubic-bezier(0.22, 1, 0.36, 1); } .ds-btn-start:hover { background: #a68aea; } .ds-btn-start:active { transform: scale(0.98); } .ds-btn-start:focus-visible { outline: 2px solid #d5c6f2; outline-offset: 3px; }"
+      "css": ".ds-btn-start { height: 56px; padding: 0 26px; border: 0; border-radius: 999px; background: #6157ea; color: #fff; font: 600 20px/1 Gabarito, Onest, ui-sans-serif, sans-serif; white-space: nowrap; cursor: pointer; transition: background-color 160ms cubic-bezier(0.22, 1, 0.36, 1), transform 160ms cubic-bezier(0.22, 1, 0.36, 1); } .ds-btn-start:hover { background: #5146e1; } .ds-btn-start:active { transform: scale(0.98); } .ds-btn-start:focus-visible { outline: 2px solid #c4bcfb; outline-offset: 3px; }"
     },
     {
       "name": "Joined Email Field",
@@ -200,7 +220,7 @@
       "refersTo": "input-start",
       "description": "The hero's email pill with the start button joined to its right end.",
       "html": "<form class=\"ds-join\"><input type=\"email\" placeholder=\"you@email.com\" aria-label=\"Email address\"><button type=\"button\">Start your archive</button></form>",
-      "css": ".ds-join { position: relative; display: flex; width: 460px; height: 56px; border: 1px solid #383843; border-radius: 999px; background: #26262d; } .ds-join:focus-within { border-color: #9b82d7; outline: 2px solid #d5c6f2; outline-offset: 3px; } .ds-join input { flex: 1; min-width: 0; padding: 0 22px; border: 0; background: transparent; color: #f6f4fc; font: 16px Gabarito, Onest, sans-serif; caret-color: #9b82d7; outline: none; } .ds-join input::placeholder { color: #8f8da8; } .ds-join button { padding: 0 22px; border: 0; border-radius: 999px; background: #8462d6; color: #fff; font: 600 16px/1 Gabarito, Onest, sans-serif; cursor: pointer; } .ds-join button:hover { background: #7653cb; }"
+      "css": ".ds-join { position: relative; display: flex; width: 460px; height: 56px; border: 1px solid #383843; border-radius: 999px; background: #26262d; } .ds-join:focus-within { border-color: #8e84f8; outline: 2px solid #c4bcfb; outline-offset: 3px; } .ds-join input { flex: 1; min-width: 0; padding: 0 22px; border: 0; background: transparent; color: #f6f4fc; font: 16px Gabarito, Onest, sans-serif; caret-color: #8e84f8; outline: none; } .ds-join input::placeholder { color: #8f8da8; } .ds-join button { padding: 0 22px; border: 0; border-radius: 999px; background: #6157ea; color: #fff; font: 600 16px/1 Gabarito, Onest, sans-serif; cursor: pointer; } .ds-join button:hover { background: #5146e1; }"
     },
     {
       "name": "Sample Pill",
@@ -208,7 +228,7 @@
       "refersTo": "pill-tag",
       "description": "Filled lilac pill for small labels such as Sample.",
       "html": "<span class=\"ds-pill\">Sample</span>",
-      "css": ".ds-pill { display: inline-flex; align-items: center; height: 24px; padding: 0 10px; border-radius: 999px; background: #b096ec; color: #2a1d52; font: 600 12.5px/1 Gabarito, Onest, sans-serif; letter-spacing: 0.01em; }"
+      "css": ".ds-pill { display: inline-flex; align-items: center; height: 24px; padding: 0 10px; border-radius: 999px; background: #b9adfa; color: #1d1850; font: 600 12.5px/1 Gabarito, Onest, sans-serif; letter-spacing: 0.01em; }"
     },
     {
       "name": "Thesis Note",
@@ -216,7 +236,7 @@
       "refersTo": "note-card",
       "description": "A tilted charcoal note card, paper on a desk.",
       "html": "<article class=\"ds-note\"><h3>Why I bought ASML</h3><ul><li>Leader in EUV lithography with a wide moat.</li><li>Essential to the chip supply chain.</li></ul><span>Revisit in January</span></article>",
-      "css": ".ds-note { width: 300px; padding: 22px 24px; border: 1px solid rgb(255 255 255 / 0.075); border-radius: 24px; background: linear-gradient(180deg, #28292f, #222329); box-shadow: 0 19px 38px -11px rgb(0 0 0 / 0.55), inset 0 1px 0 rgb(255 255 255 / 0.05); color: #f6f4fc; font: 15px/1.45 Gabarito, Onest, sans-serif; transform: rotate(4deg); } .ds-note h3 { margin: 0 0 12px; font-size: 22px; font-weight: 700; } .ds-note ul { margin: 0; padding-left: 18px; color: #e9e8f6; } .ds-note li::marker { color: #9b7be7; } .ds-note span { display: inline-block; margin-top: 14px; padding: 5px 12px; border-radius: 999px; background: #a385ec; color: #2a1d52; font-size: 13px; font-weight: 500; }"
+      "css": ".ds-note { width: 300px; padding: 22px 24px; border: 1px solid rgb(255 255 255 / 0.075); border-radius: 24px; background: linear-gradient(180deg, #28292f, #222329); box-shadow: 0 19px 38px -11px rgb(0 0 0 / 0.55), inset 0 1px 0 rgb(255 255 255 / 0.05); color: #f6f4fc; font: 15px/1.45 Gabarito, Onest, sans-serif; transform: rotate(4deg); } .ds-note h3 { margin: 0 0 12px; font-size: 22px; font-weight: 700; } .ds-note ul { margin: 0; padding-left: 18px; color: #e9e8f6; } .ds-note li::marker { color: #7b6ff5; } .ds-note span { display: inline-block; margin-top: 14px; padding: 5px 12px; border-radius: 999px; background: #a99ef9; color: #1d1850; font-size: 13px; font-weight: 500; }"
     },
     {
       "name": "Step",
@@ -224,7 +244,7 @@
       "refersTo": "step",
       "description": "A numbered how-it-works step with its small product vignette.",
       "html": "<div class=\"ds-step\"><span>1</span><h3>Add your accounts</h3><p>Type in what you hold, or drop in a CSV from any broker.</p></div>",
-      "css": ".ds-step { width: 300px; padding: 24px; background: #212128; color: #f6f4fc; font: 16px/1.6 Gabarito, Onest, sans-serif; } .ds-step span { display: grid; place-items: center; width: 44px; height: 44px; border-radius: 50%; background: #9877e1; color: #fff; font-weight: 700; font-size: 19px; } .ds-step h3 { margin: 20px 0 0; font-size: 22px; font-weight: 700; } .ds-step p { margin: 8px 0 0; color: #bcb9d8; }"
+      "css": ".ds-step { width: 300px; padding: 24px; background: #212128; color: #f6f4fc; font: 16px/1.6 Gabarito, Onest, sans-serif; } .ds-step span { display: grid; place-items: center; width: 44px; height: 44px; border-radius: 50%; background: #6157ea; color: #fff; font-weight: 700; font-size: 19px; } .ds-step h3 { margin: 20px 0 0; font-size: 22px; font-weight: 700; } .ds-step p { margin: 8px 0 0; color: #bcb9d8; }"
     },
     {
       "name": "Landing Navigation",
@@ -232,7 +252,7 @@
       "refersTo": "landing-nav",
       "description": "Soft-text links that brighten to lavender on hover.",
       "html": "<nav class=\"ds-nav\"><a href=\"#\">Portfolio</a><a href=\"#\">Theses</a><a href=\"#\">Paper Lab</a><a href=\"#\">Guilds</a></nav>",
-      "css": ".ds-nav { display: flex; gap: 32px; padding: 16px 0; background: #1c1c20; font: 17px/1 Gabarito, Onest, sans-serif; } .ds-nav a { color: #bdbcd8; text-decoration: none; transition: color 160ms cubic-bezier(0.22, 1, 0.36, 1); } .ds-nav a:hover { color: #d5c6f2; } .ds-nav a:focus-visible { outline: 2px solid #d5c6f2; outline-offset: 3px; border-radius: 4px; }"
+      "css": ".ds-nav { display: flex; gap: 32px; padding: 16px 0; background: #1c1c20; font: 17px/1 Gabarito, Onest, sans-serif; } .ds-nav a { color: #bcbbd8; text-decoration: none; transition: color 160ms cubic-bezier(0.22, 1, 0.36, 1); } .ds-nav a:hover { color: #c4bcfb; } .ds-nav a:focus-visible { outline: 2px solid #c4bcfb; outline-offset: 3px; border-radius: 4px; }"
     },
     {
       "name": "Primary Button (app)",
@@ -240,14 +260,14 @@
       "refersTo": "button-primary",
       "description": "The app's primary action: lilac fill, ink text, gently rounded.",
       "html": "<button class=\"ds-btn-primary\">Save thesis</button>",
-      "css": ".ds-btn-primary { height: 40px; padding: 0 16px; border: 0; border-radius: 12px; background: #9b82d7; color: #171320; font: 500 14px/1 Onest, ui-sans-serif, sans-serif; cursor: pointer; } .ds-btn-primary:hover { background: #ac97e0; } .ds-btn-primary:focus-visible { outline: 2px solid #d5c6f2; outline-offset: 2px; }"
+      "css": ".ds-btn-primary { height: 40px; padding: 0 16px; border: 0; border-radius: 12px; background: #8e84f8; color: #15141f; font: 500 14px/1 Onest, ui-sans-serif, sans-serif; cursor: pointer; } .ds-btn-primary:hover { background: #a39bfa; } .ds-btn-primary:focus-visible { outline: 2px solid #c4bcfb; outline-offset: 2px; }"
     }
   ],
   "narrative": {
     "northStar": "The Notebook on a Calm Desk",
-    "overview": "Investing feels calmer when your reasons are written down. Porfael looks like a tidy desk at night: a neutral charcoal surface, a few cards of your own lying on it at small angles (a portfolio, a note saying why you bought something, a comment from a friend), and one soft lilac lamp of colour. It is friendly before it is clever. A first-time investor should feel welcome and unhurried; nothing on the page should look like a trading terminal.\n\nThe system has two rooms that share one palette of lilac light. The public landing page is the friendly front room: charcoal, roomy, rounded, with the product's own cards shown as tilted notes and a hand-drawn desk illustration to close. The signed-in app is the workroom: an ink-and-amethyst glass shell with denser panels, tabular numerals and familiar controls. Both keep the faceted P, the lilac action, the private-by-default promise and Gabarito for display type.",
+    "overview": "Investing feels calmer when your reasons are written down. Portle looks like a tidy desk at night: a neutral charcoal surface, a few cards of your own lying on it at small angles (a portfolio, a note saying why you bought something, a comment from a friend), and one soft violet lamp of colour. It is friendly before it is clever. A first-time investor should feel welcome and unhurried; nothing on the page should look like a trading terminal.\n\nThe system has two rooms that share one palette of violet light, taken from the Portle symbol. The public landing page is the friendly front room: charcoal, roomy, rounded, with the product's own cards shown as tilted notes and a hand-drawn desk illustration to close. The signed-in app is the workroom: an ink-and-indigo glass shell with denser panels, tabular numerals and familiar controls. Both keep the Portle symbol, the violet action, the private-by-default promise and Gabarito for display type.",
     "keyCharacteristics": [
-      "Charcoal ground on the landing page; ink and amethyst glass in the app. Lilac is the only accent in both.",
+      "Charcoal ground on the landing page; ink and indigo glass in the app. Violet is the only accent in both; the symbol's sky, cyan and ember appear only in data and in the mark itself.",
       "Show the product, not a picture of it: the hero is made of real card components with sample data, labelled \"Sample\" or \"Example\".",
       "Friendly geometry: pill actions, 18–28px cards, tilts of at most about five degrees.",
       "Plain, warm copy that answers beginners' worries (passwords, privacy, cost, advice).",
@@ -256,12 +276,12 @@
     "rules": [
       {
         "name": "The One Lamp Rule",
-        "body": "Lilac is the only accent. A screen lights one thing (the primary action, the step number, the selected row) and leaves the rest of the desk in charcoal.",
+        "body": "Violet is the only accent. A screen lights one thing (the primary action, the step number, the selected row) and leaves the rest of the desk in charcoal.",
         "section": "colors"
       },
       {
         "name": "The Neutral Ground Rule",
-        "body": "The landing ground is a true neutral charcoal, not purple-black and not pure black. Warmth comes from the lilac and the copy, not from tinting the ground.",
+        "body": "The landing ground is a true neutral charcoal, not purple-black and not pure black. Warmth comes from the violet and the copy, not from tinting the ground.",
         "section": "colors"
       },
       {
@@ -281,16 +301,16 @@
       },
       {
         "name": "The One Drawing Rule",
-        "body": "The hand-drawn lilac illustration appears once, to close the page. Everything else shows the real product.",
+        "body": "The hand-drawn violet illustration appears once, to close the page (its plate was drawn in lilac and is turned 13° toward violet in CSS). Everything else shows the real product.",
         "section": "elevation"
       }
     ],
     "dos": [
       "Do show real product components with sample data in the hero, and label them \"Sample\" or \"Example\".",
-      "Do keep one lilac accent lit per screen and leave the rest in charcoal and soft text.",
+      "Do keep one violet accent lit per screen and leave the rest in charcoal and soft text.",
       "Do answer beginners' worries in plain words (no broker passwords, only you see your numbers, free to start, not investment advice).",
       "Do set every comparable number with tabular figures, and show money values only to their owner. Shared views use percentages.",
-      "Do keep white-on-lilac labels at 20px or larger; smaller buttons use action-lilac-deep.",
+      "Do put white labels only on indigo-violet (action-indigo or deeper); lighter violets and lavenders carry ink text.",
       "Do draw icons from one stroke family (lucide at 1.4–1.8) or as small inline SVG."
     ],
     "donts": [

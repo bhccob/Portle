@@ -35,7 +35,7 @@
 ## Secrets
 
 - `.env*` files are git-ignored; `.env.example` documents every variable without values.
-- Broker tokens (when enabled) are encrypted with AES-256-GCM (`PORFAEL_ENCRYPTION_KEY`) and excluded from data exports.
+- Broker tokens (when enabled) are encrypted with AES-256-GCM (`PORTLE_ENCRYPTION_KEY`) and excluded from data exports.
 - No secrets in client bundles: only `NEXT_PUBLIC_*` variables reach the browser, and none are defined.
 
 ## Logging

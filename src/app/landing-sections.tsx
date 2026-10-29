@@ -1,7 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { Check, FileSpreadsheet, LockKeyhole, Plus } from "lucide-react";
-import { PorfaelGem } from "@/components/brand/logo";
+import { PortleMark } from "@/components/brand/logo";
 import { RelicIcon } from "@/components/relics/relic-icon";
 import "./landing-sections.css";
 
@@ -16,12 +16,12 @@ const RELICS = [
 
 const FAQ = [
   {
-    q: "Is Porfael free?",
+    q: "Is Portle free?",
     a: "Yes, while we're in early access. If that ever changes, you'll hear about it well in advance, and you can export everything you've written at any time.",
   },
   {
     q: "Do I need to connect my broker?",
-    a: "No. Type in what you hold, or import the CSV export most brokers offer. Porfael never asks for your broker password.",
+    a: "No. Type in what you hold, or import the CSV export most brokers offer. Portle never asks for your broker password.",
   },
   {
     q: "Who can see my portfolio?",
@@ -32,8 +32,8 @@ const FAQ = [
     a: "It's made for you. Writing down why you buy something is one of the simplest habits that helps, and the Paper Lab lets you practise with pretend money first.",
   },
   {
-    q: "Will Porfael tell me what to buy?",
-    a: "No. Porfael is a place to keep your own reasoning. It doesn't give investment advice, and nothing here is a recommendation.",
+    q: "Will Portle tell me what to buy?",
+    a: "No. Portle is a place to keep your own reasoning. It doesn't give investment advice, and nothing here is a recommendation.",
   },
 ] as const;
 
@@ -58,7 +58,7 @@ export function LandingSections() {
               1
             </span>
             <h3>Add your accounts</h3>
-            <p>Type in what you hold, or drop in a CSV from any broker. Porfael works out your positions and shows them in one currency.</p>
+            <p>Type in what you hold, or drop in a CSV from any broker. Portle works out your positions and shows them in one currency.</p>
             <div className="l-mini l-mini-import" aria-hidden>
               <div className="l-mini-file">
                 <FileSpreadsheet strokeWidth={1.5} />
@@ -289,8 +289,8 @@ export function LandingFooter() {
   return (
     <footer className="l-foot">
       <span className="l-foot-brand">
-        <PorfaelGem />
-        Porfael
+        <PortleMark compact />
+        Portle
       </span>
       <ul>
         <li>
@@ -303,7 +303,7 @@ export function LandingFooter() {
           <Link href="/sign-in">Sign in</Link>
         </li>
       </ul>
-      <span>© 2026 Porfael · Early access · Not investment advice</span>
+      <span>© 2026 Portle · Early access · Not investment advice</span>
     </footer>
   );
 }

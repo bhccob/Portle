@@ -1,6 +1,6 @@
 # Product specification (as built)
 
-Porfael is a private-by-default investing companion: a portfolio tracker, an investment-thesis archive, a paper trading lab, a journal and a focused social layer. Product truth lives in `PRODUCT.md`; this file describes what each destination does today.
+Portle is a private-by-default investing companion: a portfolio tracker, an investment-thesis archive, a paper trading lab, a journal and a focused social layer. Product truth lives in `PRODUCT.md`; this file describes what each destination does today.
 
 ## Destinations
 
