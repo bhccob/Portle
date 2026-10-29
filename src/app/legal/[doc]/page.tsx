@@ -18,7 +18,9 @@ const DOCS: Record<string, { title: string; body: string }> = {
 
 **Conduct.** No harassment, spam, impersonation or misleading financial claims. We may remove content or accounts that break these rules.
 
-**Ending.** You can delete your account at any time from Settings.`,
+**Ending.** You can delete your account at any time from Settings.
+
+**Contact.** Questions about these terms: see the [contact page](/contact).`,
   },
   privacy: {
     title: "Privacy notice (early access draft)",
@@ -36,7 +38,9 @@ const DOCS: Record<string, { title: string; body: string }> = {
 
 **Your rights.** Download everything (Settings → Data & account), correct it, or delete your account. Under the GDPR you can also object, restrict processing or complain to your data protection authority.
 
-**Security.** Passwords are hashed; broker access secrets are encrypted at rest; access to private data is checked on the server for every request.`,
+**Security.** Passwords are hashed; broker access secrets are encrypted at rest; access to private data is checked on the server for every request.
+
+**Contact.** Questions or a request about your data: see the [contact page](/contact).`,
   },
 };
 

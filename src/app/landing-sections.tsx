@@ -309,6 +309,9 @@ export function LandingFooter() {
           <Link href="/legal/privacy">Privacy</Link>
         </li>
         <li>
+          <Link href="/contact">Contact</Link>
+        </li>
+        <li>
           <Link href="/sign-in">Sign in</Link>
         </li>
       </ul>
