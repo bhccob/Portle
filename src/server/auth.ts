@@ -10,6 +10,15 @@ import { deploymentOrigins, siteUrl } from "./site-url";
 
 const isProd = process.env.NODE_ENV === "production";
 
+/**
+ * A repeat sign-up looks exactly like a first one, so nobody can test which emails
+ * have accounts. For an account still waiting on its confirmation it quietly sends a
+ * fresh link; a confirmed member gets nothing.
+ */
+async function resendConfirmation({ user }: { user: { email: string; emailVerified: boolean } }): Promise<void> {
+  if (!user.emailVerified) await auth.api.sendVerificationEmail({ body: { email: user.email, callbackURL: "/onboarding" } });
+}
+
 export const auth = betterAuth({
   appName: "Portle",
   baseURL: siteUrl(),
@@ -25,6 +34,7 @@ export const auth = betterAuth({
     minPasswordLength: 10,
     maxPasswordLength: 128,
     revokeSessionsOnPasswordReset: true,
+    onExistingUserSignUp: resendConfirmation,
     async sendResetPassword({ user, url }) {
       await sendMail({
         to: user.email,
