@@ -220,7 +220,7 @@
       "refersTo": "input-start",
       "description": "The hero's email pill with the start button joined to its right end.",
       "html": "<form class=\"ds-join\"><input type=\"email\" placeholder=\"you@email.com\" aria-label=\"Email address\"><button type=\"button\">Start your archive</button></form>",
-      "css": ".ds-join { position: relative; display: flex; width: 460px; height: 56px; border: 1px solid #383843; border-radius: 999px; background: #26262d; } .ds-join:focus-within { border-color: #8e84f8; outline: 2px solid #c4bcfb; outline-offset: 3px; } .ds-join input { flex: 1; min-width: 0; padding: 0 22px; border: 0; background: transparent; color: #f6f4fc; font: 16px Gabarito, Onest, sans-serif; caret-color: #8e84f8; outline: none; } .ds-join input::placeholder { color: #8f8da8; } .ds-join button { padding: 0 22px; border: 0; border-radius: 999px; background: #6157ea; color: #fff; font: 600 16px/1 Gabarito, Onest, sans-serif; cursor: pointer; } .ds-join button:hover { background: #5146e1; }"
+      "css": ".ds-join { position: relative; display: flex; width: 460px; height: 56px; border: 1px solid #383843; border-radius: 999px; background: #26262d; } .ds-join:focus-within { border-color: #8e84f8; box-shadow: 0 0 0 4px rgb(142 132 248 / 0.22); } .ds-join input { flex: 1; min-width: 0; padding: 0 22px; border: 0; background: transparent; color: #f6f4fc; font: 16px Gabarito, Onest, sans-serif; caret-color: #8e84f8; outline: none; } .ds-join input::placeholder { color: #8f8da8; } .ds-join button { padding: 0 22px; border: 0; border-radius: 999px; background: #6157ea; color: #fff; font: 600 16px/1 Gabarito, Onest, sans-serif; cursor: pointer; } .ds-join button:hover { background: #5146e1; }"
     },
     {
       "name": "Sample Pill",

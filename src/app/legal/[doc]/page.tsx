@@ -50,7 +50,8 @@ export default async function LegalPage({ params }: { params: Promise<{ doc: str
       <Link href="/" aria-label="Portle home">
         <PortleWordmark className="text-lg text-fg" />
       </Link>
-      <article className="glass-1 mt-8 rounded-[var(--radius-xl)] p-6 sm:p-10">
+      {/* Plain text on the page, no card: these are documents to read, not panels. */}
+      <article className="mt-12">
         <h1 className="text-[1.75rem] font-semibold tracking-[-0.025em] text-fg">{doc.title}</h1>
         <div className="mt-6">
           <Markdown>{doc.body}</Markdown>

@@ -159,7 +159,7 @@ A neutral charcoal family with one violet accent and a pale lavender highlight, 
 
 ### Neutral
 - **Charcoal** (charcoal): the landing ground, sampled from the approved comp.
-- **Charcoal Raised** (charcoal-raised): panels a step up, such as the "How Portle works" band, the Relics shelf and the closing card.
+- **Charcoal Raised** (charcoal-raised): a step up from the ground, kept for small surfaces. The landing no longer puts sections in raised panels (the "How Portle works" band, the Relics shelf and the closing card were removed on 2026-10-29 as too boxy).
 - **Charcoal Card** (charcoal-card), **Field** (charcoal-field) and **Rule** (charcoal-rule): cards, inputs and their 1px edge.
 - **Warm White** (warm-white), **Soft Text** (soft-text) and **Quiet Text** (quiet-text): headings, body and captions on charcoal (body 9.6:1, captions 6.3:1).
 - **Ink** (ink), **Porcelain** (porcelain) and **Mist** (mist): the app's ground and text.
@@ -206,7 +206,7 @@ The app uses a sidebar shell with content in glass panels on a fixed ambient fie
 
 ## Elevation & Depth
 
-On the landing page, depth is paper on a desk: opaque charcoal cards with a 1px light edge and a soft, offset shadow, tilted a few degrees and overlapping each other. Raised panels step up in tone instead of casting shadows.
+On the landing page, depth is paper on a desk: opaque charcoal cards with a 1px light edge and a soft, offset shadow, tilted a few degrees and overlapping each other. Sections sit directly on the ground with no container panels, so the product cards are the only boxes on the page.
 
 The app keeps its three glass depth steps. Depth 1 is content panels: 18px blur, 52% fill. Depth 2 is overlays and menus: 28px blur, 82% fill. Depth 3 is navigation chrome: 22px blur. Each pane carries a 1px inner top highlight as its lit edge.
 
@@ -237,7 +237,7 @@ The app keeps its three glass depth steps. Depth 1 is content panels: 18px blur,
 
 ### Inputs / Fields
 - **Style:** charcoal-field fill, 1px charcoal-rule edge, a pill shape, a quiet placeholder (#8f8da8) and a violet caret.
-- **Focus:** the edge turns violet and a 2px lavender ring wraps the whole pill.
+- **Focus:** the edge turns violet and a soft 4px violet glow (22%) surrounds the pill. The text inside never gets an outline of its own, and autofilled emails keep the field's colours instead of the browser's pale box.
 - **Size:** 56px tall with 16px text on phones so they do not zoom.
 
 ### Notes (signature)
@@ -261,7 +261,7 @@ Three numbered indigo-violet circles joined by a dashed path, each with a short 
 A two-column block: the heading on the left, native disclosure rows on the right with a lavender plus that turns into a cross when open.
 
 ### Navigation
-- **Landing:** the Portle symbol and wordmark, then Portfolio · Theses · Paper Lab · Guilds in soft text, Sign in at the right in white. Links brighten to lavender on hover. Below 640px only the brand and Sign in remain.
+- **Landing:** the Portle symbol and wordmark, then Portfolio · Theses · Paper Lab · Guilds · Relics in soft text, Sign in at the right in white. Links brighten to lavender on hover. Below 720px only the brand and Sign in remain.
 - **App:** a glass depth-3 sidebar with lucide icons at one stroke weight.
 
 ### Relic

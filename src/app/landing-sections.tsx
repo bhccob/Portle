@@ -1,6 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
-import { Check, FileSpreadsheet, LockKeyhole, Plus } from "lucide-react";
+import { Check, FileSpreadsheet, LockKeyhole, MessageCircle, Plus } from "lucide-react";
 import { PortleMark } from "@/components/brand/logo";
 import { RelicIcon } from "@/components/relics/relic-icon";
 import "./landing-sections.css";
@@ -21,7 +21,7 @@ const FAQ = [
   },
   {
     q: "Do I need to connect my broker?",
-    a: "No. Type in what you hold, or import the CSV export most brokers offer. Portle never asks for your broker password.",
+    a: "No. Type in what you hold, or import the CSV export most brokers offer. Direct broker connections are on the way: they will only read your holdings, and you will sign in on your broker's own page. Portle never asks for your broker password.",
   },
   {
     q: "Who can see my portfolio?",
@@ -58,7 +58,10 @@ export function LandingSections() {
               1
             </span>
             <h3>Add your accounts</h3>
-            <p>Type in what you hold, or drop in a CSV from any broker. Portle works out your positions and shows them in one currency.</p>
+            <p>
+              Type in what you hold, or drop in a CSV from any broker. Portle works out your positions and shows them in one currency. Direct broker connections
+              are on the way.
+            </p>
             <div className="l-mini l-mini-import" aria-hidden>
               <div className="l-mini-file">
                 <FileSpreadsheet strokeWidth={1.5} />
@@ -161,10 +164,14 @@ export function LandingSections() {
             Share ideas, not your balance.
           </h2>
           <p className="l-lede">
-            Guilds are small private groups for friends. Talk through each other&rsquo;s theses, and if you like, share your mix as percentages. The amounts
-            stay yours.
+            Add friends or start a small private Guild. See the theses and ideas they share, and talk them through. If you like, share your mix as percentages;
+            the amounts stay yours.
           </p>
           <ul className="l-checks">
+            <li>
+              <MessageCircle strokeWidth={1.8} />
+              Comment, react and save posts in one feed
+            </li>
             <li>
               <LockKeyhole strokeWidth={1.8} />
               Private by default; you choose what each person sees
@@ -224,7 +231,8 @@ export function LandingSections() {
           Little rewards for good habits.
         </h2>
         <p className="l-lede">
-          Relics celebrate the process: writing down your reasons, revisiting them, being honest when you were wrong. Never how much you made.
+          Collect Relics for the habits that make you a better investor: writing down your reasons, revisiting them, being honest when you were wrong. Never for
+          how much you made.
         </p>
         <ul className="l-relic-row">
           {RELICS.map((r) => (
@@ -236,6 +244,7 @@ export function LandingSections() {
             </li>
           ))}
         </ul>
+        <p className="l-relic-note">16 to collect, from common to epic. Show the ones you&rsquo;ve earned on your profile, to whoever you choose.</p>
       </section>
 
       <section className="l-faq" aria-labelledby="faq-title">

@@ -48,6 +48,9 @@ export default async function Landing() {
               <li>
                 <a href="#guilds">Guilds</a>
               </li>
+              <li>
+                <a href="#relics">Relics</a>
+              </li>
             </ul>
           </nav>
           <Link href="/sign-in" className="l-signin">

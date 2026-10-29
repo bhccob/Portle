@@ -52,12 +52,10 @@
   color: #c4bcfb;
 }
 
-/* ---------- How it works: the panel the first viewport opens ---------- */
+/* ---------- How it works: continues from the heading the first viewport ends on ---------- */
 
 .l-howto {
-  padding: 4px var(--gutter) clamp(72px, 8vw, 112px);
-  border-radius: 0 0 clamp(28px, 4vw, 56px) clamp(28px, 4vw, 56px);
-  background: var(--l-raised);
+  padding: 4px var(--gutter) 0;
 }
 .l-howto-intro {
   margin: 14px auto 0;
@@ -98,7 +96,7 @@
   height: 44px;
   border-radius: 50%;
   background: #6157ea;
-  box-shadow: 0 0 0 6px var(--l-raised);
+  box-shadow: 0 0 0 6px var(--l-ground); /* masks the dotted path behind the number */
   color: #fff;
   font-size: 19px;
   font-weight: 700;
@@ -460,23 +458,16 @@
 .l-relic-row {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  margin: 48px 0 0;
+  gap: 40px 24px;
+  margin: 56px 0 0;
   padding: 0;
   list-style: none;
-  border: 1px solid var(--l-line);
-  border-radius: 28px;
-  background: var(--l-raised);
-  overflow: hidden;
 }
 .l-relic-row li {
   display: grid;
   justify-items: center;
   align-content: start;
   gap: 10px;
-  padding: 32px 22px 30px;
-}
-.l-relic-row li + li {
-  border-left: 1px solid var(--l-line-soft);
 }
 .l-relic-row h3 {
   margin: 6px 0 0;
@@ -502,6 +493,14 @@
 .l-relic-row .is-earned .l-relic-progress {
   background: rgb(127 214 160 / 0.12);
   color: var(--l-gain);
+}
+.l-relic-note {
+  margin: 48px auto 0;
+  max-width: 46ch;
+  font-size: 15.5px;
+  line-height: 1.55;
+  color: var(--l-muted);
+  text-wrap: balance;
 }
 
 /* ---------- FAQ ---------- */
@@ -571,11 +570,7 @@
   gap: 24px;
   max-width: 1180px;
   margin: clamp(120px, 12vw, 176px) auto 0;
-  padding: clamp(40px, 5vw, 64px) 0 clamp(40px, 5vw, 64px) clamp(28px, 5vw, 64px);
-  border: 1px solid var(--l-line-soft);
-  border-radius: clamp(28px, 4vw, 44px);
-  background: var(--l-raised);
-  overflow: hidden;
+  padding: 0 var(--gutter);
 }
 .l-close-note {
   margin: 14px 0 0;
@@ -604,9 +599,8 @@
 }
 .l-desk {
   filter: hue-rotate(-13deg) saturate(1.08);
-  width: 112%;
+  width: 100%;
   height: auto;
-  margin: -4% -6% -10% 0;
 }
 
 /* ---------- Footer ---------- */
@@ -657,12 +651,6 @@
 
 /* ---------- Tablet and phone ---------- */
 
-@media (max-width: 1179px) {
-  .l-close {
-    margin-inline: var(--gutter);
-  }
-}
-
 @media (max-width: 899px) {
   .l-steps {
     grid-template-columns: minmax(0, 1fr);
@@ -689,19 +677,8 @@
   .l-relic-row {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
-  .l-relic-row li:nth-child(3) {
-    border-left: 0;
-  }
-  .l-relic-row li:nth-child(n + 3) {
-    border-top: 1px solid var(--l-line-soft);
-  }
-  .l-close {
-    padding: 36px 24px 0;
-    text-align: left;
-  }
   .l-desk {
-    width: 100%;
-    margin: 8px 0 -6%;
+    margin-top: 8px;
   }
 }
 
@@ -715,7 +692,7 @@
   .l-join .l-btn {
     width: 100%;
   }
-  .l-relic-row li {
-    padding: 24px 14px;
+  .l-relic-row {
+    column-gap: 16px;
   }
 }

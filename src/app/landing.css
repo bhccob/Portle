@@ -44,9 +44,9 @@
   color: #fff;
 }
 
+/* Inputs are left out: each sits in a pill that shows focus itself (see .l-field). */
 .landing a:focus-visible,
-.landing button:focus-visible,
-.landing input:focus-visible {
+.landing button:focus-visible {
   outline: 2px solid var(--l-lavender);
   outline-offset: 3px;
 }
@@ -68,10 +68,22 @@
   border: 1px solid #383843;
   border-radius: 999px;
   background: #26262d;
-  transition: border-color 160ms var(--ease);
+  transition:
+    border-color 160ms var(--ease),
+    box-shadow 160ms var(--ease);
 }
-.l-field:focus-within {
+/* Focus is one soft glow on the pill, never an outline around the text inside it. */
+.l-field:focus-within,
+.l-email:focus-within {
   border-color: var(--l-violet);
+  box-shadow: 0 0 0 4px rgb(142 132 248 / 0.22);
+}
+/* Chrome paints saved emails on a pale box of its own; keep the pill's colours. */
+.l-field input:autofill,
+.l-email input:autofill {
+  -webkit-text-fill-color: var(--l-ink);
+  box-shadow: 0 0 0 100px #26262d inset;
+  transition: background-color 9999s;
 }
 .l-field svg {
   flex: none;
@@ -90,10 +102,6 @@
 }
 .l-field input::placeholder {
   color: #8f8da8;
-}
-.landing .l-field:has(input:focus-visible) {
-  outline: 2px solid var(--l-lavender);
-  outline-offset: 3px;
 }
 
 .l-btn {
@@ -175,7 +183,7 @@
   position: absolute;
   left: 22.17%;
   top: 4.08%;
-  width: 29.69%;
+  width: 37.1%; /* the comp's four links were 29.69%; a fifth (Relics) keeps their spacing */
   height: 3.42%;
   display: flex;
   align-items: center;
@@ -251,14 +259,9 @@
   border: 1px solid #383843;
   border-radius: 999px;
   background: #26262d;
-  transition: border-color 160ms var(--ease);
-}
-.l-email:focus-within {
-  border-color: var(--l-violet);
-}
-.landing .l-email:has(input:focus-visible) {
-  outline: 2px solid var(--l-lavender);
-  outline-offset: 3px;
+  transition:
+    border-color 160ms var(--ease),
+    box-shadow 160ms var(--ease);
 }
 .l-email input {
   min-width: 0;
@@ -629,14 +632,13 @@
 
 /* ---------- The start of the next section ---------- */
 
+/* No raised panel: the section sits on the page itself, so the product cards are the only boxes. */
 .l-panel {
   position: absolute;
   left: 0;
   right: 0;
   top: 81.84%;
   bottom: 0;
-  border-radius: 4.836cqw 4.836cqw 0 0;
-  background: var(--l-raised);
 }
 .l-how {
   display: flex;
@@ -786,10 +788,8 @@
     margin-top: -3%;
   }
   .l-panel {
-    width: calc(100% + 2 * clamp(16px, 5vw, 48px));
-    margin: 40px calc(-1 * clamp(16px, 5vw, 48px)) 0;
-    padding: 40px 16px 0;
-    border-radius: 32px 32px 0 0;
+    width: 100%;
+    margin-top: 56px;
   }
   .l-how {
     margin: 0;
@@ -803,10 +803,14 @@
   }
 }
 
-@media (max-width: 639px) {
+/* Five links need about 360px between the brand and Sign in; below this they would touch. */
+@media (max-width: 719px) {
   .l-nav {
     display: none;
   }
+}
+
+@media (max-width: 639px) {
   .l-signup {
     height: auto;
     display: grid;
