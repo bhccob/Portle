@@ -132,10 +132,10 @@ components:
 
 Investing feels calmer when your reasons are written down. Portle looks like a tidy desk at night: a neutral charcoal surface, a few cards of your own lying on it at small angles (a portfolio, a note saying why you bought something, a comment from a friend), and one soft violet lamp of colour. It is friendly before it is clever. A first-time investor should feel welcome and unhurried; nothing on the page should look like a trading terminal.
 
-The system has two rooms that share one palette of violet light, taken from the Portle symbol. The public landing page is the friendly front room: charcoal, roomy, rounded, with the product's own cards shown as tilted notes and a hand-drawn desk illustration to close. The signed-in app is the workroom: an ink-and-indigo glass shell with denser panels, tabular numerals and familiar controls. Both keep the Portle symbol, the violet action, the private-by-default promise and Gabarito for display type.
+The system has two rooms that share one palette of violet light, taken from the Portle symbol. The public landing page is the friendly front room: charcoal, roomy, rounded, with the product's own cards shown as tilted notes and a hand-drawn desk illustration to close. The signed-in app is phone-first and calm, modelled on the user's references (Blossom and their own Steady app): a plain ground that follows the phone's light or dark setting, two soft glows at the top, content sitting on the page in hairline rows rather than in cards, and one floating glass tab bar. Its signature is the portfolio ring. Practice money (the Paper Lab) is a separate blue room so it can never be mistaken for real money. Both keep the Portle symbol, the violet action, the private-by-default promise and Gabarito for display type.
 
 **Key Characteristics:**
-- Charcoal ground on the landing page; ink and indigo glass in the app. Violet is the only accent in both; the symbol's sky, cyan and ember appear only in data and in the mark itself.
+- Charcoal ground on the landing page; a plain light or ink ground in the app (following the phone), with glass only on what floats. Violet is the only accent in both; the symbol's sky, cyan and ember appear only in data and in the mark itself.
 - Show the product, not a picture of it: the hero is made of real card components with sample data, labelled "Sample" or "Example".
 - Friendly geometry: pill actions, 18–28px cards, tilts of at most about five degrees.
 - Plain, warm copy that answers beginners' worries (passwords, privacy, cost, advice).
@@ -183,7 +183,9 @@ Semantic colours (positive, negative, warning, info, gain) belong to data only: 
 ### Hierarchy
 - **Display** (Gabarito 700, 4.948cqw of the hero frame (133px at 2688, about 71px at 1440), line-height 1.135, -0.02em): the landing headline only, left aligned over two lines.
 - **Headline** (Gabarito 700, clamp(32px, 3.4vw, 48px), line-height 1.1, -0.02em): landing section headings, balanced.
-- **Title** (Onest 600, 1.75rem, line-height 1.2, -0.025em): app page titles.
+- **Title** (Gabarito 700, 2rem, line-height 1.08, -0.02em): app page titles and the greeting.
+- **Section** (Gabarito 700, 1.1875rem): app section headings, each under a hairline.
+- **Figure** (Gabarito 700, 1.625–2.125rem, tabular): the big money numbers on Home, Portfolio and Practice.
 - **Lede** (Gabarito 400, 17–19px, line-height 1.6, 40ch): landing section introductions.
 - **Body** (Onest 400, 0.9375rem, line-height 1.55): app text; long-form notes use a 68ch measure at line-height 1.7.
 - **Label** (Gabarito 600, 12.5px, +0.01em): pills, tags and small captions.
@@ -202,13 +204,13 @@ The landing page has two modes:
 
 Sections below sit in a 1180px container with a fluid 16–56px gutter and are separated by clamp(96px, 10vw, 152px), with more space above a heading than below it. The rhythm varies on purpose: a raised band with three steps, two alternating split sections (art and copy), a centred shelf, a two-column FAQ, and a closing card with the illustration. Breakpoints are 640px, 900px (sections) and 1180px (the hero).
 
-The app uses a sidebar shell with content in glass panels on a fixed ambient field.
+The app is designed for the phone first. Phones get a top bar that scrolls away (brand, notifications, the account menu, which also holds Markets, Journal, Archives, Guilds, Relics and Settings) and a floating tab bar with five places: Home, Portfolio, Theses, Circle and Practice. Desktop shows the same five, then the rest, in a sidebar on the page (a hairline edge, no slab), with content up to 1120px. Sections sit on the page, separated by a hairline and generous space; lists are hairline rows with a leading tile, two lines of text and a trailing value or chevron. Cards are not used to hold layout.
 
 ## Elevation & Depth
 
 On the landing page, depth is paper on a desk: opaque charcoal cards with a 1px light edge and a soft, offset shadow, tilted a few degrees and overlapping each other. Sections sit directly on the ground with no container panels, so the product cards are the only boxes on the page.
 
-The app keeps its three glass depth steps. Depth 1 is content panels: 18px blur, 52% fill. Depth 2 is overlays and menus: 28px blur, 82% fill. Depth 3 is navigation chrome: 22px blur. Each pane carries a 1px inner top highlight as its lit edge.
+In the app, glass is reserved for what floats above the page: the tab bar (depth 3), menus, dialogs, tooltips and the search list (depth 2). Content never sits in a glass panel. Depth on the page comes from spacing, hairlines and the soft glows at the top.
 
 ### Shadow Vocabulary
 - **Note** (`box-shadow: 0 0.7cqw 1.4cqw -0.4cqw rgb(0 0 0 / 0.55), inset 0 1px 0 rgb(255 255 255 / 0.05)`): hero cards on the landing page, scaled with the frame.
@@ -232,7 +234,9 @@ The app keeps its three glass depth steps. Depth 1 is content panels: 18px blur,
 
 ### Buttons
 - **Start (landing):** an indigo-violet pill with a white semibold label, 56px tall in flow. In the hero it is joined to the right end of the email field so the two read as one control.
-- **Primary (app):** violet fill with ink text, 40px tall, gently rounded (12px).
+- **Primary (app):** an indigo pill (violet with ink text in dark mode), Gabarito semibold, 40px tall, sitting on a 3px shade of its own colour that flattens to 1px when pressed.
+- **Practice:** the same pill in practice blue, used only for practice trades.
+- **Secondary:** a quiet field-tinted pill, no border.
 - **Hover / Focus:** hover shifts the fill one step (160ms, ease-out cubic-bezier(0.22, 1, 0.36, 1)); press scales to 0.98; focus is a 2px lavender ring offset by 3px.
 
 ### Inputs / Fields
@@ -252,8 +256,8 @@ The hero's three cards, built from real components with sample data: the **Portf
 Three numbered indigo-violet circles joined by a dashed path, each with a short heading, two lines of copy and a small tilted product vignette (an import, a note, a revision rail). On phones the path is dropped and the steps stack.
 
 ### Cards / Containers
-- **Corner Style:** 24px section cards, 28px panels, 22px app panels.
-- **Background:** charcoal-card on the landing page; glass depth fills in the app.
+- **Corner Style:** 24px section cards and 28px panels on the landing page. The app has no content cards; tiles are 12px, controls are pills.
+- **Background:** charcoal-card on the landing page.
 - **Border:** 1px hairline.
 - **Nesting:** cards never nest inside cards; lists and rows sit directly in the card with hairline dividers.
 
@@ -262,7 +266,13 @@ A two-column block: the heading on the left, native disclosure rows on the right
 
 ### Navigation
 - **Landing:** the Portle symbol and wordmark, then Portfolio · Theses · Paper Lab · Guilds · Relics in soft text, Sign in at the right in white. Links brighten to lavender on hover. Below 720px only the brand and Sign in remain.
-- **App:** a glass depth-3 sidebar with lucide icons at one stroke weight.
+- **App:** a floating glass tab bar on phones (Home, Portfolio, Theses, Circle, Practice; Practice lights in practice blue) and a sidebar on desktop, with lucide icons at one stroke weight.
+
+### Portfolio ring (signature)
+A donut drawn from shares: one slice per holding (or per type, sector, region or currency), largest first, with a 2px surface gap between slices and anything folded past six into a quiet "Other". The total and its all-time return sit in the middle. It leads Home and My portfolio, and appears small wherever percentages are shared (posts, profiles, Guild averages). A legend or the holdings rows always repeat each slice's name and share, and each slice names itself on hover, so colour is never the only carrier. Its six series colours (--chart-1..6) were validated for colour-blind separation and contrast in both themes with the dataviz validator.
+
+### Practice room
+Practice money (the Paper Lab) has its own room: a pale blue ground (deep blue in dark mode) that replaces the page's glows, a dashed ring and dashed position tiles, an outline "Practice money · not real" chip, the word "pretend" beside its numbers, and a practice-blue action. On Home it appears as a dashed blue strip under the real portfolio. Real money is never drawn in these colours or with dashes.
 
 ### Relic
 Relics are hexagonal frames whose finish encodes the tier, with a single-stroke glyph inside. Unearned Relics are dimmed. Each states its rule and the visitor's progress in a small pill.

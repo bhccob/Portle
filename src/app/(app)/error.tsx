@@ -6,7 +6,7 @@ import { EmptyState } from "@/components/ui/states";
 
 export default function AppError({ reset, error }: { reset: () => void; error: Error & { digest?: string } }) {
   return (
-    <div className="glass-1 rounded-[var(--radius-xl)]">
+    <div className="">
       <EmptyState
         icon={TriangleAlert}
         title="This page couldn't load"

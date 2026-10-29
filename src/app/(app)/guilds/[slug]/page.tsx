@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import { ArrowLeft, BarChart3, Lock, Users } from "lucide-react";
 import { Composer } from "@/app/(app)/feed/feed-client";
 import { NewWatchlistForm } from "@/app/(app)/markets/market-controls";
-import { AllocationBar } from "@/components/charts/allocation";
+import { AllocationRing } from "@/components/charts/allocation";
 import { PostCard } from "@/components/social/post-card";
 import { Badge } from "@/components/ui/badge";
 import { ButtonLink } from "@/components/ui/button";
@@ -37,11 +37,11 @@ export default async function GuildPage({ params }: { params: Promise<{ slug: st
   const { guild, members, role, pending } = g;
 
   const header = (
-    <section className="glass-1 mb-5 rounded-[var(--radius-xl)] p-6">
+    <section className="mb-8">
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div className="min-w-0">
           <div className="flex flex-wrap items-center gap-2">
-            <h1 className="text-[1.625rem] font-semibold tracking-[-0.025em] text-fg">{guild.name}</h1>
+            <h1 className="font-display text-[1.75rem] leading-tight font-bold tracking-[-0.02em] text-fg">{guild.name}</h1>
             {guild.visibility === "private" ? (
               <Badge>
                 <Lock className="size-3" aria-hidden /> Private
@@ -133,7 +133,7 @@ export default async function GuildPage({ params }: { params: Promise<{ slug: st
           <Panel title="Guild allocation" description="Average of consenting members" actions={<BarChart3 className="size-4 text-fg-subtle" aria-hidden />}>
             {analytics.available ? (
               <>
-                <AllocationBar label="Average allocation by asset class" slices={analytics.assetClass} />
+                <AllocationRing label="Average allocation by asset class" slices={analytics.assetClass} />
                 <p className="mt-3 text-xs text-fg-subtle">From {analytics.members} members who opted in. Percentages only.</p>
               </>
             ) : (

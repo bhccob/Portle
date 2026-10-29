@@ -54,9 +54,9 @@ export default async function GuildsPage({ searchParams }: { searchParams: Promi
               {q ? "Try a broader topic, or start the Guild you were looking for." : "Be the first to found one around what you care about."}
             </EmptyState>
           ) : (
-            <ul className="grid gap-3 md:grid-cols-2">
+            <ul className="grid gap-x-10 md:grid-cols-2">
               {others.map(({ guild, members }) => (
-                <li key={guild.id} className="flex flex-col rounded-[var(--radius-lg)] border border-line p-4">
+                <li key={guild.id} className="flex flex-col border-t border-line py-4">
                   <Link href={`/guilds/${guild.slug}`} className="font-semibold text-fg hover:underline">
                     {guild.name}
                   </Link>

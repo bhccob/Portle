@@ -14,7 +14,7 @@ const ITEMS = [
 export function SettingsNav() {
   const path = usePathname();
   return (
-    <nav aria-label="Settings" className="flex gap-1 overflow-x-auto lg:flex-col">
+    <nav aria-label="Settings" className="relative flex gap-1 overflow-x-auto lg:flex-col">
       {ITEMS.map((i) => {
         const active = path === i.href;
         return (

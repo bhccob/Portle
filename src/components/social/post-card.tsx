@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { MessageSquare, ShieldCheck, Users } from "lucide-react";
 import { DeletePostButton } from "@/app/(app)/feed/feed-client";
-import { AllocationBar } from "@/components/charts/allocation";
+import { AllocationRing } from "@/components/charts/allocation";
 import { Avatar } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { relativeTime } from "@/lib/format";
@@ -16,7 +16,7 @@ export function PostCard({ item, viewerId, guildName, link = true }: { item: Fee
   const { post, author } = item;
   const target = { type: "post" as const, id: post.id };
   return (
-    <article className="glass-1 rounded-[var(--radius-xl)] p-5">
+    <article className="border-t border-line py-5 first:border-t-0">
       <header className="flex items-start justify-between gap-3">
         <div className="flex min-w-0 items-center gap-3">
           <Avatar name={author.displayName} hue={author.avatarHue} size="md" />
@@ -41,9 +41,9 @@ export function PostCard({ item, viewerId, guildName, link = true }: { item: Fee
       <p className="mt-3 text-[0.9375rem] whitespace-pre-wrap text-fg">{post.body}</p>
 
       {item.thesis ? (
-        <Link href={`/theses/${item.thesis.id}`} className="mt-3 block rounded-[var(--radius-lg)] border border-line bg-field p-4 hover:border-line-strong">
+        <Link href={`/theses/${item.thesis.id}`} className="group mt-3 block border-l border-line-strong py-0.5 pl-4">
           <span className="text-xs text-fg-subtle">Thesis · {item.thesis.status.replace("_", " ")}</span>
-          <span className="mt-1 block font-semibold text-fg">{item.thesis.title}</span>
+          <span className="mt-1 block font-semibold text-fg group-hover:underline">{item.thesis.title}</span>
           {item.thesis.summary ? <span className="mt-1 line-clamp-2 block text-sm text-fg-muted">{item.thesis.summary}</span> : null}
         </Link>
       ) : post.kind === "thesis" ? (
@@ -51,7 +51,7 @@ export function PostCard({ item, viewerId, guildName, link = true }: { item: Fee
       ) : null}
 
       {post.insight ? (
-        <div className="mt-3 rounded-[var(--radius-lg)] border border-line bg-field p-4">
+        <div className="mt-4">
           <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
             <span className="text-sm font-medium text-fg">Allocation by {DIM[post.insight.dimension]}</span>
             {post.insight.verified ? (
@@ -62,7 +62,7 @@ export function PostCard({ item, viewerId, guildName, link = true }: { item: Fee
               <Badge>Self-reported</Badge>
             )}
           </div>
-          <AllocationBar label={`Shared allocation by ${DIM[post.insight.dimension]}`} slices={post.insight.slices} />
+          <AllocationRing label={`Shared allocation by ${DIM[post.insight.dimension]}`} slices={post.insight.slices} size={88} className="max-w-sm" />
           <p className="mt-2 text-xs text-fg-subtle">Percentages only, as of {relativeTime(post.insight.asOf)}.</p>
         </div>
       ) : null}

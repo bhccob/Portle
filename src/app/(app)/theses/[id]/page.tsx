@@ -85,7 +85,7 @@ export default async function ThesisPage({ params, searchParams }: { params: Pro
       </Link>
 
       <div className="grid gap-5 xl:grid-cols-[1fr_320px]">
-        <article className="glass-1 rounded-[var(--radius-xl)] p-6 sm:p-8">
+        <article className="min-w-0">
           <header className="border-b border-line pb-5">
             <div className="flex flex-wrap items-center gap-2 text-xs text-fg-subtle">
               <Badge tone={STATUS_TONE[shown.status]}>{STATUS_LABEL[shown.status]}</Badge>
@@ -143,10 +143,10 @@ export default async function ThesisPage({ params, searchParams }: { params: Pro
             <Section title="Why" body={shown.rationale} />
             {shown.bullCase || shown.bearCase ? (
               <div className="grid gap-4 md:grid-cols-2">
-                <div className="rounded-[var(--radius-lg)] border border-line bg-positive-soft/40 p-4">
+                <div className="rounded-[var(--radius-lg)] bg-positive-soft p-4">
                   <Section title="Bull case" body={shown.bullCase || "_Not written yet._"} />
                 </div>
-                <div className="rounded-[var(--radius-lg)] border border-line bg-negative-soft/40 p-4">
+                <div className="rounded-[var(--radius-lg)] bg-negative-soft p-4">
                   <Section title="Bear case" body={shown.bearCase || "_Not written yet._"} />
                 </div>
               </div>
@@ -156,7 +156,7 @@ export default async function ThesisPage({ params, searchParams }: { params: Pro
             <Section title="Risks" body={shown.risks} />
             <Section title="Valuation" body={shown.valuation} />
             {shown.invalidationCriteria ? (
-              <div className="rounded-[var(--radius-lg)] border border-line-strong bg-selected/40 p-4">
+              <div className="rounded-[var(--radius-lg)] bg-selected p-4">
                 <Section
                   title="What would prove this wrong"
                   body={shown.invalidationCriteria}

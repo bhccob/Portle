@@ -92,15 +92,15 @@ export default async function ThesesPage({ searchParams }: { searchParams: Promi
           </EmptyState>
         </Panel>
       ) : (
-        <ul className="grid gap-3 md:grid-cols-2">
+        <ul className="grid gap-x-10 md:grid-cols-2">
           {rows.map(({ thesis: t, instrument, author }) => (
             <li key={t.id}>
               <Link
                 href={`/theses/${t.id}`}
-                className="glass-1 group block h-full rounded-[var(--radius-xl)] p-5 transition-[border-color,transform] duration-[var(--dur)] hover:-translate-y-0.5 hover:border-line-strong"
+                className="group block h-full border-t border-line py-4"
               >
                 <div className="flex items-start justify-between gap-3">
-                  <h2 className="text-[1rem] font-semibold text-fg group-hover:underline">{t.title}</h2>
+                  <h2 className="font-display text-[1.0625rem] font-semibold text-fg group-hover:underline">{t.title}</h2>
                   <Badge tone={STATUS_TONE[t.status]}>{STATUS_LABEL[t.status]}</Badge>
                 </div>
                 {t.summary ? <p className="mt-2 line-clamp-2 text-sm text-fg-muted">{t.summary}</p> : null}

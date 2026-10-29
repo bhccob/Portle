@@ -30,7 +30,7 @@ export default async function EntryPage({ params }: { params: Promise<{ id: stri
       <Link href={isOwner ? "/journal" : `/u/${author.handle}`} className="mb-3 inline-flex items-center gap-1.5 text-sm text-fg-muted hover:text-fg">
         <ArrowLeft className="size-4" aria-hidden /> {isOwner ? "Journal" : author.displayName}
       </Link>
-      <article className="glass-1 mx-auto max-w-[760px] rounded-[var(--radius-xl)] p-6 sm:p-10">
+      <article className="mx-auto max-w-[760px]">
         <header className="mb-6 border-b border-line pb-5">
           <time dateTime={entry.entryDate} className="text-sm text-fg-subtle">
             {formatDate(entry.entryDate)}

@@ -136,7 +136,7 @@ export function ThesisForm({ draft, guilds, today }: { draft: ThesisDraft; guild
             {(p) => <Textarea {...p} name="valuation" defaultValue={draft.valuation} maxLength={4000} />}
           </Field>
         </div>
-        <div className="rounded-[var(--radius-lg)] border border-line-strong bg-selected/40 p-4">
+        <div className="rounded-[var(--radius-lg)] bg-selected p-4">
           <Field
             label={
               <span className="inline-flex items-center gap-1.5 text-fg">

@@ -147,15 +147,15 @@ export function OrderTicket({
             <dd className="num text-fg">{formatMoney(estimate.fee.toFixed(2), config.currency)}</dd>
           </div>
           <div className="flex justify-between border-t border-line pt-1 font-medium">
-            <dt className="text-fg">{side === "buy" ? "Virtual cash out" : "Virtual cash in"}</dt>
+            <dt className="text-fg">{side === "buy" ? "Pretend cash out" : "Pretend cash in"}</dt>
             <dd className="num text-fg">{formatMoney(estimate.total.toFixed(2), config.currency)}</dd>
           </div>
         </dl>
       ) : null}
-      <Button type="submit" className="w-full" size="lg" loading={pending} disabled={!instrument || !!wrongCurrency}>
+      <Button type="submit" variant="practice" className="w-full" size="lg" loading={pending} disabled={!instrument || !!wrongCurrency}>
         Place simulated {side}
       </Button>
-      <p className="text-xs text-fg-subtle">Virtual money only. Nothing here touches your real accounts or holdings.</p>
+      <p className="text-xs text-fg-subtle">Pretend money only. Nothing here touches your real portfolio.</p>
     </form>
   );
 }
@@ -206,8 +206,8 @@ export function ResetLabDialog() {
     <Dialog
       open={open}
       onOpenChange={setOpen}
-      title="Reset the Paper Lab"
-      description="Open orders are cancelled and you start again with fresh virtual cash. Past simulated trades stay in your data export."
+      title="Reset Practice"
+      description="Open orders are cancelled and you start again with fresh pretend cash. Past practice trades stay in your data export."
       trigger={
         <Button variant="ghost" size="sm">
           <RotateCcw className="size-4" aria-hidden /> Reset

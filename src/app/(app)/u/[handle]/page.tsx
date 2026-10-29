@@ -2,7 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { EyeOff, Lock, Settings2 } from "lucide-react";
 import { FriendButton } from "@/app/(app)/feed/feed-client";
-import { AllocationBar } from "@/components/charts/allocation";
+import { AllocationRing } from "@/components/charts/allocation";
 import { RelicIcon } from "@/components/relics/relic-icon";
 import { Avatar } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -36,12 +36,12 @@ export default async function ProfilePage({ params, searchParams }: { params: Pr
 
   return (
     <>
-      <section className="glass-1 mb-5 rounded-[var(--radius-xl)] p-6 sm:p-8">
+      <section className="mb-8">
         <div className="flex flex-wrap items-start justify-between gap-5">
           <div className="flex min-w-0 items-center gap-5">
             <Avatar name={p.displayName} hue={p.avatarHue} size="xl" />
             <div className="min-w-0">
-              <h1 className="text-[1.625rem] font-semibold tracking-[-0.025em] text-fg">{p.displayName}</h1>
+              <h1 className="font-display text-[1.75rem] leading-tight font-bold tracking-[-0.02em] text-fg">{p.displayName}</h1>
               <p className="text-sm text-fg-subtle">
                 @{p.handle} · member since {formatDate(p.memberSince)}
               </p>
@@ -120,7 +120,7 @@ export default async function ProfilePage({ params, searchParams }: { params: Pr
                   current={dim.dimension}
                   items={view.allocation.map((a) => ({ value: a.dimension, label: DIM_LABEL[a.dimension], href: `/u/${p.handle}?dim=${a.dimension}` }))}
                 />
-                {dim.slices.length ? <AllocationBar label={`${p.displayName}'s allocation`} slices={dim.slices} /> : <p className="text-sm text-fg-muted">No priced holdings.</p>}
+                {dim.slices.length ? <AllocationRing label={`${p.displayName}'s allocation`} slices={dim.slices} /> : <p className="text-sm text-fg-muted">No priced holdings.</p>}
               </>
             ) : (
               <p className="flex items-center gap-2 text-sm text-fg-muted">

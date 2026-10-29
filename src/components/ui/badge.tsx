@@ -5,8 +5,8 @@ import { formatDate, relativeTime } from "@/lib/format";
 type Tone = "neutral" | "brand" | "positive" | "negative" | "warning" | "info";
 
 const tones: Record<Tone, string> = {
-  neutral: "bg-field text-fg-muted border-line",
-  brand: "bg-selected text-fg border-line-strong",
+  neutral: "bg-field text-fg-muted border-transparent",
+  brand: "bg-selected text-accent border-transparent",
   positive: "bg-positive-soft text-positive border-transparent",
   negative: "bg-negative-soft text-negative border-transparent",
   warning: "bg-warning-soft text-warning border-transparent",

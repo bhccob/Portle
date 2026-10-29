@@ -174,7 +174,7 @@ export function ImportWizard({ accounts }: { accounts: { id: string; name: strin
               </p>
               {parsed.parseErrors.length ? <Callout tone="warning">{parsed.parseErrors.slice(0, 3).join(" ")}</Callout> : null}
               {preview.valid.length ? (
-                <div className="overflow-x-auto rounded-[var(--radius-lg)] border border-line">
+                <div className="relative overflow-x-auto rounded-[var(--radius-lg)] border border-line">
                   <table className="w-full min-w-[640px] text-[0.8125rem]">
                     <caption className="sr-only">First rows as they will be imported</caption>
                     <thead>

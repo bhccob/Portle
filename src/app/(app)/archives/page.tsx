@@ -24,10 +24,10 @@ export default async function ArchivesPage() {
         <h2 id="guides-title" className="mb-3 text-[0.9375rem] font-semibold text-fg">
           Guides
         </h2>
-        <ul className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+        <ul className="grid gap-x-10 md:grid-cols-2 xl:grid-cols-3">
           {GUIDES.map((g) => (
             <li key={g.slug}>
-              <Link href={`/archives/guides/${g.slug}`} className="glass-1 group flex h-full flex-col rounded-[var(--radius-xl)] p-5 transition-[border-color,transform] duration-[var(--dur)] hover:-translate-y-0.5 hover:border-line-strong">
+              <Link href={`/archives/guides/${g.slug}`} className="group flex h-full flex-col border-t border-line py-4">
                 <BookOpen className="mb-3 size-5 text-accent" aria-hidden />
                 <span className="font-semibold text-fg group-hover:underline">{g.title}</span>
                 <span className="mt-1 text-sm text-fg-muted">{g.summary}</span>

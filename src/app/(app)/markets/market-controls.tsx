@@ -73,9 +73,9 @@ export function NewWatchlistForm({ guildId }: { guildId?: string }) {
   const [state, action, pending] = useActionState(createWatchlistAction, null);
   useResultToast(state);
   return (
-    <form action={action} className="flex gap-2">
+    <form action={action} className="flex w-full min-w-0 gap-2">
       {guildId ? <input type="hidden" name="guildId" value={guildId} /> : null}
-      <Input name="name" placeholder="New watchlist name" aria-label="New watchlist name" maxLength={60} required className="h-9" />
+      <Input name="name" placeholder="New watchlist name" aria-label="New watchlist name" maxLength={60} required className="h-9 min-w-0 flex-1" />
       <Button type="submit" size="sm" variant="secondary" loading={pending} className="h-9">
         <Plus className="size-4" aria-hidden /> Create
       </Button>

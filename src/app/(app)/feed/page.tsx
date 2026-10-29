@@ -12,7 +12,7 @@ import { listOwnTheses } from "@/server/services/theses";
 import { requireViewer } from "@/server/viewer-session";
 import { Composer, FriendButton } from "./feed-client";
 
-export const metadata = { title: "Feed" };
+export const metadata = { title: "Circle" };
 
 export default async function FeedPage({ searchParams }: { searchParams: Promise<{ tab?: string; q?: string; before?: string }> }) {
   const sp = await searchParams;
@@ -23,7 +23,7 @@ export default async function FeedPage({ searchParams }: { searchParams: Promise
 
   return (
     <>
-      <PageHeader title="Feed" description="Friends first. Theses, questions and what people are learning, not price predictions." />
+      <PageHeader title="Circle" description="What your friends and Guilds share: theses, questions and their mix as percentages. Friends first, not price predictions." />
       <LinkTabs
         className="mb-5 w-fit max-w-full"
         label="Feed filter"

@@ -1,5 +1,5 @@
 import { EyeOff, Lock } from "lucide-react";
-import { AllocationBar } from "@/components/charts/allocation";
+import { AllocationRing } from "@/components/charts/allocation";
 import { Panel } from "@/components/ui/panel";
 import { Callout } from "@/components/ui/states";
 import { formatPercent } from "@/lib/format";
@@ -14,7 +14,7 @@ type Preview = Awaited<ReturnType<typeof previewProfileAs>>;
 
 function PreviewCard({ title, preview }: { title: string; preview: Preview }) {
   return (
-    <div className="rounded-[var(--radius-lg)] border border-line p-4">
+    <div className="rounded-[var(--radius-lg)] bg-field p-4">
       <h3 className="text-sm font-semibold text-fg">{title}</h3>
       {!preview.visible ? (
         <p className="mt-2 flex items-center gap-2 text-sm text-fg-muted">
@@ -30,7 +30,7 @@ function PreviewCard({ title, preview }: { title: string; preview: Preview }) {
           </div>
           <div>
             <dt className="text-xs text-fg-subtle">Allocation</dt>
-            <dd>{preview.view.allocation?.[0]?.slices.length ? <AllocationBar label="Preview allocation" slices={preview.view.allocation[0].slices} max={4} /> : <span className="text-fg-muted">Hidden</span>}</dd>
+            <dd>{preview.view.allocation?.[0]?.slices.length ? <AllocationRing label="Preview allocation" slices={preview.view.allocation[0].slices} max={4} /> : <span className="text-fg-muted">Hidden</span>}</dd>
           </div>
           <div>
             <dt className="text-xs text-fg-subtle">Holdings by weight</dt>

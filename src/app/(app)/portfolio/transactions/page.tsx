@@ -61,7 +61,7 @@ export default async function TransactionsPage({ searchParams }: { searchParams:
             Record buys, sells, dividends and cash movements, or import your broker&apos;s history.
           </EmptyState>
         ) : (
-          <div className="overflow-x-auto">
+          <div className="relative overflow-x-auto">
             <table className="w-full min-w-[820px] text-sm">
               <caption className="sr-only">Transactions, newest first</caption>
               <thead>

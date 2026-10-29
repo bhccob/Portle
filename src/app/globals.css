@@ -29,21 +29,21 @@
   --dur-slow: 360ms;
 }
 
-/* Dark is the default: evening research under low light. */
+/* Dark is the default when nothing says otherwise; the light theme follows the phone. */
 :root,
 [data-theme="dark"] {
   color-scheme: dark;
   --bg: #15141f;
   --bg-elevated: #1c1b29;
   --fg: #f2f1fb;
-  --fg-muted: #b3b0cf;
-  --fg-subtle: #8d8aac;
+  --fg-muted: #c3c0dc;
+  --fg-subtle: #9b98b8;
   --line: rgb(196 188 251 / 0.1);
   --line-strong: rgb(196 188 251 / 0.18);
 
   --depth-1: rgb(33 31 58 / 0.52);
-  --depth-2: rgb(39 36 68 / 0.82);
-  --depth-3: rgb(24 22 42 / 0.7);
+  --depth-2: rgb(39 36 68 / 0.9);
+  --depth-3: rgb(30 29 44 / 0.72);
   --blur-1: 18px;
   --blur-2: 28px;
   --blur-3: 22px;
@@ -51,137 +51,183 @@
   --shadow-1: 0 10px 30px -18px rgb(0 0 0 / 0.7);
   --shadow-2: 0 24px 60px -24px rgb(0 0 0 / 0.75);
 
-  --field: rgb(21 20 34 / 0.6);
-  --field-hover: rgb(28 27 46 / 0.7);
+  --field: rgb(255 255 255 / 0.06);
+  --field-hover: rgb(255 255 255 / 0.1);
 
   --primary: #8e84f8;
   --primary-hover: #a39bfa;
   --primary-fg: #14131f;
+  --primary-shade: #5146e1;
   --brand: #5146e1;
   --brand-fg: #ffffff;
-  --accent: #c4bcfb;
-  --selected: rgb(81 70 225 / 0.26);
+  --accent: #a99ef9;
+  --selected: rgb(123 111 245 / 0.18);
   --focus: #c4bcfb;
 
-  --positive: #5fd59d;
-  --positive-soft: rgb(95 213 157 / 0.12);
-  --negative: #ff8a97;
-  --negative-soft: rgb(255 138 151 / 0.12);
-  --warning: #f2bd62;
-  --warning-soft: rgb(242 189 98 / 0.12);
+  --positive: #4fc98a;
+  --positive-soft: rgb(79 201 138 / 0.14);
+  --negative: #f07a7a;
+  --negative-soft: rgb(240 122 122 / 0.14);
+  --warning: #e8c15a;
+  --warning-soft: rgb(232 193 90 / 0.14);
   --info: #8fa6ff;
   --info-soft: rgb(143 166 255 / 0.12);
   --neutral: #a3a0bd;
 
-  --chart-1: #9d94f9;
-  --chart-2: #25d0ee;
-  --chart-3: #ff9340;
-  --chart-4: #56b8f5;
-  --chart-5: #e88fbf;
-  --chart-6: #c9d47c;
-  --chart-7: #8a87a8;
+  /* The ring palette, validated for CVD and contrast on #15141F (dataviz validator). */
+  --chart-1: #7b6ff5;
+  --chart-2: #d7681e;
+  --chart-3: #2786cc;
+  --chart-4: #b4821a;
+  --chart-5: #13948a;
+  --chart-6: #a65fd0;
+  --chart-7: #6f6c8a;
 
-  --glow-a: rgb(64 56 196 / 0.42);
-  --glow-b: rgb(37 208 238 / 0.08);
-  --glow-c: rgb(196 188 251 / 0.06);
+  /* Practice (Paper Lab): its own room, never styled like real money. */
+  --practice: #7cc4f5;
+  --practice-strong: #bfe0fa;
+  --practice-ground: #131c29;
+  --practice-line: rgb(124 196 245 / 0.4);
+  --practice-soft: rgb(124 196 245 / 0.12);
+  --practice-fill: #2f7fc4;
+  --practice-fill-fg: #ffffff;
+  --practice-shade: #1d5e98;
+  --practice-cash: #3a6a96;
+
+  --glow-a: rgb(81 70 225 / 0.42);
+  --glow-b: rgb(39 134 204 / 0.22);
+  --glow-practice: rgb(39 134 204 / 0.3);
 }
 
 [data-theme="light"] {
   color-scheme: light;
-  --bg: #f4f3fb;
+  --bg: #fbfafe;
   --bg-elevated: #ffffff;
   --fg: #15141f;
-  --fg-muted: #55516e;
-  --fg-subtle: #6a6688;
-  --line: rgb(81 70 225 / 0.12);
-  --line-strong: rgb(81 70 225 / 0.22);
+  --fg-muted: #4f4d63;
+  --fg-subtle: #67657f;
+  --line: rgb(21 20 31 / 0.08);
+  --line-strong: rgb(21 20 31 / 0.15);
 
-  --depth-1: rgb(255 255 255 / 0.62);
-  --depth-2: rgb(255 255 255 / 0.86);
-  --depth-3: rgb(249 248 254 / 0.72);
-  --edge: inset 0 1px 0 rgb(255 255 255 / 0.9);
-  --shadow-1: 0 12px 32px -20px rgb(64 56 196 / 0.3);
-  --shadow-2: 0 28px 64px -28px rgb(64 56 196 / 0.4);
+  --depth-1: rgb(255 255 255 / 0.7);
+  --depth-2: rgb(255 255 255 / 0.94);
+  --depth-3: rgb(255 255 255 / 0.74);
+  --edge: inset 0 0 0 1px rgb(255 255 255 / 0.7);
+  --shadow-1: 0 12px 30px -16px rgb(21 20 31 / 0.18);
+  --shadow-2: 0 24px 60px -24px rgb(21 20 31 / 0.3);
 
-  --field: rgb(255 255 255 / 0.75);
-  --field-hover: rgb(255 255 255 / 0.95);
+  --field: rgb(21 20 31 / 0.045);
+  --field-hover: rgb(21 20 31 / 0.075);
 
-  --primary: #4a40d6;
-  --primary-hover: #3d33c0;
+  --primary: #5146e1;
+  --primary-hover: #4237c9;
   --primary-fg: #ffffff;
-  --brand: #4a40d6;
+  --primary-shade: #3a30b5;
+  --brand: #5146e1;
   --brand-fg: #ffffff;
-  --accent: #5146e1;
-  --selected: rgb(81 70 225 / 0.12);
+  --accent: #4a40d6;
+  --selected: rgb(81 70 225 / 0.09);
   --focus: #4a40d6;
 
-  --positive: #0b7a49;
-  --positive-soft: rgb(11 122 73 / 0.1);
-  --negative: #b7283f;
-  --negative-soft: rgb(183 40 63 / 0.09);
-  --warning: #8f5400;
-  --warning-soft: rgb(196 125 10 / 0.12);
+  --positive: #13804f;
+  --positive-soft: rgb(19 128 79 / 0.1);
+  --negative: #c23a3a;
+  --negative-soft: rgb(194 58 58 / 0.1);
+  --warning: #7a5600;
+  --warning-soft: rgb(201 146 18 / 0.14);
   --info: #3651c9;
   --info-soft: rgb(54 81 201 / 0.1);
-  --neutral: #6a6688;
+  --neutral: #67657f;
 
+  /* The ring palette, validated for CVD and contrast on #FBFAFE (dataviz validator). */
   --chart-1: #5146e1;
-  --chart-2: #0e8fa8;
-  --chart-3: #c25f12;
-  --chart-4: #2a7fc0;
-  --chart-5: #b4417f;
-  --chart-6: #7f8c1e;
-  --chart-7: #8a87a8;
+  --chart-2: #e8772a;
+  --chart-3: #2b8fd9;
+  --chart-4: #c99212;
+  --chart-5: #0f9c94;
+  --chart-6: #b868d8;
+  --chart-7: #a19fb4;
 
-  --glow-a: rgb(123 111 245 / 0.28);
-  --glow-b: rgb(37 208 238 / 0.18);
-  --glow-c: rgb(255 255 255 / 0.7);
+  /* Practice (Paper Lab): its own room, never styled like real money. */
+  --practice: #1f6fb8;
+  --practice-strong: #123f6b;
+  --practice-ground: #edf5fd;
+  --practice-line: rgb(31 111 184 / 0.35);
+  --practice-soft: rgb(31 111 184 / 0.1);
+  --practice-fill: #1f6fb8;
+  --practice-fill-fg: #ffffff;
+  --practice-shade: #175a96;
+  --practice-cash: #9cc6ec;
+
+  --glow-a: rgb(185 173 250 / 0.45);
+  --glow-b: rgb(86 184 245 / 0.26);
+  --glow-practice: rgb(86 184 245 / 0.4);
 }
 
 @media (prefers-color-scheme: light) {
   :root:not([data-theme]) {
     color-scheme: light;
-    --bg: #f4f3fb;
+    --bg: #fbfafe;
     --bg-elevated: #ffffff;
     --fg: #15141f;
-    --fg-muted: #55516e;
-    --fg-subtle: #6a6688;
-    --line: rgb(81 70 225 / 0.12);
-    --line-strong: rgb(81 70 225 / 0.22);
-    --depth-1: rgb(255 255 255 / 0.62);
-    --depth-2: rgb(255 255 255 / 0.86);
-    --depth-3: rgb(249 248 254 / 0.72);
-    --edge: inset 0 1px 0 rgb(255 255 255 / 0.9);
-    --shadow-1: 0 12px 32px -20px rgb(64 56 196 / 0.3);
-    --shadow-2: 0 28px 64px -28px rgb(64 56 196 / 0.4);
-    --field: rgb(255 255 255 / 0.75);
-    --field-hover: rgb(255 255 255 / 0.95);
-    --primary: #4a40d6;
-    --primary-hover: #3d33c0;
+    --fg-muted: #4f4d63;
+    --fg-subtle: #67657f;
+    --line: rgb(21 20 31 / 0.08);
+    --line-strong: rgb(21 20 31 / 0.15);
+
+    --depth-1: rgb(255 255 255 / 0.7);
+    --depth-2: rgb(255 255 255 / 0.94);
+    --depth-3: rgb(255 255 255 / 0.74);
+    --edge: inset 0 0 0 1px rgb(255 255 255 / 0.7);
+    --shadow-1: 0 12px 30px -16px rgb(21 20 31 / 0.18);
+    --shadow-2: 0 24px 60px -24px rgb(21 20 31 / 0.3);
+
+    --field: rgb(21 20 31 / 0.045);
+    --field-hover: rgb(21 20 31 / 0.075);
+
+    --primary: #5146e1;
+    --primary-hover: #4237c9;
     --primary-fg: #ffffff;
-    --brand: #4a40d6;
+    --primary-shade: #3a30b5;
+    --brand: #5146e1;
     --brand-fg: #ffffff;
-    --accent: #5146e1;
-    --selected: rgb(81 70 225 / 0.12);
+    --accent: #4a40d6;
+    --selected: rgb(81 70 225 / 0.09);
     --focus: #4a40d6;
-    --positive: #0b7a49;
-    --positive-soft: rgb(11 122 73 / 0.1);
-    --negative: #b7283f;
-    --negative-soft: rgb(183 40 63 / 0.09);
-    --warning: #8f5400;
-    --warning-soft: rgb(196 125 10 / 0.12);
+
+    --positive: #13804f;
+    --positive-soft: rgb(19 128 79 / 0.1);
+    --negative: #c23a3a;
+    --negative-soft: rgb(194 58 58 / 0.1);
+    --warning: #7a5600;
+    --warning-soft: rgb(201 146 18 / 0.14);
     --info: #3651c9;
     --info-soft: rgb(54 81 201 / 0.1);
-    --neutral: #6a6688;
+    --neutral: #67657f;
+
+    /* The ring palette, validated for CVD and contrast on #FBFAFE (dataviz validator). */
     --chart-1: #5146e1;
-    --chart-2: #0e8fa8;
-    --chart-3: #c25f12;
-    --chart-4: #2a7fc0;
-    --chart-5: #b4417f;
-    --chart-6: #7f8c1e;
-    --glow-a: rgb(123 111 245 / 0.28);
-    --glow-b: rgb(37 208 238 / 0.18);
-    --glow-c: rgb(255 255 255 / 0.7);
+    --chart-2: #e8772a;
+    --chart-3: #2b8fd9;
+    --chart-4: #c99212;
+    --chart-5: #0f9c94;
+    --chart-6: #b868d8;
+    --chart-7: #a19fb4;
+
+    /* Practice (Paper Lab): its own room, never styled like real money. */
+    --practice: #1f6fb8;
+    --practice-strong: #123f6b;
+    --practice-ground: #edf5fd;
+    --practice-line: rgb(31 111 184 / 0.35);
+    --practice-soft: rgb(31 111 184 / 0.1);
+    --practice-fill: #1f6fb8;
+    --practice-fill-fg: #ffffff;
+    --practice-shade: #175a96;
+  --practice-cash: #9cc6ec;
+
+    --glow-a: rgb(185 173 250 / 0.45);
+    --glow-b: rgb(86 184 245 / 0.26);
+    --glow-practice: rgb(86 184 245 / 0.4);
   }
 }
 
@@ -198,6 +244,15 @@
   --color-primary: var(--primary);
   --color-primary-hover: var(--primary-hover);
   --color-primary-fg: var(--primary-fg);
+  --color-primary-shade: var(--primary-shade);
+  --color-practice: var(--practice);
+  --color-practice-strong: var(--practice-strong);
+  --color-practice-ground: var(--practice-ground);
+  --color-practice-line: var(--practice-line);
+  --color-practice-soft: var(--practice-soft);
+  --color-practice-fill: var(--practice-fill);
+  --color-practice-fill-fg: var(--practice-fill-fg);
+  --color-practice-shade: var(--practice-shade);
   --color-brand: var(--brand);
   --color-brand-fg: var(--brand-fg);
   --color-accent: var(--accent);
@@ -282,17 +337,27 @@
 }
 
 @layer components {
-  /* The ambient field the glass floats over. Fixed and painted once. */
+  /* The ambient field: two soft glows at the top of a plain ground. Fixed and painted once. */
   .archive-light {
     position: fixed;
     inset: 0;
     z-index: -1;
     pointer-events: none;
     background:
-      radial-gradient(60rem 40rem at 85% -10%, var(--glow-a), transparent 60%),
-      radial-gradient(40rem 32rem at -5% 30%, var(--glow-b), transparent 65%),
-      radial-gradient(50rem 30rem at 50% 110%, var(--glow-c), transparent 70%),
+      radial-gradient(min(60rem, 120vw) 22rem at 8% -6%, var(--glow-a), transparent 70%),
+      radial-gradient(min(44rem, 100vw) 20rem at 100% -2%, var(--glow-b), transparent 70%),
       var(--bg);
+  }
+  /* The Practice room repaints that field in its own blue, so pretend money never shares real money's ground. */
+  .practice-room::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    background:
+      radial-gradient(min(60rem, 120vw) 22rem at 8% -6%, var(--glow-practice), transparent 70%),
+      var(--practice-ground);
   }
 
   .glass-1 {

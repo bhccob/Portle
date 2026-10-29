@@ -68,7 +68,7 @@ export default async function JournalPage({ searchParams }: { searchParams: Prom
             <ol className="space-y-3">
               {entries.map(({ entry, thesisTitle, symbol }) => (
                 <li key={entry.id}>
-                  <Link href={`/journal/${entry.id}`} className="glass-1 block rounded-[var(--radius-xl)] p-5 transition-colors hover:border-line-strong">
+                  <Link href={`/journal/${entry.id}`} className="group block border-t border-line py-4">
                     <div className="flex flex-wrap items-center justify-between gap-2">
                       <h2 className="font-semibold text-fg">{entry.title}</h2>
                       <time dateTime={entry.entryDate} className="text-xs text-fg-subtle">

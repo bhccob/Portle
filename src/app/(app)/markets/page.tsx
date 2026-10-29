@@ -50,7 +50,7 @@ export default async function MarketsPage({ searchParams }: { searchParams: Prom
           {indices.map((ix) => {
             const change = Number(ix.previousClose) ? d(ix.value).minus(ix.previousClose).div(ix.previousClose) : null;
             return (
-              <li key={ix.key} className="glass-1 rounded-[var(--radius-lg)] p-3.5">
+              <li key={ix.key} className="border-t border-line py-3">
                 <p className="truncate text-xs text-fg-subtle">{ix.name}</p>
                 <p className="num mt-1 text-[1.0625rem] font-semibold text-fg">{formatNumber(ix.value, { decimals: 2 })}</p>
                 <div className="mt-1 flex items-end justify-between gap-2">
@@ -107,7 +107,7 @@ export default async function MarketsPage({ searchParams }: { searchParams: Prom
           )}
         </Panel>
 
-        <div className="space-y-5">
+        <div className="min-w-0 space-y-5">
           <Panel title="Watchlists" description="Private to you" actions={<NewWatchlistForm />} bodyClassName="px-0 pb-2">
             {lists.map((l) => (
               <div key={l.id} className="border-t border-line first:border-t-0">
