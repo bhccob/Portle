@@ -22,11 +22,27 @@ export async function sendMail(mail: Mail) {
       }),
       signal: AbortSignal.timeout(8000),
     });
-    if (!res.ok) throw new Error(`Mail provider rejected the message (${res.status}).`);
+    if (!res.ok) throw new Error(`Mail provider rejected the message (${res.status}${await providerReason(res)}).`);
     return;
   }
   if (process.env.NODE_ENV === "production") {
     console.warn("[mail] RESEND_API_KEY is not set; a transactional email was not delivered.");
   }
   await getDb().insert(emailOutbox).values(mail);
+}
+
+/**
+ * Resend's own explanation of a refusal (its error name and message), so the log says
+ * what to fix: a bad key, a bad sender, a recipient it won't deliver to. Email addresses
+ * in its message are blanked; links and tokens never reach this text.
+ */
+async function providerReason(res: Response) {
+  try {
+    const body = (await res.json()) as { name?: unknown; message?: unknown };
+    const name = typeof body.name === "string" ? ` ${body.name}` : "";
+    const message = typeof body.message === "string" ? `: ${body.message.replace(/[^\s<>()@]+@[^\s<>()@]+/g, "[email]").slice(0, 200)}` : "";
+    return name + message;
+  } catch {
+    return "";
+  }
 }
