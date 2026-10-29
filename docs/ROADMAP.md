@@ -15,7 +15,7 @@ Status as of the first build. Phases follow the master prompt; adjusted to what 
 ## Next, in priority order
 
 1. **Landing page** — shipped: the friendly Notebook design on charcoal (see DESIGN.md).
-2. **Production deployment:** managed Postgres (Neon or Supabase), Vercel project, `RESEND_API_KEY`, staging environment, CI workflow running lint/typecheck/unit/integration/e2e on every push.
+2. **Production deployment:** the repo is ready for Vercel with Neon and Resend (`docs/DEPLOYMENT.md`, CI already runs every check on each push); the accounts and a custom domain remain, then Neon preview branches as a staging environment.
 3. **Shared rate-limit store** (Redis/Upstash) before scaling past one instance. (The nonce-based CSP from this item is done.)
 4. **Licensed market data:** choose a provider after checking coverage and licence terms (Finnhub/Polygon/EODHD), add daily history to the adapter, cache per provider rules; earnings calendar and fundamentals from the same source.
 5. **Broker sync (SnapTrade):** verify coverage for IBKR, DEGIRO, Trading 212; implement request signing, hosted connection flow, encrypted token storage, nightly idempotent sync into the ledger, reconnect/disconnect, reconciliation against broker balances, duplicate handling between CSV and synced rows.

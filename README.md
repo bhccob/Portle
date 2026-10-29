@@ -61,7 +61,7 @@ pnpm lint
 
 ## Configuration
 
-See `.env.example`. Production needs `DATABASE_URL` (PostgreSQL), `BETTER_AUTH_SECRET`, `BETTER_AUTH_URL`, `PORTLE_ENCRYPTION_KEY` and `RESEND_API_KEY`. Real quotes need `MARKET_DATA_PROVIDER=finnhub` and `FINNHUB_API_KEY` (check the licence terms for your use).
+See `.env.example`. Production needs `DATABASE_URL` (PostgreSQL), `BETTER_AUTH_SECRET`, `PORTLE_ENCRYPTION_KEY` and `RESEND_API_KEY`, plus `BETTER_AUTH_URL` except on Vercel, where the production address is used. To deploy on Vercel with Neon and Resend, follow `docs/DEPLOYMENT.md`. Real quotes need `MARKET_DATA_PROVIDER=finnhub` and `FINNHUB_API_KEY` (check the licence terms for your use).
 
 ## Documentation
 
@@ -70,6 +70,7 @@ See `.env.example`. Production needs `DATABASE_URL` (PostgreSQL), `BETTER_AUTH_S
 - `docs/ARCHITECTURE.md`: structure and key decisions
 - `docs/DATA_MODEL.md`: schema, accounting and return methodology
 - `docs/SECURITY.md`: privacy model, auth, threat mitigations
+- `docs/DEPLOYMENT.md`: step-by-step deploy to Vercel with Neon and Resend
 - `docs/ROADMAP.md`: what's next and known limitations
 
 ## Stack

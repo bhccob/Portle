@@ -1,6 +1,8 @@
 /**
  * Applies migrations and seeds reference data. Idempotent; used by `pnpm dev`,
  * CI and deploys. Uses DATABASE_URL when set, otherwise a PGlite directory.
+ * Migrations prefer Neon's direct connection (DATABASE_URL_UNPOOLED) when the
+ * Vercel integration provides one; the app itself uses the pooled DATABASE_URL.
  */
 import { PGlite } from "@electric-sql/pglite";
 import { drizzle as drizzlePglite } from "drizzle-orm/pglite";
@@ -12,10 +14,11 @@ import { pathToFileURL } from "node:url";
 import postgres from "postgres";
 import * as schema from "../src/server/db/schema";
 import { seedInstruments } from "../src/server/db/seed-instruments";
-import type { Db } from "../src/server/db";
+import { databaseUrl, type Db } from "../src/server/db";
 
 export async function setupDatabase() {
-  const url = process.env.DATABASE_URL;
+  const pooled = databaseUrl();
+  const url = pooled && (process.env.DATABASE_URL_UNPOOLED || pooled);
   if (url) {
     const client = postgres(url, { max: 1, onnotice: () => {} });
     const db = drizzlePg({ client, schema, casing: "snake_case" });

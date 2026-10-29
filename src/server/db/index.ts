@@ -15,12 +15,23 @@ declare global {
 }
 
 /**
+ * The Postgres connection string, or undefined to use the local PGlite. Vercel has
+ * no writable disk for PGlite, so there it is required.
+ */
+export function databaseUrl(env: Record<string, string | undefined> = process.env) {
+  if (!env.DATABASE_URL && env.VERCEL) {
+    throw new Error("DATABASE_URL is not set. Connect a Postgres database to the project (Vercel → Storage → Neon), then redeploy.");
+  }
+  return env.DATABASE_URL || undefined;
+}
+
+/**
  * Production and staging connect to Postgres through DATABASE_URL.
  * Without it, an embedded PGlite (real Postgres compiled to WASM) persists to
  * .data/pglite so the app runs locally with zero setup.
  */
 export function createDb(): Db {
-  const url = process.env.DATABASE_URL;
+  const url = databaseUrl();
   if (url) {
     const client = postgres(url, { max: Number(process.env.DATABASE_POOL_MAX ?? 10) });
     return drizzlePostgres({ client, schema, casing: "snake_case" }) as unknown as Db;
