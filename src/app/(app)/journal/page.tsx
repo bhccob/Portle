@@ -55,7 +55,7 @@ export default async function JournalPage({ searchParams }: { searchParams: Prom
               defaultValue={sp.q}
               placeholder="Search your entries"
               aria-label="Search journal"
-              className="h-10 w-full rounded-[var(--radius-md)] border border-line bg-field pr-3 pl-9 text-sm text-fg placeholder:text-fg-subtle focus:border-accent focus:outline-none"
+              className="h-10 w-full rounded-[var(--radius-md)] border border-transparent bg-field pr-3 pl-9 text-sm text-fg placeholder:text-fg-subtle focus:border-accent focus:outline-none"
             />
           </form>
           {entries.length === 0 ? (

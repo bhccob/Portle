@@ -19,7 +19,8 @@ function readThesis(form: FormData): ThesisInput {
     title: s("title"),
     summary: s("summary"),
     instrumentId: s("instrumentId") || null,
-    status: s("status") as ThesisInput["status"],
+    // A new thesis has no status question; the service starts it as Researching.
+    status: (s("status") || undefined) as ThesisInput["status"],
     visibility: s("visibility") as ThesisInput["visibility"],
     guildId: s("guildId") || null,
     timeHorizon: s("timeHorizon"),

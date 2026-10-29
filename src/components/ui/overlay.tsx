@@ -28,11 +28,15 @@ export function Dialog({
         <D.Overlay className="fixed inset-0 z-50 bg-[rgb(10_8_15/0.55)] backdrop-blur-[2px] data-[state=open]:animate-[fade-in_var(--dur)_var(--ease-out)]" />
         <D.Content
           className={cn(
-            "glass-2 fixed top-1/2 left-1/2 z-50 max-h-[min(88dvh,820px)] w-[min(94vw,560px)] -translate-x-1/2 -translate-y-1/2 overflow-y-auto rounded-[var(--radius-xl)] p-6",
-            "data-[state=open]:animate-[dialog-in_var(--dur-slow)_var(--ease-out)]",
+            "glass-2 fixed z-50 overflow-y-auto p-6",
+            // Phones: a sheet rising from the bottom edge. Wider screens: a centred dialog.
+            "inset-x-0 bottom-0 max-h-[92dvh] rounded-t-[28px] pb-[calc(1.5rem+env(safe-area-inset-bottom))] data-[state=open]:animate-[sheet-in_var(--dur-slow)_var(--ease-out)]",
+            "sm:inset-x-auto sm:top-1/2 sm:bottom-auto sm:left-1/2 sm:max-h-[min(88dvh,820px)] sm:w-[min(94vw,560px)] sm:-translate-x-1/2 sm:-translate-y-1/2 sm:rounded-[var(--radius-xl)] sm:pb-6",
+            "sm:data-[state=open]:animate-[dialog-in_var(--dur-slow)_var(--ease-out)]",
             className,
           )}
         >
+          <div className="mx-auto -mt-3 mb-4 h-1.5 w-10 rounded-full bg-line-strong sm:hidden" aria-hidden />
           <div className="mb-4 flex items-start justify-between gap-4">
             <div>
               <D.Title className="text-lg font-semibold text-fg">{title}</D.Title>

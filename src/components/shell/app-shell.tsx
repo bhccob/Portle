@@ -3,13 +3,15 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useTransition } from "react";
-import { LogOut, Monitor, Moon, Sun, UserRound } from "lucide-react";
+import { LogOut, Monitor, Moon, SquarePen, Sun, UserRound } from "lucide-react";
 import { setThemeAction, signOutAction } from "@/app/actions/session";
 import { PortleMark } from "@/components/brand/logo";
 import { Avatar } from "@/components/ui/avatar";
 import { Menu, MenuItem, MenuLabel, MenuSeparator } from "@/components/ui/overlay";
+import { buttonClass } from "@/components/ui/button";
 import { cn } from "@/lib/cn";
 import { isActive, MORE_NAV, PRIMARY_NAV, UTILITY_NAV, type NavItem } from "./nav-config";
+import { WriteSheet } from "./write-sheet";
 
 type Me = { displayName: string; handle: string; avatarHue: string };
 
@@ -126,6 +128,15 @@ export function AppShell({ me, unread, children }: { me: Me; unread: number; chi
           <PortleMark compact className="size-8" />
           Portle
         </Link>
+        <div className="px-3.5 pb-3">
+          <WriteSheet
+            trigger={
+              <button type="button" className={buttonClass("primary", "md", "w-full")}>
+                <SquarePen className="size-4" aria-hidden /> Write
+              </button>
+            }
+          />
+        </div>
         <nav aria-label="Primary" className="flex-1 space-y-6 overflow-y-auto px-3.5 py-2">
           <div className="space-y-1">
             {PRIMARY_NAV.map((item) => (
@@ -156,6 +167,13 @@ export function AppShell({ me, unread, children }: { me: Me; unread: number; chi
           Portle
         </Link>
         <div className="flex items-center gap-1.5">
+          <WriteSheet
+            trigger={
+              <button type="button" aria-label="Write" className="grid size-10 place-items-center rounded-full text-fg hover:bg-field">
+                <SquarePen className="size-[21px]" aria-hidden />
+              </button>
+            }
+          />
           <Link href="/notifications" className="relative grid size-10 place-items-center rounded-full text-fg hover:bg-field" aria-label={`Notifications${unread ? `, ${unread} unread` : ""}`}>
             <Bell className="size-[22px]" />
             {unread ? <span className="absolute top-2 right-2.5 size-2 rounded-full bg-primary ring-2 ring-bg" aria-hidden /> : null}

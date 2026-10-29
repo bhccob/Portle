@@ -185,6 +185,7 @@ Semantic colours (positive, negative, warning, info, gain) belong to data only: 
 - **Headline** (Gabarito 700, clamp(32px, 3.4vw, 48px), line-height 1.1, -0.02em): landing section headings, balanced.
 - **Title** (Gabarito 700, 2rem, line-height 1.08, -0.02em): app page titles and the greeting.
 - **Section** (Gabarito 700, 1.1875rem): app section headings, each under a hairline.
+- **Writing** (Gabarito 700, 1.75rem for a thesis claim, 1.5rem for a journal prompt, line-height 1.15–1.2): what the member is writing about, set large on writing screens.
 - **Figure** (Gabarito 700, 1.625–2.125rem, tabular): the big money numbers on Home, Portfolio and Practice.
 - **Lede** (Gabarito 400, 17–19px, line-height 1.6, 40ch): landing section introductions.
 - **Body** (Onest 400, 0.9375rem, line-height 1.55): app text; long-form notes use a 68ch measure at line-height 1.7.
@@ -243,6 +244,10 @@ In the app, glass is reserved for what floats above the page: the tab bar (depth
 - **Style:** charcoal-field fill, 1px charcoal-rule edge, a pill shape, a quiet placeholder (#8f8da8) and a violet caret.
 - **Focus:** the edge turns violet and a soft 4px violet glow (22%) surrounds the pill. The text inside never gets an outline of its own, and autofilled emails keep the field's colours instead of the browser's pale box.
 - **Size:** 56px tall with 16px text on phones so they do not zoom.
+- **In the app:** fields are a soft field-tinted fill with no edge at rest; the violet edge and glow appear only on focus. Native selects draw their arrow from the `select-chevron` class.
+
+### Writing screens
+Thesis, journal entry and onboarding ask a few plain questions at a time. Answers are written straight on the page (no box), each question under a hairline that turns violet while you type in it. Choices are soft pills (picked: violet edge and tint), not dropdowns, and everything optional waits behind one "Add more detail" row. One full-width button at the bottom. On phones, dialogs rise from the bottom edge as sheets.
 
 ### Notes (signature)
 The hero's three cards, built from real components with sample data: the **Portfolio** card (a donut drawn from the weights, total value, all-time change, four holdings with letter tiles), the **Thesis note** ("Why I bought ASML", three bullets, a pill tag and a gem sticker) and the **Comment** (a friend's avatar, name in lilac, one line). Each is tilted a few degrees and overlaps its neighbour; on load they settle into place, and with a mouse they drift a few pixels at different depths. Neither motion runs under reduced motion.

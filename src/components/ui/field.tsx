@@ -4,9 +4,9 @@ import { useId } from "react";
 import { cn } from "@/lib/cn";
 
 export const controlClass =
-  "w-full rounded-[var(--radius-md)] border border-line bg-field px-3 text-sm text-fg placeholder:text-fg-subtle " +
+  "w-full rounded-[var(--radius-md)] border border-transparent bg-field px-3 text-sm text-fg placeholder:text-fg-subtle " +
   "transition-[border-color,background-color,box-shadow] duration-[var(--dur-fast)] " +
-  "hover:border-line-strong hover:bg-field-hover focus:outline-none focus:border-accent focus:ring-2 focus:ring-[color-mix(in_srgb,var(--accent)_30%,transparent)] " +
+  "hover:bg-field-hover focus:outline-none focus:border-accent focus:ring-2 focus:ring-[color-mix(in_srgb,var(--accent)_30%,transparent)] " +
   "aria-[invalid=true]:border-negative disabled:opacity-60";
 
 export function Label({ className, ...props }: React.LabelHTMLAttributes<HTMLLabelElement>) {

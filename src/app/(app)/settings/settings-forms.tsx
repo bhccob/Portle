@@ -43,7 +43,7 @@ export function ProfileForm({ profile, interests }: { profile: { displayName: st
           {interests.map((i) => (
             <label
               key={i}
-              className="cursor-pointer rounded-full border border-line bg-field px-3 py-1.5 text-[0.8125rem] text-fg-muted select-none hover:border-line-strong has-[:checked]:border-transparent has-[:checked]:bg-selected has-[:checked]:text-fg has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-[var(--focus)]"
+              className="cursor-pointer rounded-full border border-transparent bg-field px-3 py-1.5 text-[0.8125rem] text-fg-muted select-none hover:bg-field-hover has-[:checked]:bg-selected has-[:checked]:text-fg has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-[var(--focus)]"
             >
               <input type="checkbox" name="interests" value={i} defaultChecked={profile.interests.includes(i)} className="sr-only" />
               {topicLabel(i)}

@@ -79,7 +79,7 @@ export function OrderTicket({
     <form action={action} className="space-y-4">
       <input type="hidden" name="idempotencyKey" value={key} />
       <input type="hidden" name="side" value={side} />
-      <div className="grid grid-cols-2 gap-1 rounded-[var(--radius-md)] border border-line bg-field p-1" role="radiogroup" aria-label="Order side">
+      <div className="grid grid-cols-2 gap-1 rounded-[var(--radius-md)] border border-transparent bg-field p-1" role="radiogroup" aria-label="Order side">
         {(["buy", "sell"] as const).map((s) => (
           <button
             key={s}
@@ -137,7 +137,7 @@ export function OrderTicket({
         )}
       </Field>
       {estimate ? (
-        <dl className="space-y-1 rounded-[var(--radius-md)] border border-line bg-field px-3 py-2.5 text-sm">
+        <dl className="space-y-1 rounded-[var(--radius-md)] border border-transparent bg-field px-3 py-2.5 text-sm">
           <div className="flex justify-between">
             <dt className="text-fg-muted">Estimated {type === "market" ? "fill incl. slippage" : "at limit"}</dt>
             <dd className="num text-fg">{formatMoney(estimate.notional.toFixed(2), config.currency)}</dd>

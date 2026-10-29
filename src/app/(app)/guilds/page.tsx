@@ -79,7 +79,7 @@ export default async function GuildsPage({ searchParams }: { searchParams: Promi
           actions={
             <form role="search" className="relative">
               <Search className="pointer-events-none absolute top-1/2 left-2.5 size-4 -translate-y-1/2 text-fg-subtle" aria-hidden />
-              <input name="q" defaultValue={q} placeholder="Name or topic" aria-label="Search Guilds" className="h-9 w-52 rounded-[var(--radius-md)] border border-line bg-field pr-3 pl-8 text-sm text-fg placeholder:text-fg-subtle focus:border-accent focus:outline-none" />
+              <input name="q" defaultValue={q} placeholder="Name or topic" aria-label="Search Guilds" className="h-9 w-52 rounded-[var(--radius-md)] border border-transparent bg-field pr-3 pl-8 text-sm text-fg placeholder:text-fg-subtle focus:border-accent focus:outline-none" />
             </form>
           }
         >

@@ -1,6 +1,5 @@
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
-import { PageHeader, Panel } from "@/components/ui/panel";
 import { utcToday } from "@/domain/review";
 import { getInstrument } from "@/server/services/market";
 import { getPrivacy } from "@/server/services/profile";
@@ -19,37 +18,35 @@ export default async function NewThesisPage({ searchParams }: { searchParams: Pr
     myGuilds(user.id),
   ]);
   return (
-    <>
+    <div className="mx-auto max-w-[640px]">
       <Link href="/theses" className="mb-3 inline-flex items-center gap-1.5 text-sm text-fg-muted hover:text-fg">
         <ArrowLeft className="size-4" aria-hidden /> Theses
       </Link>
-      <PageHeader title="New thesis" description="Only the title is required. Fill in the rest as your research develops." />
-      <Panel>
-        <ThesisForm
-          today={utcToday()}
-          guilds={guilds.map((g) => ({ id: g.guild.id, name: g.guild.name }))}
-          draft={{
-            title: "",
-            summary: "",
-            instrument: inst ? { id: inst.id, symbol: inst.symbol, name: inst.name, exchange: inst.exchange, currency: inst.currency } : null,
-            status: "researching",
-            visibility: privacy.thesesDefaultVisibility === "guild" ? "private" : privacy.thesesDefaultVisibility,
-            guildId: null,
-            timeHorizon: "",
-            tags: [],
-            rationale: "",
-            bullCase: "",
-            bearCase: "",
-            assumptions: "",
-            catalysts: "",
-            risks: "",
-            valuation: "",
-            invalidationCriteria: "",
-            sources: [],
-            reviewOn: null,
-          }}
-        />
-      </Panel>
-    </>
+      <h1 className="mb-6 font-display text-lg font-bold text-fg">New thesis</h1>
+      <ThesisForm
+        today={utcToday()}
+        guilds={guilds.map((g) => ({ id: g.guild.id, name: g.guild.name }))}
+        draft={{
+          title: "",
+          summary: "",
+          instrument: inst ? { id: inst.id, symbol: inst.symbol, name: inst.name, exchange: inst.exchange, currency: inst.currency } : null,
+          status: "researching",
+          visibility: privacy.thesesDefaultVisibility === "guild" ? "private" : privacy.thesesDefaultVisibility,
+          guildId: null,
+          timeHorizon: "",
+          tags: [],
+          rationale: "",
+          bullCase: "",
+          bearCase: "",
+          assumptions: "",
+          catalysts: "",
+          risks: "",
+          valuation: "",
+          invalidationCriteria: "",
+          sources: [],
+          reviewOn: null,
+        }}
+      />
+    </div>
   );
 }

@@ -110,7 +110,7 @@ async function People({ q, viewer, friends }: { q: string; viewer: Awaited<Retur
             minLength={2}
             placeholder="Name or @handle"
             aria-label="Search members"
-            className="h-10 w-full rounded-[var(--radius-md)] border border-line bg-field pr-3 pl-9 text-sm text-fg placeholder:text-fg-subtle focus:border-accent focus:outline-none"
+            className="h-10 w-full rounded-[var(--radius-md)] border border-transparent bg-field pr-3 pl-9 text-sm text-fg placeholder:text-fg-subtle focus:border-accent focus:outline-none"
           />
         </form>
         {q && results.length === 0 ? <EmptyState icon={UserRoundSearch} title="No members found" className="py-6">People who turned off discoverability only appear to existing friends.</EmptyState> : null}

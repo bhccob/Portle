@@ -4,62 +4,118 @@ import { useActionState, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { Plus } from "lucide-react";
 import { toast } from "sonner";
+import { chipClass } from "@/components/forms/compose";
 import { fieldError, useResultToast } from "@/components/forms/use-result";
 import { Button } from "@/components/ui/button";
-import { Field, Input, Select, Textarea } from "@/components/ui/field";
+import { Field, Input, Textarea } from "@/components/ui/field";
 import { Dialog, Switch } from "@/components/ui/overlay";
 import { Callout } from "@/components/ui/states";
+import { INTERESTS, topicLabel, type Interest } from "@/domain/topics";
+import { cn } from "@/lib/cn";
 import { createGuildAction, guildOpAction, inviteAction } from "./actions";
 
+/** Starting a Guild: a name, an optional topic from the onboarding list, and who can join. */
 export function CreateGuildDialog() {
   const [state, action, pending] = useActionState(createGuildAction, null);
+  const [topic, setTopic] = useState("");
+  const [allTopics, setAllTopics] = useState(false);
+  const [join, setJoin] = useState<Join>("request");
+  const [listed, setListed] = useState(true);
+  const [describe, setDescribe] = useState(false);
   return (
     <Dialog
-      title="Found a Guild"
-      description="A focused group around one investing interest. You'll be its owner."
+      title="Start a Guild"
+      description="A small group around one interest. Joining never shares anyone's portfolio."
       trigger={
         <Button>
           <Plus className="size-4" aria-hidden /> New Guild
         </Button>
       }
     >
-      <form action={action} className="space-y-4">
+      <form action={action} className="space-y-5">
         <Field label="Name" error={fieldError(state, "name")}>
-          {(p) => <Input {...p} name="name" required minLength={3} maxLength={48} placeholder="e.g. Long Horizon" />}
+          {(p) => <Input {...p} name="name" required minLength={3} maxLength={48} placeholder="e.g. Dividend Gardeners" className="h-12 text-base" />}
         </Field>
-        <Field label="Topic" optional>
-          {(p) => <Input {...p} name="topic" maxLength={48} placeholder="e.g. Dividend investing" />}
-        </Field>
-        <Field label="What it's for" optional>
-          {(p) => <Textarea {...p} name="description" maxLength={500} className="min-h-20" />}
-        </Field>
-        <div className="grid gap-4 sm:grid-cols-2">
-          <Field label="Who can find it">
-            {(p) => (
-              <Select {...p} name="visibility" defaultValue="discoverable">
-                <option value="discoverable">Listed in Discover</option>
-                <option value="private">Private (invite only to see)</option>
-              </Select>
+
+        <div role="group" aria-labelledby="guild-topic-label">
+          <p id="guild-topic-label" className="mb-2 text-[0.8125rem] font-medium text-fg-muted">
+            Topic <span className="font-normal text-fg-subtle">· optional</span>
+          </p>
+          <input type="hidden" name="topic" value={topic} />
+          <div className="flex flex-wrap gap-2">
+            {(allTopics ? INTERESTS : FIRST_TOPICS).map((t) => (
+              <button key={t} type="button" aria-pressed={topic === topicLabel(t)} onClick={() => setTopic(topic === topicLabel(t) ? "" : topicLabel(t))} className={chipClass}>
+                {topicLabel(t)}
+              </button>
+            ))}
+            {allTopics ? null : (
+              <button type="button" onClick={() => setAllTopics(true)} className={cn(chipClass, "text-fg-muted")}>
+                More topics
+              </button>
             )}
-          </Field>
-          <Field label="How people join">
-            {(p) => (
-              <Select {...p} name="joinPolicy" defaultValue="request">
-                <option value="open">Anyone can join</option>
-                <option value="request">Request, admins approve</option>
-                <option value="invite">Invitation only</option>
-              </Select>
-            )}
-          </Field>
+          </div>
         </div>
+
+        <div>
+          <p id="guild-join-label" className="mb-2 text-[0.8125rem] font-medium text-fg-muted">
+            Who can join
+          </p>
+          <div role="radiogroup" aria-labelledby="guild-join-label" className="grid grid-cols-3 gap-1 rounded-[16px] bg-field p-1">
+            {JOIN.map(([value, label]) => (
+              <label
+                key={value}
+                className="relative grid h-10 cursor-pointer place-items-center rounded-[12px] text-sm font-medium text-fg-muted transition-colors select-none has-[:checked]:bg-[color-mix(in_srgb,var(--fg)_12%,transparent)] has-[:checked]:font-semibold has-[:checked]:text-fg has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-[var(--focus)]"
+              >
+                <input type="radio" name="joinPolicy" value={value} checked={join === value} onChange={() => setJoin(value)} className="sr-only" />
+                {label}
+              </label>
+            ))}
+          </div>
+          <p className="mt-2 text-[0.8125rem] text-fg-subtle">{JOIN_HINT[join]}</p>
+        </div>
+
+        <label className="flex items-center justify-between gap-4">
+          <span>
+            <span className="block text-[0.9375rem] text-fg">Show in Discover</span>
+            <span className="block text-[0.8125rem] text-fg-subtle">{listed ? "Others can find it by name or topic." : "Hidden: only people you invite can see it."}</span>
+          </span>
+          <input type="hidden" name="visibility" value={listed ? "discoverable" : "private"} />
+          <Switch checked={listed} onCheckedChange={setListed} aria-label="Show in Discover" />
+        </label>
+
+        {describe ? (
+          <Field label="What it's for" optional>
+            {(p) => <Textarea {...p} name="description" maxLength={500} className="min-h-20" autoFocus />}
+          </Field>
+        ) : (
+          <button type="button" onClick={() => setDescribe(true)} className={chipClass}>
+            <Plus aria-hidden /> Add a description
+          </button>
+        )}
+
         {state && !state.ok && !state.fieldErrors ? <Callout tone="negative">{state.error}</Callout> : null}
-        <Button type="submit" loading={pending} className="w-full">
-          Create Guild
+        <Button type="submit" size="lg" loading={pending} className="w-full">
+          Start Guild
         </Button>
       </form>
     </Dialog>
   );
 }
+
+const FIRST_TOPICS = ["Long-term investing", "ETFs", "Dividends", "Technology", "Market news", "Crypto"] as const satisfies readonly Interest[];
+
+const JOIN = [
+  ["open", "Anyone"],
+  ["request", "Ask first"],
+  ["invite", "Invite only"],
+] as const;
+type Join = (typeof JOIN)[number][0];
+
+const JOIN_HINT: Record<Join, string> = {
+  open: "Anyone who finds it can join straight away.",
+  request: "People ask to join, and you or your admins say yes.",
+  invite: "Only people you invite can join.",
+};
 
 export function GuildOpButton({
   input,

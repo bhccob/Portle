@@ -16,7 +16,8 @@ export const REFLECTION_PROMPTS = [
 
 export const journalInput = z.object({
   entryDate: z.iso.date("Choose a date."),
-  title: z.string().trim().min(1, "Give the entry a title.").max(120),
+  // Optional: an entry without one is titled by its first line (see titleFromBody).
+  title: z.string().trim().max(120).default(""),
   body: z.string().max(20_000).default(""),
   prompt: z.string().max(200).optional().nullable(),
   visibility: z.enum(["private", "friends"]).default("private"),
@@ -26,6 +27,24 @@ export const journalInput = z.object({
   transactionId: z.uuid().optional().nullable(),
   tags: z.array(z.string().trim().toLowerCase().regex(/^[a-z0-9-]{1,24}$/)).max(8).default([]),
 });
+
+/** The first line of an entry as plain text, shortened at a word, for entries saved without a title. */
+export function titleFromBody(body: string) {
+  const line = (body.split("\n").find((l) => l.trim()) ?? "")
+    .replace(/^\s*(#{1,6}\s+|>\s*|[-*+]\s+|\d+[.)]\s+)/, "")
+    .replace(/[*_`~]/g, "")
+    .replace(/\s+/g, " ")
+    .trim();
+  if (line.length <= 80) return line;
+  const cut = line.slice(0, 79);
+  return `${cut.slice(0, cut.lastIndexOf(" ") > 40 ? cut.lastIndexOf(" ") : 79).trimEnd()}…`;
+}
+
+function withTitle(v: z.output<typeof journalInput>) {
+  const title = v.title || titleFromBody(v.body);
+  if (!title) throw new UserFacingError("Write something first.");
+  return { ...v, title };
+}
 
 /** Links may only point at the author's own theses, orders and transactions. */
 async function assertLinks(userId: string, v: z.output<typeof journalInput>) {
@@ -38,7 +57,7 @@ async function assertLinks(userId: string, v: z.output<typeof journalInput>) {
 }
 
 export async function createEntry(userId: string, raw: z.input<typeof journalInput>) {
-  const v = journalInput.parse(raw);
+  const v = withTitle(journalInput.parse(raw));
   if (v.entryDate > new Date().toISOString().slice(0, 10)) throw new UserFacingError("Journal entries can't be dated in the future.");
   await assertLinks(userId, v);
   const [row] = await getDb().insert(journalEntries).values({ ...v, userId }).returning();
@@ -46,7 +65,7 @@ export async function createEntry(userId: string, raw: z.input<typeof journalInp
 }
 
 export async function updateEntry(userId: string, id: string, raw: z.input<typeof journalInput>) {
-  const v = journalInput.parse(raw);
+  const v = withTitle(journalInput.parse(raw));
   await assertLinks(userId, v);
   const [row] = await getDb()
     .update(journalEntries)

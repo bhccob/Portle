@@ -222,7 +222,7 @@ export function ImportWizard({ accounts }: { accounts: { id: string; name: strin
 
 function ErrorList({ errors }: { errors: { row: number; message: string }[] }) {
   return (
-    <details className="rounded-[var(--radius-lg)] border border-line bg-field px-4 py-3 text-sm">
+    <details className="rounded-[var(--radius-lg)] border border-transparent bg-field px-4 py-3 text-sm">
       <summary className="cursor-pointer font-medium text-fg">
         {errors.length} row{errors.length === 1 ? "" : "s"} rejected
       </summary>

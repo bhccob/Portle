@@ -75,10 +75,15 @@ test.describe.serial("a new member's core journey", () => {
 
   test("writes a private thesis and tests it in the Paper Lab", async () => {
     await page.goto("/theses/new");
-    await page.getByLabel("Title").fill("Index core stays the default");
+    // Three questions up front; the rest waits behind "Add more detail".
+    await page.getByLabel("What do you believe?").fill("Index core stays the default");
     await page.getByLabel(/What would prove you wrong/).fill("Fees on global trackers rise above 0.4% a year.");
-    await page.getByRole("button", { name: "In 6 months" }).click();
-    await page.getByRole("button", { name: "Create thesis" }).click();
+    await page.getByRole("button", { name: "6 months" }).click();
+    await page.getByRole("button", { name: /Add more detail/ }).click();
+    await page.getByRole("button", { name: "Add bear case" }).click();
+    await page.getByLabel("Bear case", { exact: true }).fill("Active funds win after fees for a decade.");
+    await expect(page.getByRole("radio", { name: "Only me" })).toBeChecked();
+    await page.getByRole("button", { name: "Save thesis" }).click();
     await expect(page).toHaveURL(/\/theses\/[0-9a-f-]{36}/);
     thesisUrl = new URL(page.url()).pathname;
     await expect(page.locator("article header").getByText(/Revisit \d/)).toBeVisible();
@@ -96,10 +101,13 @@ test.describe.serial("a new member's core journey", () => {
 
   test("keeps a journal entry", async () => {
     await page.goto("/journal/new");
-    await page.getByLabel("Title").fill("First reflection");
-    await page.getByLabel("Entry").fill("I wrote the thesis before looking at the chart.");
+    // No title field: the first line becomes the title.
+    await page.getByRole("button", { name: "Write without a prompt" }).click();
+    await page.getByLabel("Entry").fill("First reflection\n\nI wrote the thesis before looking at the chart.");
     await page.getByRole("button", { name: "Save entry" }).click();
     await expect(page.getByRole("heading", { name: "First reflection" })).toBeVisible();
+    await expect(page.getByText("I wrote the thesis before looking at the chart.")).toBeVisible();
+    await expect(page.locator("article").getByText("First reflection")).toHaveCount(1);
   });
 
   test("founds a Guild and posts to friends", async () => {
@@ -109,7 +117,10 @@ test.describe.serial("a new member's core journey", () => {
       .getByRole("dialog")
       .getByLabel("Name")
       .fill(`Erin's circle ${Date.now().toString(36)}`);
-    await page.getByRole("dialog").getByRole("button", { name: "Create Guild" }).click();
+    await page.getByRole("dialog").getByRole("button", { name: "Dividends" }).click();
+    await page.getByRole("dialog").getByText("Anyone", { exact: true }).click();
+    await expect(page.getByRole("dialog").getByRole("radio", { name: "Anyone" })).toBeChecked();
+    await page.getByRole("dialog").getByRole("button", { name: "Start Guild" }).click();
     await expect(page.getByText("owner", { exact: true })).toBeVisible();
 
     await page.goto("/feed");

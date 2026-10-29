@@ -74,7 +74,7 @@ export default async function MarketsPage({ searchParams }: { searchParams: Prom
                 defaultValue={q}
                 placeholder="Ticker, name or ISIN"
                 aria-label="Search securities"
-                className="h-9 w-56 rounded-[var(--radius-md)] border border-line bg-field pr-3 pl-8 text-sm text-fg placeholder:text-fg-subtle focus:border-accent focus:outline-none"
+                className="h-9 w-56 rounded-[var(--radius-md)] border border-transparent bg-field pr-3 pl-8 text-sm text-fg placeholder:text-fg-subtle focus:border-accent focus:outline-none"
               />
             </form>
           }
