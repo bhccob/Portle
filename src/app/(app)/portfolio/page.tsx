@@ -400,7 +400,10 @@ export default async function PortfolioPage({ searchParams }: { searchParams: Pr
             {/* Phones: the ring with each holding's logo floating round it, the total and one return in the middle. */}
             <section aria-label="Your mix" className="mt-2 lg:hidden">
               <OrbitRing slices={slices} size={RING} thickness={20} label={mixLabel} other={otherMark}>
-                <span className="text-[0.8125rem] text-fg-subtle">{priced ? "Total value" : "What you put in"}</span>
+                <span className="flex flex-wrap items-center justify-center gap-x-1.5 gap-y-1 text-[0.8125rem] text-fg-subtle">
+                  {priced ? "Total value" : "What you put in"}
+                  <HideNumbersButton pill initial={hideAmounts} />
+                </span>
                 <span className="num secret font-display text-[1.625rem] leading-tight font-bold tracking-[-0.02em] text-fg" data-mask={maskFor(base)}>
                   {formatMoney(total, base)}
                 </span>
@@ -416,9 +419,9 @@ export default async function PortfolioPage({ searchParams }: { searchParams: Pr
             >
               <div className="lg:col-span-2 xl:col-span-1 xl:col-start-2 xl:row-start-1">
                 <OrbitRing slices={slices} size={RING_WIDE} thickness={26} label={mixLabel} other={otherMark}>
-                  <span className="inline-flex items-center gap-1 text-[0.8125rem] text-fg-subtle">
+                  <span className="inline-flex items-center gap-1.5 text-[0.8125rem] text-fg-subtle">
                     {priced ? "Total value" : "What you put in"}
-                    <HideNumbersButton small initial={hideAmounts} />
+                    <HideNumbersButton pill initial={hideAmounts} />
                   </span>
                   <span
                     className="num secret font-display text-[2rem] leading-tight font-bold tracking-[-0.02em] whitespace-nowrap text-fg"

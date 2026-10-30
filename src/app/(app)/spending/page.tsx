@@ -1,6 +1,7 @@
 import { CalendarClock, Lock, Plus, Receipt } from "lucide-react";
 import { Ring, ringColor } from "@/components/charts/ring";
 import { Button } from "@/components/ui/button";
+import { HideTotalButton } from "@/components/shell/hide-total";
 import { PageHeader } from "@/components/ui/panel";
 import { Callout, EmptyState } from "@/components/ui/states";
 import { LinkTabs } from "@/components/ui/tabs";
@@ -82,6 +83,7 @@ export default async function SpendingPage({ searchParams }: { searchParams: Pro
             <Ring slices={legend.map((l) => ({ label: l.label, percent: l.percent }))} label={`Your costs by category, ${word}`} size={184} thickness={22}>
               <span className="num secret font-display text-[1.625rem] leading-tight font-bold tracking-[-0.02em] text-fg">{money(s.total)}</span>
               <span className="text-[0.8125rem] text-fg-subtle">{word}</span>
+              <HideTotalButton className="mt-2" />
             </Ring>
             <ul className="grid min-w-[200px] flex-1 gap-2 text-[0.9375rem]">
               {legend.map((l, i) => (

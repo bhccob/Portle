@@ -3,6 +3,7 @@ import { ChartLine, FlaskConical, List, RotateCcw } from "lucide-react";
 import { AskAccessSheet, type AccessInfo } from "@/components/access/access-client";
 import { Ring } from "@/components/charts/ring";
 import { practiceSlices } from "@/components/charts/ring-data";
+import { HideTotalButton } from "@/components/shell/hide-total";
 import { Badge, SourceBadge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Change } from "@/components/ui/finance";
@@ -20,7 +21,8 @@ export const metadata = { title: "Practice" };
 const STATUS_TONE = { filled: "positive", open: "info", rejected: "negative", cancelled: "neutral" } as const;
 
 /** A dashed tile marks a practice position, where real holdings get a solid one. */
-const dashedTile = "grid size-10 shrink-0 place-items-center rounded-[12px] font-display text-[0.8125rem] font-bold text-practice shadow-[inset_0_0_0_1.5px_var(--practice-line)]";
+const dashedTile =
+  "grid size-10 shrink-0 place-items-center rounded-[12px] font-display text-[0.8125rem] font-bold text-practice shadow-[inset_0_0_0_1.5px_var(--practice-line)]";
 
 export default async function LabPage({ searchParams }: { searchParams: Promise<{ instrument?: string; thesis?: string }> }) {
   const sp = await searchParams;
@@ -34,7 +36,9 @@ export default async function LabPage({ searchParams }: { searchParams: Promise<
     sp.instrument && /^[0-9a-f-]{36}$/i.test(sp.instrument) ? getInstrument(sp.instrument) : null,
   ]);
   const ccy = lab.account.currency;
-  const theses = [...mine, ...shared].filter((t) => !["archived", "invalidated", "validated"].includes(t.thesis.status)).map((t) => ({ id: t.thesis.id, title: t.thesis.title }));
+  const theses = [...mine, ...shared]
+    .filter((t) => !["archived", "invalidated", "validated"].includes(t.thesis.status))
+    .map((t) => ({ id: t.thesis.id, title: t.thesis.title }));
   const slices = practiceSlices(lab);
 
   return (
@@ -56,8 +60,13 @@ export default async function LabPage({ searchParams }: { searchParams: Promise<
           <section aria-label="Pretend account" className="grid items-center gap-x-10 gap-y-6 sm:grid-cols-[auto_1fr]">
             <div className="justify-self-center">
               <Ring slices={slices} label="Practice mix" size={216} thickness={24} dashed>
-                <span className="text-[0.8125rem] text-fg-muted">Pretend value</span>
-                <span className="num secret font-display text-[1.625rem] leading-tight font-bold tracking-[-0.02em] text-practice-strong">{formatMoney(lab.equity, ccy)}</span>
+                <span className="flex flex-wrap items-center justify-center gap-x-1.5 gap-y-1 text-[0.8125rem] text-fg-muted">
+                  Pretend value
+                  <HideTotalButton />
+                </span>
+                <span className="num secret font-display text-[1.625rem] leading-tight font-bold tracking-[-0.02em] text-practice-strong">
+                  {formatMoney(lab.equity, ccy)}
+                </span>
                 <span className="mt-1 text-[0.8125rem]">
                   <Change percent={lab.totalReturn} /> <span className="text-fg-subtle">since start</span>
                 </span>
@@ -137,8 +146,8 @@ export default async function LabPage({ searchParams }: { searchParams: Promise<
                   <li key={order.id} className="flex flex-wrap items-start justify-between gap-3 py-3">
                     <div className="min-w-0 text-sm">
                       <p className="text-fg">
-                        <span className={order.side === "buy" ? "text-positive" : "text-negative"}>{order.side === "buy" ? "Buy" : "Sell"}</span> {formatQuantity(order.quantity)}{" "}
-                        <span className="font-semibold">{instrument.symbol}</span> · {order.type}
+                        <span className={order.side === "buy" ? "text-positive" : "text-negative"}>{order.side === "buy" ? "Buy" : "Sell"}</span>{" "}
+                        {formatQuantity(order.quantity)} <span className="font-semibold">{instrument.symbol}</span> · {order.type}
                         {order.limitPrice ? ` @ ${formatMoney(order.limitPrice, ccy)}` : ""}
                       </p>
                       <p className="mt-0.5 text-xs text-fg-subtle">
@@ -170,9 +179,16 @@ export default async function LabPage({ searchParams }: { searchParams: Promise<
           </Panel>
           <Panel title="How practice trades fill">
             <ul className="space-y-2 text-sm text-fg-muted">
-              <li>Market orders fill at the latest quote moved against you by the slippage assumption ({formatPercent(Number(lab.account.slippageBps) / 10000, { decimals: 2 })}).</li>
-              <li>Limit orders fill only when the quote reaches your limit, never at a worse price. Resting orders are re-checked each time you open Practice.</li>
-              <li>Fees: {formatMoney(lab.account.feeFlat, ccy)} plus {Number(lab.account.feeBps)} bps of the order value.</li>
+              <li>
+                Market orders fill at the latest quote moved against you by the slippage assumption (
+                {formatPercent(Number(lab.account.slippageBps) / 10000, { decimals: 2 })}).
+              </li>
+              <li>
+                Limit orders fill only when the quote reaches your limit, never at a worse price. Resting orders are re-checked each time you open Practice.
+              </li>
+              <li>
+                Fees: {formatMoney(lab.account.feeFlat, ccy)} plus {Number(lab.account.feeBps)} bps of the order value.
+              </li>
               <li>No quote, or a live quote older than a day, means the order is rejected. Practice never invents a price.</li>
             </ul>
             <div className="mt-4 border-t border-line pt-4">

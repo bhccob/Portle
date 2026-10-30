@@ -3,6 +3,7 @@ import { BookOpen, CalendarClock, CheckCircle2, ChevronRight, Circle, FlaskConic
 import { BadgeIcon } from "@/components/badges/badge-icon";
 import { Ring } from "@/components/charts/ring";
 import { holdingSlices, practiceSlices } from "@/components/charts/ring-data";
+import { HideTotalButton } from "@/components/shell/hide-total";
 import { Avatar } from "@/components/ui/avatar";
 import { Badge, SourceBadge } from "@/components/ui/badge";
 import { ButtonLink } from "@/components/ui/button";
@@ -27,7 +28,19 @@ export const metadata = { title: "Home" };
 const olderThanDays = (date: Date, days: number) => Date.now() - date.getTime() > days * 86400_000;
 
 /** A hairline row that links somewhere: a leading tile, two lines of text, a chevron. */
-function RowLink({ href, lead, title, sub, end }: { href: string; lead: React.ReactNode; title: React.ReactNode; sub?: React.ReactNode; end?: React.ReactNode }) {
+function RowLink({
+  href,
+  lead,
+  title,
+  sub,
+  end,
+}: {
+  href: string;
+  lead: React.ReactNode;
+  title: React.ReactNode;
+  sub?: React.ReactNode;
+  end?: React.ReactNode;
+}) {
   return (
     <li>
       <Link href={href} className="group flex items-center gap-3 py-3">
@@ -84,9 +97,7 @@ export default async function HomePage() {
   const wroteToday = journal.some((j) => j.entry.entryDate === today);
   const prompt = REFLECTION_PROMPTS[new Date().getUTCDate() % REFLECTION_PROMPTS.length];
   // The badge closest to its next level, earned or not.
-  const next = [...badges.earned, ...badges.locked]
-    .filter((b) => b.progress?.toNext)
-    .sort((a, b) => b.progress!.fraction - a.progress!.fraction)[0];
+  const next = [...badges.earned, ...badges.locked].filter((b) => b.progress?.toNext).sort((a, b) => b.progress!.fraction - a.progress!.fraction)[0];
 
   const steps = [
     { done: val.accounts.length > 0 && v.holdings.length > 0, label: "Add what you own", href: "/portfolio" },
@@ -113,15 +124,22 @@ export default async function HomePage() {
             {v.holdings.length ? (
               // Priced by the member's broker, their own price or (with Plus) the market; otherwise what was paid.
               v.holdings.some((h) => h.price) ? (
-                <Link href="/portfolio" className="group flex items-center gap-5">
+                // The total is the link, stretched over the whole block; the Hide button sits on top of it.
+                <div className="group relative flex items-center gap-5">
                   <Ring slices={holdingSlices(v.holdings)} label="Your mix" size={120} thickness={16} />
                   <span className="min-w-0">
-                    <span id="real-title" className="flex items-center gap-1.5 font-display text-[0.8125rem] font-semibold text-fg-subtle">
-                      <Lock className="size-3.5" aria-hidden /> My real portfolio
+                    <span className="flex items-center gap-2">
+                      <span id="real-title" className="flex items-center gap-1.5 font-display text-[0.8125rem] font-semibold text-fg-subtle">
+                        <Lock className="size-3.5" aria-hidden /> My real portfolio
+                      </span>
+                      <HideTotalButton className="relative z-10" />
                     </span>
-                    <span className="num mt-1 block font-display text-[2.125rem] leading-none font-bold tracking-[-0.02em] text-fg group-hover:underline">
+                    <Link
+                      href="/portfolio"
+                      className="num mt-1 block font-display text-[2.125rem] leading-none font-bold tracking-[-0.02em] text-fg group-hover:underline after:absolute after:inset-0"
+                    >
                       <span className="secret">{formatMoney(v.totals.marketValue.plus(v.totals.cash.gt(0) ? v.totals.cash : 0), base)}</span>
-                    </span>
+                    </Link>
                     {v.totals.dayChangePct ? (
                       <span className="mt-2 block text-sm">
                         <Change value={v.totals.dayChange} percent={v.totals.dayChangePct} currency={base} /> <span className="text-fg-subtle">today</span>
@@ -129,10 +147,10 @@ export default async function HomePage() {
                     ) : null}
                     {v.usesDemoPrices ? <SourceBadge kind="demo" className="mt-2.5" detail="Demo prices" /> : null}
                   </span>
-                </Link>
+                </div>
               ) : (
                 // Without real prices: what was paid, never a made-up value.
-                <Link href="/portfolio" className="group flex items-center gap-5">
+                <div className="group relative flex items-center gap-5">
                   <Ring
                     slices={val.paid.rows.map((r) => ({ label: r.holding.instrument.symbol, percent: Number(r.share ?? 0) }))}
                     label="Your mix by what you paid"
@@ -140,17 +158,23 @@ export default async function HomePage() {
                     thickness={16}
                   />
                   <span className="min-w-0">
-                    <span id="real-title" className="flex items-center gap-1.5 font-display text-[0.8125rem] font-semibold text-fg-subtle">
-                      <Lock className="size-3.5" aria-hidden /> What you put in
+                    <span className="flex items-center gap-2">
+                      <span id="real-title" className="flex items-center gap-1.5 font-display text-[0.8125rem] font-semibold text-fg-subtle">
+                        <Lock className="size-3.5" aria-hidden /> What you put in
+                      </span>
+                      <HideTotalButton className="relative z-10" />
                     </span>
-                    <span className="num mt-1 block font-display text-[2.125rem] leading-none font-bold tracking-[-0.02em] text-fg group-hover:underline">
+                    <Link
+                      href="/portfolio"
+                      className="num mt-1 block font-display text-[2.125rem] leading-none font-bold tracking-[-0.02em] text-fg group-hover:underline after:absolute after:inset-0"
+                    >
                       <span className="secret">{formatMoney(val.paid.total, base)}</span>
-                    </span>
+                    </Link>
                     <span className="mt-2 block text-sm text-fg-subtle">
                       {val.access.status === "requested" ? "Market prices: Plus requested" : "Market prices come with Portle Plus"}
                     </span>
                   </span>
-                </Link>
+                </div>
               )
             ) : (
               <div>
@@ -173,7 +197,11 @@ export default async function HomePage() {
                 {steps.map((s) => (
                   <li key={s.label}>
                     <Link href={s.href} className="flex items-center gap-3 py-2.5 text-[0.9375rem] hover:underline">
-                      {s.done ? <CheckCircle2 className="size-5 shrink-0 text-positive" aria-label="Done" /> : <Circle className="size-5 shrink-0 text-fg-subtle" aria-label="To do" />}
+                      {s.done ? (
+                        <CheckCircle2 className="size-5 shrink-0 text-positive" aria-label="Done" />
+                      ) : (
+                        <Circle className="size-5 shrink-0 text-fg-subtle" aria-label="To do" />
+                      )}
                       <span className={s.done ? "text-fg-subtle line-through" : "text-fg"}>{s.label}</span>
                     </Link>
                   </li>
@@ -257,7 +285,13 @@ export default async function HomePage() {
             ) : (
               <ul className="divide-y divide-line">
                 {theses.slice(0, 3).map((t) => (
-                  <RowLink key={t.thesis.id} href={`/theses/${t.thesis.id}`} lead={null} title={t.thesis.title} end={<Badge tone={STATUS_TONE[t.thesis.status]}>{STATUS_LABEL[t.thesis.status]}</Badge>} />
+                  <RowLink
+                    key={t.thesis.id}
+                    href={`/theses/${t.thesis.id}`}
+                    lead={null}
+                    title={t.thesis.title}
+                    end={<Badge tone={STATUS_TONE[t.thesis.status]}>{STATUS_LABEL[t.thesis.status]}</Badge>}
+                  />
                 ))}
               </ul>
             )}
@@ -301,7 +335,12 @@ export default async function HomePage() {
                     }
                     end={
                       p.post.insight ? (
-                        <Ring slices={p.post.insight.slices.map((s) => ({ label: s.label, percent: Number(s.percent) }))} label={`${p.author.displayName}'s mix`} size={36} thickness={7} />
+                        <Ring
+                          slices={p.post.insight.slices.map((s) => ({ label: s.label, percent: Number(s.percent) }))}
+                          label={`${p.author.displayName}'s mix`}
+                          size={36}
+                          thickness={7}
+                        />
                       ) : undefined
                     }
                   />
@@ -342,7 +381,13 @@ export default async function HomePage() {
             {journal.length ? (
               <ul className="mt-3 divide-y divide-line">
                 {journal.slice(0, 3).map((j) => (
-                  <RowLink key={j.entry.id} href={`/journal/${j.entry.id}`} lead={null} title={j.entry.title} end={<span className="shrink-0 text-xs text-fg-subtle">{formatDate(j.entry.entryDate, { withYear: false })}</span>} />
+                  <RowLink
+                    key={j.entry.id}
+                    href={`/journal/${j.entry.id}`}
+                    lead={null}
+                    title={j.entry.title}
+                    end={<span className="shrink-0 text-xs text-fg-subtle">{formatDate(j.entry.entryDate, { withYear: false })}</span>}
+                  />
                 ))}
               </ul>
             ) : null}

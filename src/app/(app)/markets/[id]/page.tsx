@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { ArrowLeft, FlaskConical, ScrollText } from "lucide-react";
 import { AccessBand } from "@/components/access/access-client";
 import { LineChart } from "@/components/charts/line-chart";
+import { HideTotalButton } from "@/components/shell/hide-total";
 import { Badge, SourceBadge } from "@/components/ui/badge";
 import { ButtonLink } from "@/components/ui/button";
 import { Change } from "@/components/ui/finance";
@@ -87,12 +88,26 @@ export default async function InstrumentPage({ params, searchParams }: { params:
       <div className="grid gap-5 xl:grid-cols-[1.6fr_1fr]">
         <Panel
           title="Price"
-          actions={price ? <SourceBadge kind={price.isDemo ? "demo" : price.delayMinutes ? "delayed" : "live"} asOf={price.asOf} detail={price.isDemo ? "Demo · synthetic" : `${price.source}${price.delayMinutes >= 1440 ? " · closing price" : price.delayMinutes ? ` · ${price.delayMinutes} min delay` : ""}`} /> : null}
+          actions={
+            price ? (
+              <SourceBadge
+                kind={price.isDemo ? "demo" : price.delayMinutes ? "delayed" : "live"}
+                asOf={price.asOf}
+                detail={
+                  price.isDemo
+                    ? "Demo · synthetic"
+                    : `${price.source}${price.delayMinutes >= 1440 ? " · closing price" : price.delayMinutes ? ` · ${price.delayMinutes} min delay` : ""}`
+                }
+              />
+            ) : null
+          }
         >
           {!access.full ? <AccessBand access={access} /> : null}
           <div className={access.full ? "flex flex-wrap items-end justify-between gap-4" : "hidden"}>
             <div>
-              <p className="num text-[2rem] leading-none font-semibold tracking-[-0.03em] text-fg">{price ? formatMoney(price.price, price.currency) : "No price"}</p>
+              <p className="num text-[2rem] leading-none font-semibold tracking-[-0.03em] text-fg">
+                {price ? formatMoney(price.price, price.currency) : "No price"}
+              </p>
               <p className="mt-2 text-sm">
                 <Change percent={change} /> <span className="text-fg-subtle">today</span>
               </p>
@@ -100,7 +115,12 @@ export default async function InstrumentPage({ params, searchParams }: { params:
             <LinkTabs label="Chart range" current={range} items={RANGES.map((r) => ({ value: r, label: r, href: `/markets/${inst.id}?range=${r}` }))} />
           </div>
           <div className={access.full ? "mt-5" : "hidden"}>
-            <LineChart points={history.map((h) => ({ date: h.date, value: Number(h.close) }))} mode="index" label={`${inst.symbol} closing price`} height={240} />
+            <LineChart
+              points={history.map((h) => ({ date: h.date, value: Number(h.close) }))}
+              mode="index"
+              label={`${inst.symbol} closing price`}
+              height={240}
+            />
           </div>
           {history.length > 1 ? (
             <dl className="mt-5 grid grid-cols-2 gap-4 border-t border-line pt-4 sm:grid-cols-4">
@@ -116,17 +136,43 @@ export default async function InstrumentPage({ params, searchParams }: { params:
         </Panel>
 
         <div className="space-y-5">
-          <Panel title="Your position" actions={<PrivateNote>Private</PrivateNote>}>
+          <Panel
+            title="Your position"
+            actions={
+              <div className="flex items-center gap-3">
+                <PrivateNote>Private</PrivateNote>
+                <HideTotalButton />
+              </div>
+            }
+          >
             {holding ? (
               <dl className="grid grid-cols-2 gap-4">
                 <Stat label="Quantity" value={<span className="secret">{formatQuantity(holding.quantity)}</span>} />
-                <Stat label="Average cost" value={holding.averageCost ? <span className="secret">{formatMoney(holding.averageCost, inst.currency)}</span> : "Unknown"} />
-                <Stat label={`Value (${valuation.portfolio.baseCurrency})`} value={<span className="secret">{formatMoney(holding.marketValueBase, valuation.portfolio.baseCurrency)}</span>} />
+                <Stat
+                  label="Average cost"
+                  value={holding.averageCost ? <span className="secret">{formatMoney(holding.averageCost, inst.currency)}</span> : "Unknown"}
+                />
+                <Stat
+                  label={`Value (${valuation.portfolio.baseCurrency})`}
+                  value={<span className="secret">{formatMoney(holding.marketValueBase, valuation.portfolio.baseCurrency)}</span>}
+                />
                 <Stat label="Weight" value={holding.weight ? formatPercent(holding.weight) : "—"} />
-                <Stat className="col-span-2" label="Unrealized" value={holding.unrealizedBase ? <Change value={holding.unrealizedBase} percent={holding.unrealizedPct} currency={valuation.portfolio.baseCurrency} size="md" /> : "—"} />
+                <Stat
+                  className="col-span-2"
+                  label="Unrealized"
+                  value={
+                    holding.unrealizedBase ? (
+                      <Change value={holding.unrealizedBase} percent={holding.unrealizedPct} currency={valuation.portfolio.baseCurrency} size="md" />
+                    ) : (
+                      "—"
+                    )
+                  }
+                />
               </dl>
             ) : (
-              <p className="text-sm text-fg-muted">You don&apos;t hold {inst.symbol}. Record a purchase from the Portfolio page, or rehearse it in the Paper Lab first.</p>
+              <p className="text-sm text-fg-muted">
+                You don&apos;t hold {inst.symbol}. Record a purchase from the Portfolio page, or rehearse it in the Paper Lab first.
+              </p>
             )}
           </Panel>
 
@@ -143,7 +189,10 @@ export default async function InstrumentPage({ params, searchParams }: { params:
               <ul className="space-y-3">
                 {theses.map((t) => (
                   <li key={t.thesis.id}>
-                    <Link href={`/theses/${t.thesis.id}`} className="block rounded-[var(--radius-md)] border border-line p-3 hover:border-line-strong hover:bg-field">
+                    <Link
+                      href={`/theses/${t.thesis.id}`}
+                      className="block rounded-[var(--radius-md)] border border-line p-3 hover:border-line-strong hover:bg-field"
+                    >
                       <span className="flex items-center justify-between gap-2">
                         <span className="font-medium text-fg">{t.thesis.title}</span>
                         <Badge>{t.thesis.status.replace("_", " ")}</Badge>
