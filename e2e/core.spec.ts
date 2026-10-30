@@ -85,7 +85,8 @@ test.describe.serial("a new member's core journey", () => {
     await dialog.getByRole("button", { name: "Save transaction" }).click();
     await expect(page.getByRole("rowheader", { name: /ASML/ })).toBeVisible();
     // Without a broker or Plus, Portfolio shows what was paid.
-    await expect(page.getByText("Demo prices · synthetic").or(page.getByText("What you put in").first())).toBeVisible();
+    // Phones and computers each have their own ring, so look at the one on screen.
+    await expect(page.getByText("Demo prices · synthetic").or(page.getByText("What you put in")).filter({ visible: true }).first()).toBeVisible();
   });
 
   test("writes a private thesis and tests it in the Paper Lab", async () => {

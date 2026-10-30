@@ -27,8 +27,8 @@ export function useHiddenNumbers(initial: boolean) {
   return [hidden, toggle] as const;
 }
 
-/** The eye: hides every amount and share count in Portle on this device, and shows them again. */
-export function HideNumbersButton({ initial, className, withLabel }: { initial: boolean; className?: string; withLabel?: boolean }) {
+/** The eye: hides every amount and share count in Portle on this device, and shows them again. `small` sits beside a total. */
+export function HideNumbersButton({ initial, className, withLabel, small }: { initial: boolean; className?: string; withLabel?: boolean; small?: boolean }) {
   const [hidden, toggle] = useHiddenNumbers(initial);
   const Icon = hidden ? EyeOff : Eye;
   return (
@@ -41,13 +41,17 @@ export function HideNumbersButton({ initial, className, withLabel }: { initial: 
       className={cn(
         withLabel
           ? "group flex h-10 w-full items-center gap-3 rounded-full px-3.5 text-[0.9375rem] text-fg-muted transition-colors hover:bg-field hover:text-fg"
-          : "grid size-10 place-items-center rounded-full text-fg hover:bg-field",
-        hidden && !withLabel && "bg-selected text-accent",
+          : small
+            ? "grid size-6 place-items-center rounded-full text-fg-subtle transition-colors hover:bg-field hover:text-fg"
+            : "grid size-10 place-items-center rounded-full text-fg hover:bg-field",
+        hidden && !withLabel && (small ? "text-accent" : "bg-selected text-accent"),
         className,
       )}
     >
       <Icon
-        className={withLabel ? cn("size-[19px] shrink-0", hidden ? "text-accent" : "text-fg-subtle group-hover:text-fg-muted") : "size-[21px]"}
+        className={
+          withLabel ? cn("size-[19px] shrink-0", hidden ? "text-accent" : "text-fg-subtle group-hover:text-fg-muted") : small ? "size-3.5" : "size-[21px]"
+        }
         aria-hidden
       />
       {withLabel ? <span>{hidden ? "Show numbers" : "Hide numbers"}</span> : null}

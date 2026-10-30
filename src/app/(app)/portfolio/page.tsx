@@ -39,11 +39,14 @@ import {
   type ReturnFigure,
 } from "./portfolio-client";
 import { AddTransactionDialog, LoadSampleButton } from "./portfolio-forms";
+import { ReturnBlock } from "./summary";
 
 export const metadata = { title: "My portfolio" };
 
 const RANGES: Range[] = ["1M", "3M", "6M", "YTD", "1Y", "3Y"];
 const RING = 216;
+/** On computers the ring takes the middle of the page, so it can be bigger. */
+const RING_WIDE = 300;
 
 type Row = {
   id: string;
@@ -84,7 +87,9 @@ export default async function PortfolioPage({ searchParams }: { searchParams: Pr
   // Linked brokers catch up quietly after the page is sent, at most every few hours.
   if (connections.length) after(() => syncStaleBrokerConnections(user.id).catch(() => undefined));
   const qs = (patch: Record<string, string | undefined>) => {
-    const p = new URLSearchParams(Object.entries({ range, sort: sort === "value" ? undefined : sort, account: accountId, ...patch }).filter(([, x]) => x) as [string, string][]);
+    const p = new URLSearchParams(
+      Object.entries({ range, sort: sort === "value" ? undefined : sort, account: accountId, ...patch }).filter(([, x]) => x) as [string, string][],
+    );
     return `/portfolio?${p}`;
   };
   const accountOptions = accounts.map((a) => ({ id: a.id, name: a.name, currency: a.currency }));
@@ -124,7 +129,10 @@ export default async function PortfolioPage({ searchParams }: { searchParams: Pr
   const [lists, ownItems, privacy] = await Promise.all([listWatchlists(user.id), listOwnItems(user.id), getPrivacy(user.id)]);
   const watch = lists[0]?.items ?? [];
   const [logos, watchPrices] = await Promise.all([
-    logosFor([...v.holdings.map((h) => ({ id: h.instrument.id, symbol: h.instrument.symbol, exchange: h.instrument.exchange ?? "" })), ...watch.map((i) => i.instrument)]),
+    logosFor([
+      ...v.holdings.map((h) => ({ id: h.instrument.id, symbol: h.instrument.symbol, exchange: h.instrument.exchange ?? "" })),
+      ...watch.map((i) => i.instrument),
+    ]),
     getPrices(
       watch.map((i) => i.instrument),
       { userId: user.id },
@@ -190,20 +198,74 @@ export default async function PortfolioPage({ searchParams }: { searchParams: Pr
     ) : (
       <span className="text-fg-subtle">—</span>
     );
-  const tile = (r: Row, size: number, round = false) => <LogoTile symbol={r.label} logo={r.logo} kind={r.kind} size={size} round={round} fallback={r.colour || "var(--chart-7)"} />;
+  const tile = (r: Row, size: number, round = false) => (
+    <LogoTile symbol={r.label} logo={r.logo} kind={r.kind} size={size} round={round} fallback={r.colour || "var(--chart-7)"} />
+  );
   const slices: OrbitSlice[] = byShare.map((r) => ({ label: r.label, percent: r.share, mark: tile(r, 32, true) }));
+  const mixLabel = priced ? "Your mix by value" : "Your mix by what you paid";
+  const otherMark = (n: number) => <LogoTile symbol={`+${n}`} kind="other" size={32} round />;
   const ordered = [...rows].sort((a, b) =>
     sort === "name" ? a.label.localeCompare(b.label) : sort === "return" ? Number(b.allPct ?? -Infinity) - Number(a.allPct ?? -Infinity) : b.share - a.share,
   );
 
   const figure = (value: Dec | null, pct: Dec | null, note?: string): ReturnFigure =>
     value || pct
-      ? { money: value ? formatMoney(value, base, { signed: true }) : null, mask: maskFor(base), pct: pct ? formatPercent(pct, { signed: true, decimals: 2 }) : null, tone: signOf(pct ?? value) }
+      ? {
+          money: value ? formatMoney(value, base, { signed: true }) : null,
+          mask: maskFor(base),
+          pct: pct ? formatPercent(pct, { signed: true, decimals: 2 }) : null,
+          tone: signOf(pct ?? value),
+        }
       : { money: null, mask: maskFor(base), pct: null, tone: 0, note };
   const todayFig: ReturnFigure = !access.full
     ? { money: null, mask: maskFor(base), pct: null, tone: 0, locked: true }
     : figure(v.totals.dayChangePct ? v.totals.dayChange : null, v.totals.dayChangePct, "No price from yesterday yet");
   const allFig = figure(v.totals.unrealizedPct ? v.totals.unrealized : null, v.totals.unrealizedPct);
+  // Beside the ring on computers: today's best and worst holding, then what selling and dividends have brought in.
+  const movers = v.holdings.filter((h) => h.dayChangePct).sort((a, b) => Number(b.dayChangePct) - Number(a.dayChangePct));
+  const moved = (h: (typeof movers)[number]) => (
+    <>
+      {h.instrument.symbol}{" "}
+      <span className={signOf(h.dayChangePct) > 0 ? "text-positive" : signOf(h.dayChangePct) < 0 ? "text-negative" : "text-fg-muted"}>
+        {formatPercent(h.dayChangePct!, { signed: true, decimals: 2 })}
+      </span>
+    </>
+  );
+  const todayDetails =
+    movers.length > 1
+      ? [
+          { term: "Best", detail: moved(movers[0]) },
+          { term: "Worst", detail: moved(movers[movers.length - 1]) },
+        ]
+      : undefined;
+  const allDetails = [
+    {
+      term: "Sold",
+      detail: (
+        <Money
+          value={v.totals.realized}
+          currency={base}
+          signed
+          className={signOf(v.totals.realized) > 0 ? "text-positive" : signOf(v.totals.realized) < 0 ? "text-negative" : undefined}
+        />
+      ),
+    },
+    { term: "Dividends", detail: <Money value={v.totals.income} currency={base} /> },
+  ];
+  const held = `${v.holdings.length} ${v.holdings.length === 1 ? "holding" : "holdings"}${cash ? " and cash" : ""}`;
+  // Under the ring: where the prices come from, or why there are none yet.
+  const source = priced ? (
+    <p className="flex justify-center">
+      <SourceBadge kind={priceKind} detail={priceLabel} asOf={v.oldestPriceAsOf} />
+    </p>
+  ) : (
+    <div className="mx-auto max-w-[34ch] text-center">
+      <p className="text-[0.8125rem] text-fg-muted">
+        Portle shows what you paid until it has prices. Link your broker for its prices, or get Plus for market prices.
+      </p>
+      <AccessButton access={access} className="mt-3" />
+    </div>
+  );
 
   const mix: MixPreview = {
     assetClass: v.allocation.assetClass.map((s) => ({ label: s.label, percent: Number(s.percent) })),
@@ -250,7 +312,9 @@ export default async function PortfolioPage({ searchParams }: { searchParams: Pr
       <div className="mb-1 flex items-center justify-between">
         <h2 className="flex items-center gap-2 font-display text-lg font-bold text-fg">
           <Star className="size-4 fill-[var(--chart-4)] text-[var(--chart-4)]" aria-hidden /> Watchlist
-          <span className="num grid h-5 min-w-5 place-items-center rounded-full bg-[color-mix(in_srgb,var(--chart-4)_26%,transparent)] px-1.5 text-xs">{watch.length}</span>
+          <span className="num grid h-5 min-w-5 place-items-center rounded-full bg-[color-mix(in_srgb,var(--chart-4)_26%,transparent)] px-1.5 text-xs">
+            {watch.length}
+          </span>
         </h2>
         <Link href="/markets" className="text-[0.8125rem] font-semibold text-accent hover:underline">
           See all
@@ -262,14 +326,15 @@ export default async function PortfolioPage({ searchParams }: { searchParams: Pr
 
   return (
     <>
-      {/* The title, and on computers the toolbar: how you're looking at it, then what you can do. */}
-      <div className="mb-4 flex flex-wrap items-center justify-between gap-3 lg:mb-6">
-        <h1 className="font-display text-[1.75rem] leading-tight font-bold tracking-[-0.02em] text-fg lg:text-[2rem]">Portfolio</h1>
-        <div className="hidden flex-wrap items-center justify-end gap-2.5 lg:flex">
-          <AccountPicker accounts={accountOptions} current={accountId} access={access} />
-          <CurrencyPicker value={base} />
-          <HideNumbersButton initial={hideAmounts} className="border border-line-strong bg-field" />
-          <span className="mx-1 h-6 w-px bg-line-strong" aria-hidden />
+      {/* The title; on computers the account switch sits beside it and three actions on the right. The currency lives in Manage. */}
+      <div className="mb-4 flex flex-wrap items-center justify-between gap-3 lg:mb-2">
+        <div className="flex items-center gap-3.5">
+          <h1 className="font-display text-[1.75rem] leading-tight font-bold tracking-[-0.02em] text-fg lg:text-[2rem]">Portfolio</h1>
+          <div className="hidden lg:block">
+            <AccountPicker accounts={accountOptions} current={accountId} access={access} quiet />
+          </div>
+        </div>
+        <div className="hidden items-center gap-2 lg:flex">
           <ShareButton mix={mix} wide />
           <ManageMenu labelled {...manage} />
           <AddInvestmentsButton {...manage} />
@@ -331,156 +396,192 @@ export default async function PortfolioPage({ searchParams }: { searchParams: Pr
         </EmptyState>
       ) : (
         <div className="space-y-10">
-          <div className="mt-2 grid gap-x-8 gap-y-4 lg:mt-0 lg:grid-cols-[320px_minmax(0,1fr)] xl:grid-cols-[320px_minmax(0,1fr)_240px]">
-            {/* The ring: your money with each holding's logo floating round it, the total and one return in the middle. */}
-            <section aria-label="Your mix" className="lg:sticky lg:top-8 lg:self-start">
-              <OrbitRing
-                slices={slices}
-                size={RING}
-                thickness={20}
-                label={priced ? "Your mix by value" : "Your mix by what you paid"}
-                other={(n) => <LogoTile symbol={`+${n}`} kind="other" size={32} round />}
-              >
+          <div>
+            {/* Phones: the ring with each holding's logo floating round it, the total and one return in the middle. */}
+            <section aria-label="Your mix" className="mt-2 lg:hidden">
+              <OrbitRing slices={slices} size={RING} thickness={20} label={mixLabel} other={otherMark}>
                 <span className="text-[0.8125rem] text-fg-subtle">{priced ? "Total value" : "What you put in"}</span>
                 <span className="num secret font-display text-[1.625rem] leading-tight font-bold tracking-[-0.02em] text-fg" data-mask={maskFor(base)}>
                   {formatMoney(total, base)}
                 </span>
                 {priced ? <ReturnPicker initial={ringReturn} today={todayFig} allTime={allFig} access={access} /> : null}
               </OrbitRing>
-              {priced ? (
-                <p className="flex justify-center">
-                  <SourceBadge kind={priceKind} detail={priceLabel} asOf={v.oldestPriceAsOf} />
-                </p>
-              ) : (
-                <div className="mx-auto max-w-[34ch] text-center">
-                  <p className="text-[0.8125rem] text-fg-muted">Portle shows what you paid until it has prices. Link your broker for its prices, or get Plus for market prices.</p>
-                  <AccessButton access={access} className="mt-3" />
-                </div>
-              )}
+              {source}
             </section>
 
-            <section aria-label="Holdings" className="min-w-0">
-              <div className="mb-1 flex items-center justify-between gap-3">
-                <h2 className="font-display text-xl font-bold text-fg">Holdings</h2>
-                <SortPicker value={sort} />
+            {/* Computers: a bigger ring in the middle, Today on its left and All time on its right (under it on narrower screens). */}
+            <section
+              aria-label="Your mix"
+              className="hidden items-center gap-x-12 gap-y-6 lg:grid lg:grid-cols-2 xl:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] xl:gap-x-6"
+            >
+              <div className="lg:col-span-2 xl:col-span-1 xl:col-start-2 xl:row-start-1">
+                <OrbitRing slices={slices} size={RING_WIDE} thickness={26} label={mixLabel} other={otherMark}>
+                  <span className="inline-flex items-center gap-1 text-[0.8125rem] text-fg-subtle">
+                    {priced ? "Total value" : "What you put in"}
+                    <HideNumbersButton small initial={hideAmounts} />
+                  </span>
+                  <span
+                    className="num secret font-display text-[2rem] leading-tight font-bold tracking-[-0.02em] whitespace-nowrap text-fg"
+                    data-mask={maskFor(base)}
+                  >
+                    {formatMoney(total, base)}
+                  </span>
+                  <span className="mt-1 text-xs text-fg-subtle">
+                    {held} · {base}
+                  </span>
+                </OrbitRing>
+                {source}
               </div>
+              {priced ? (
+                <>
+                  <ReturnBlock
+                    side="left"
+                    label="Today"
+                    value={v.totals.dayChangePct ? v.totals.dayChange : null}
+                    percent={v.totals.dayChangePct}
+                    currency={base}
+                    against="Since yesterday's close"
+                    note="No price from yesterday yet. It comes with a market data plan."
+                    details={todayDetails}
+                    locked={access.full ? undefined : access}
+                    className="xl:col-start-1 xl:row-start-1"
+                  />
+                  <ReturnBlock
+                    side="right"
+                    label="All time"
+                    value={v.totals.unrealizedPct ? v.totals.unrealized : null}
+                    percent={v.totals.unrealizedPct}
+                    currency={base}
+                    against="Against what you paid"
+                    details={allDetails}
+                    className="xl:col-start-3 xl:row-start-1"
+                  />
+                </>
+              ) : null}
+            </section>
 
-              {/* Phones: one row each, value and all-time return on the right. */}
-              <ul className="lg:hidden">
-                {ordered.map((r) => {
-                  const inner = (
-                    <>
-                      {tile(r, 42)}
-                      <span className="min-w-0 flex-1">
-                        <span className="block truncate font-display text-[0.9375rem] font-semibold text-fg">{r.label}</span>
-                        <span className="block truncate text-xs text-fg-subtle">
-                          <span className="num">{formatPercent(r.share)}</span>
-                          {r.quantity ? (
-                            <>
-                              {" · "}
-                              <Secret className="num">{formatQuantity(r.quantity)}</Secret> {r.kind === "own" ? "held" : "shares"}
-                            </>
-                          ) : (
-                            ` · ${base}`
-                          )}
-                        </span>
-                      </span>
-                      <span className="text-right">
-                        {r.value ? (
-                          <Money value={r.value} currency={base} className="block text-[0.9375rem] font-semibold text-fg" />
-                        ) : (
-                          <span className="block text-sm text-fg-muted">No price</span>
-                        )}
-                        {r.allPct ? <Change percent={r.allPct} className="justify-end" /> : null}
-                      </span>
-                    </>
-                  );
-                  return (
-                    <li key={r.id} className="border-t border-line first:border-t-0">
-                      {r.href ? (
-                        <Link href={r.href} className="flex items-center gap-3 py-3">
-                          {inner}
-                        </Link>
-                      ) : (
-                        <div className="flex items-center gap-3 py-3">{inner}</div>
-                      )}
-                    </li>
-                  );
-                })}
-              </ul>
+            <div className="mt-4 grid gap-x-10 lg:mt-8 lg:border-t lg:border-line lg:pt-5 xl:grid-cols-[minmax(0,1fr)_260px]">
+              <section aria-label="Holdings" className="min-w-0">
+                <div className="mb-1 flex items-center justify-between gap-3">
+                  <h2 className="font-display text-xl font-bold text-fg">Holdings</h2>
+                  <SortPicker value={sort} />
+                </div>
 
-              {/* Computers: position, today and all time side by side. */}
-              <table className="hidden w-full text-sm lg:table">
-                <caption className="sr-only">Your holdings with value, today&apos;s change and all-time return</caption>
-                <thead>
-                  <tr className="border-b border-line text-right text-xs whitespace-nowrap text-fg-subtle">
-                    <th scope="col" className="py-3 text-left font-medium">
-                      Holding
-                    </th>
-                    <th scope="col" className="py-3 pl-3 font-medium">
-                      Position
-                    </th>
-                    <th scope="col" className="py-3 pl-3 font-medium">
-                      <span className="inline-flex items-center gap-1">
-                        {!access.full ? <Lock className="size-3" aria-label="Plus" /> : null}Today
-                      </span>
-                    </th>
-                    <th scope="col" className="py-3 pl-3 font-medium">
-                      All time
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
+                {/* Phones: one row each, value and all-time return on the right. */}
+                <ul className="lg:hidden">
                   {ordered.map((r) => {
-                    const name = (
+                    const inner = (
                       <>
-                        {tile(r, 40)}
-                        <span className="min-w-0">
-                          <span className="block font-display font-semibold text-fg group-hover:underline">{r.label}</span>
-                          <span className="block max-w-[130px] truncate text-xs text-fg-subtle">
-                            <span className="num">{formatPercent(r.share)}</span> · {r.sub}
+                        {tile(r, 42)}
+                        <span className="min-w-0 flex-1">
+                          <span className="block truncate font-display text-[0.9375rem] font-semibold text-fg">{r.label}</span>
+                          <span className="block truncate text-xs text-fg-subtle">
+                            <span className="num">{formatPercent(r.share)}</span>
+                            {r.quantity ? (
+                              <>
+                                {" · "}
+                                <Secret className="num">{formatQuantity(r.quantity)}</Secret> {r.kind === "own" ? "held" : "shares"}
+                              </>
+                            ) : (
+                              ` · ${base}`
+                            )}
                           </span>
+                        </span>
+                        <span className="text-right">
+                          {r.value ? (
+                            <Money value={r.value} currency={base} className="block text-[0.9375rem] font-semibold text-fg" />
+                          ) : (
+                            <span className="block text-sm text-fg-muted">No price</span>
+                          )}
+                          {r.allPct ? <Change percent={r.allPct} className="justify-end" /> : null}
                         </span>
                       </>
                     );
                     return (
-                      <tr key={r.id} className="border-t border-line first:border-t-0">
-                        <th scope="row" className="py-3 text-left font-normal">
-                          {r.href ? (
-                            <Link href={r.href} className="group flex min-w-0 items-center gap-3">
-                              {name}
-                            </Link>
-                          ) : (
-                            <span className="flex min-w-0 items-center gap-3">{name}</span>
-                          )}
-                        </th>
-                        <td className="py-3 pl-3 text-right whitespace-nowrap">
-                          {r.value ? <Money value={r.value} currency={base} className="block font-semibold text-fg" /> : <span className="text-fg-muted">No price</span>}
-                          {r.quantity ? (
-                            <span className="block text-xs text-fg-subtle">
-                              <Secret className="num">{formatQuantity(r.quantity)}</Secret> {r.kind === "own" ? "held" : "shares"}
-                            </span>
-                          ) : null}
-                        </td>
-                        <td className="py-3 pl-3 text-right whitespace-nowrap">
-                          {delta(r.todayValue, r.todayPct)}
-                        </td>
-                        <td className="py-3 pl-3 text-right whitespace-nowrap">
-                          {delta(r.allValue, r.allPct)}
-                        </td>
-                      </tr>
+                      <li key={r.id} className="border-t border-line first:border-t-0">
+                        {r.href ? (
+                          <Link href={r.href} className="flex items-center gap-3 py-3">
+                            {inner}
+                          </Link>
+                        ) : (
+                          <div className="flex items-center gap-3 py-3">{inner}</div>
+                        )}
+                      </li>
                     );
                   })}
-                </tbody>
-              </table>
+                </ul>
 
-              {/* Between phone and wide screens the watchlist sits under the holdings. */}
-              <div className="mt-8 hidden lg:block xl:hidden">{watchRail}</div>
-            </section>
+                {/* Computers: position, today and all time side by side. */}
+                <table className="hidden w-full text-sm lg:table">
+                  <caption className="sr-only">Your holdings with value, today&apos;s change and all-time return</caption>
+                  <thead>
+                    <tr className="border-b border-line text-right text-xs whitespace-nowrap text-fg-subtle">
+                      <th scope="col" className="py-3 text-left font-medium">
+                        Holding
+                      </th>
+                      <th scope="col" className="py-3 pl-3 font-medium">
+                        Position
+                      </th>
+                      <th scope="col" className="py-3 pl-3 font-medium">
+                        <span className="inline-flex items-center gap-1">{!access.full ? <Lock className="size-3" aria-label="Plus" /> : null}Today</span>
+                      </th>
+                      <th scope="col" className="py-3 pl-3 font-medium">
+                        All time
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {ordered.map((r) => {
+                      const name = (
+                        <>
+                          {tile(r, 40)}
+                          <span className="min-w-0">
+                            <span className="block font-display font-semibold text-fg group-hover:underline">{r.label}</span>
+                            <span className="block max-w-[240px] truncate text-xs text-fg-subtle">
+                              <span className="num">{formatPercent(r.share)}</span> · {r.sub}
+                            </span>
+                          </span>
+                        </>
+                      );
+                      return (
+                        <tr key={r.id} className="border-t border-line first:border-t-0">
+                          <th scope="row" className="py-3 text-left font-normal">
+                            {r.href ? (
+                              <Link href={r.href} className="group flex min-w-0 items-center gap-3">
+                                {name}
+                              </Link>
+                            ) : (
+                              <span className="flex min-w-0 items-center gap-3">{name}</span>
+                            )}
+                          </th>
+                          <td className="py-3 pl-3 text-right whitespace-nowrap">
+                            {r.value ? (
+                              <Money value={r.value} currency={base} className="block font-semibold text-fg" />
+                            ) : (
+                              <span className="text-fg-muted">No price</span>
+                            )}
+                            {r.quantity ? (
+                              <span className="block text-xs text-fg-subtle">
+                                <Secret className="num">{formatQuantity(r.quantity)}</Secret> {r.kind === "own" ? "held" : "shares"}
+                              </span>
+                            ) : null}
+                          </td>
+                          <td className="py-3 pl-3 text-right whitespace-nowrap">{delta(r.todayValue, r.todayPct)}</td>
+                          <td className="py-3 pl-3 text-right whitespace-nowrap">{delta(r.allValue, r.allPct)}</td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
 
-            <aside aria-label="Watchlist" className="hidden border-l border-line pl-7 xl:block">
-              {watchRail}
-            </aside>
+                {/* Between phone and wide screens the watchlist sits under the holdings. */}
+                <div className="mt-8 hidden lg:block xl:hidden">{watchRail}</div>
+              </section>
+
+              <aside aria-label="Watchlist" className="hidden border-l border-line pl-7 xl:block">
+                {watchRail}
+              </aside>
+            </div>
           </div>
 
           {data.issues.length || (priced && v.excluded.length) ? (
@@ -505,11 +606,19 @@ export default async function PortfolioPage({ searchParams }: { searchParams: Pr
           <Panel
             title="Value over time"
             actions={
-              access.full && priced && !noRealHistory ? <LinkTabs label="Chart range" current={range} items={RANGES.map((r) => ({ value: r, label: r, href: qs({ range: r }) }))} /> : null
+              access.full && priced && !noRealHistory ? (
+                <LinkTabs label="Chart range" current={range} items={RANGES.map((r) => ({ value: r, label: r, href: qs({ range: r }) }))} />
+              ) : null
             }
           >
             {perf?.available ? (
-              <LineChart points={perf.points.map((p) => ({ date: p.date, value: Number(p.value) }))} mode="money" currency={base} label="Holdings value" height={200} />
+              <LineChart
+                points={perf.points.map((p) => ({ date: p.date, value: Number(p.value) }))}
+                mode="money"
+                currency={base}
+                label="Holdings value"
+                height={200}
+              />
             ) : !access.full ? (
               <Callout tone="neutral" icon={Lock}>
                 Value over time needs market prices, which come with Portle Plus.
@@ -549,7 +658,8 @@ export default async function PortfolioPage({ searchParams }: { searchParams: Pr
 
           <p className="text-xs text-fg-subtle">
             Currency conversion: {data.fx.label}
-            {data.fx.asOf !== "demo" ? ` as of ${data.fx.asOf}` : ""}. Cost basis is converted at current rates, so unrealized P/L in {base} includes currency movements.{" "}
+            {data.fx.asOf !== "demo" ? ` as of ${data.fx.asOf}` : ""}. Cost basis is converted at current rates, so unrealized P/L in {base} includes currency
+            movements.{" "}
             <Link href="/portfolio/transactions" className="underline">
               All transactions
             </Link>{" "}

@@ -47,6 +47,9 @@ export type ReturnFigure = { money: string | null; mask: string; pct: string | n
 
 const pill =
   "inline-flex h-9 items-center gap-1.5 rounded-full border border-line-strong bg-field px-3.5 text-[0.8125rem] font-medium text-fg transition-colors hover:bg-field-hover";
+// The computer header: quiet pills with no edge, so only "Add investments" stands out.
+const quiet =
+  "inline-flex h-10 items-center gap-2 rounded-full bg-field px-4 font-display text-sm font-semibold text-fg transition-colors hover:bg-field-hover";
 const COOKIE = "portle-ring-return";
 
 /** The middle of the ring under the total: the return you picked, then the dropdown to pick it. Remembered on this device. */
@@ -104,8 +107,21 @@ export function ReturnPicker({
   );
 }
 
-/** "Showing: All accounts". One account at a time is Plus; on the free plan those choices open the Plus sheet. */
-export function AccountPicker({ accounts, current, access }: { accounts: Account[]; current: string | undefined; access: AccessInfo }) {
+/**
+ * "Showing: All accounts". One account at a time is Plus; on the free plan those choices open the Plus sheet.
+ * `quiet` is the computer version beside the title: just the name.
+ */
+export function AccountPicker({
+  accounts,
+  current,
+  access,
+  quiet: plain,
+}: {
+  accounts: Account[];
+  current: string | undefined;
+  access: AccessInfo;
+  quiet?: boolean;
+}) {
   const router = useRouter();
   const [ask, setAsk] = useState(false);
   const name = accounts.find((a) => a.id === current)?.name ?? "All accounts";
@@ -122,9 +138,19 @@ export function AccountPicker({ accounts, current, access }: { accounts: Account
         modal={false}
         className="min-w-60"
         trigger={
-          <button type="button" className={cn(pill, "max-w-[62vw] sm:max-w-none")}>
-            <span className="text-fg-subtle">Showing:</span> <span className="truncate">{name}</span> <ChevronDown className="size-4 shrink-0" aria-hidden />
-          </button>
+          plain ? (
+            <button
+              type="button"
+              aria-label={`Showing: ${name}`}
+              className="inline-flex h-9 max-w-64 items-center gap-1.5 rounded-full bg-field px-3.5 text-sm font-medium text-fg-muted transition-colors hover:bg-field-hover hover:text-fg"
+            >
+              <span className="truncate">{name}</span> <ChevronDown className="size-4 shrink-0" aria-hidden />
+            </button>
+          ) : (
+            <button type="button" className={cn(pill, "max-w-[62vw] sm:max-w-none")}>
+              <span className="text-fg-subtle">Showing:</span> <span className="truncate">{name}</span> <ChevronDown className="size-4 shrink-0" aria-hidden />
+            </button>
+          )
         }
       >
         <MenuItem onSelect={() => go()} className={cn(!current && "bg-selected")}>
@@ -214,7 +240,7 @@ export function ManageMenu({ labelled, ...props }: ManageProps & { labelled?: bo
         className={labelled ? "w-80" : "min-w-64"}
         trigger={
           labelled ? (
-            <button type="button" className={cn(pill, "h-10 px-4 font-display text-sm font-semibold")}>
+            <button type="button" className={quiet}>
               <Landmark className="size-4" aria-hidden /> Manage <ChevronDown className="size-4" aria-hidden />
             </button>
           ) : (
@@ -637,7 +663,7 @@ export function ShareButton({ mix, wide }: { mix: MixPreview; wide?: boolean }) 
       mix={mix}
       trigger={
         wide ? (
-          <button type="button" className={cn(pill, "h-10 px-4 font-display text-sm font-semibold")}>
+          <button type="button" className={quiet}>
             <Upload className="size-4" aria-hidden /> Share
           </button>
         ) : (
