@@ -1,10 +1,10 @@
-import { and, eq, ne, sql } from "drizzle-orm";
+import { and, eq, inArray, ne, sql } from "drizzle-orm";
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
 import { buildLedger } from "@/domain/accounting";
 import { setBrokerProviderForTests, type BrokerActivity, type BrokerPosition, type BrokerProvider, type BrokerUser } from "@/integrations/brokers";
 import { createTestDb, createTestUser as createUser, grantFullAccess } from "@/test/db";
 import type { Db } from "../db";
-import { accounts, brokerConnections, brokerUsers, transactions } from "../db/schema";
+import { accounts, brokerConnections, brokerUsers, instruments, transactions } from "../db/schema";
 import { resetRateLimits } from "../rate-limit";
 import {
   addBrokerAccounts,
@@ -14,6 +14,7 @@ import {
   startBrokerConnection,
   syncBrokerConnection,
 } from "./brokers";
+import { getPrices } from "./market";
 import { ledgerRows } from "./portfolio";
 
 /** A stand-in broker: one DEGIRO login with two accounts, whose data a test can change. */
@@ -133,6 +134,27 @@ describe("connecting a broker", () => {
     broker.positions["acc-main"] = [{ ...asml, quantity: "3", averagePrice: "610", price: "700" }];
     await syncBrokerConnection(u.id, acc.brokerConnectionId!);
     expect(Object.values(await holdings(u.id, acc.id))).toEqual(["3"]);
+  });
+
+  it("keeps the broker's own prices, which beat demo ones everywhere but Practice", async () => {
+    const u = await createTestUser(db, "Pricer");
+    await startBrokerConnection(u.id, "http://x/back");
+    broker.positions["acc-main"] = [
+      { ...asml, quantity: "2", averagePrice: "600", price: "712.4" },
+      { ...vwrl, quantity: "1", averagePrice: "100", price: null },
+    ];
+    await addBrokerAccounts(u.id, ["acc-main"]);
+    const [acc] = await db.select().from(accounts).where(eq(accounts.userId, u.id));
+    const rows = await db
+      .select()
+      .from(instruments)
+      .where(inArray(instruments.id, Object.keys(await holdings(u.id, acc.id))));
+    const held = rows.find((r) => r.symbol === "ASML")!;
+
+    const price = (await getPrices(rows, { userId: u.id })).get(held.id)!;
+    expect(price).toMatchObject({ currency: "EUR", source: "DEGIRO via Fake", isDemo: false });
+    expect(Number(price.price)).toBe(712.4);
+    expect((await getPrices([held], "practice")).get(held.id)?.source).not.toBe("DEGIRO via Fake");
   });
 
   it("says plainly when the broker signed Portle out", async () => {

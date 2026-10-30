@@ -121,9 +121,11 @@ export default async function HomePage() {
                     <span className="num mt-1 block font-display text-[2.125rem] leading-none font-bold tracking-[-0.02em] text-fg group-hover:underline">
                       {formatMoney(v.totals.marketValue, base)}
                     </span>
-                    <span className="mt-2 block text-sm">
-                      <Change value={v.totals.dayChange} percent={v.totals.dayChangePct} currency={base} /> <span className="text-fg-subtle">today</span>
-                    </span>
+                    {v.totals.dayChangePct ? (
+                      <span className="mt-2 block text-sm">
+                        <Change value={v.totals.dayChange} percent={v.totals.dayChangePct} currency={base} /> <span className="text-fg-subtle">today</span>
+                      </span>
+                    ) : null}
                     {v.usesDemoPrices ? <SourceBadge kind="demo" className="mt-2.5" detail="Demo prices" /> : null}
                   </span>
                 </Link>

@@ -70,8 +70,20 @@ export default async function PortfolioPage({ searchParams }: { searchParams: Pr
   const oldestSync = synced.reduce<Date | null>((min, c) => (c.lastSyncAt && (!min || c.lastSyncAt < min) ? c.lastSyncAt : min), null);
 
   const hasHoldings = v.holdings.length > 0;
-  const perf = hasHoldings ? await getPerformance(user.id, range, { accountId: sp.account }) : null;
-  const priceKind = v.usesDemoPrices ? "demo" : "delayed";
+  // Real prices but only demo history: the chart would draw a made-up line, so it waits for a market data plan.
+  const noRealHistory = data.market.isDemo && !v.usesDemoPrices;
+  const perf = hasHoldings && !noRealHistory ? await getPerformance(user.id, range, { accountId: sp.account }) : null;
+  const priceKind = v.usesDemoPrices ? "demo" : data.market.isDemo ? "broker" : "delayed";
+  // Prices say where they came from: demo, the member's broker, or the market data plan.
+  const priceLabel = v.usesDemoPrices
+    ? v.priceSources.length
+      ? "Some prices are demo"
+      : "Demo prices · synthetic"
+    : v.priceSources.length === 1
+      ? v.priceSources[0]
+      : data.market.isDemo
+        ? "Broker prices"
+        : data.market.label;
   // Without full access there are no prices, so the ring and table use what was paid instead.
   const priced = access.full;
   const paid = data.paid;
@@ -177,10 +189,12 @@ export default async function PortfolioPage({ searchParams }: { searchParams: Pr
               </Ring>
               {priced ? (
                 <div className="flex flex-wrap justify-center gap-2">
-                  <SourceBadge kind={priceKind} detail={v.usesDemoPrices ? "Demo prices · synthetic" : data.market.label} asOf={v.oldestPriceAsOf} />
-                  <span className="inline-flex h-6 items-center gap-1 rounded-full bg-field px-2.5 text-xs text-fg-muted">
-                    Today <Change percent={v.totals.dayChangePct} />
-                  </span>
+                  <SourceBadge kind={priceKind} detail={priceLabel} asOf={v.oldestPriceAsOf} />
+                  {v.totals.dayChangePct ? (
+                    <span className="inline-flex h-6 items-center gap-1 rounded-full bg-field px-2.5 text-xs text-fg-muted">
+                      Today <Change percent={v.totals.dayChangePct} />
+                    </span>
+                  ) : null}
                 </div>
               ) : (
                 <AccessButton access={access} />
@@ -306,13 +320,19 @@ export default async function PortfolioPage({ searchParams }: { searchParams: Pr
 
           <Panel
             title="Value over time"
-            actions={priced ? <LinkTabs label="Chart range" current={range} items={RANGES.map((r) => ({ value: r, label: r, href: qs({ range: r }) }))} /> : null}
+            actions={
+              priced && !noRealHistory ? <LinkTabs label="Chart range" current={range} items={RANGES.map((r) => ({ value: r, label: r, href: qs({ range: r }) }))} /> : null
+            }
           >
             {perf?.available ? (
               <LineChart points={perf.points.map((p) => ({ date: p.date, value: Number(p.value) }))} mode="money" currency={base} label="Holdings value" height={200} />
             ) : (
               <Callout tone="neutral" icon={Info}>
-                {perf && !perf.available ? perf.reason : "Not enough history yet."}
+                {noRealHistory
+                  ? "Your broker sends today's prices, not past ones, so this chart appears once Portle has a market data plan for price history."
+                  : perf && !perf.available
+                    ? perf.reason
+                    : "Not enough history yet."}
               </Callout>
             )}
             <dl className="mt-6 grid grid-cols-2 gap-x-6 gap-y-5 sm:grid-cols-4">

@@ -7,7 +7,7 @@ import { getBrokerProvider, NotConfiguredError, type BrokerAccount, type BrokerS
 import { audit } from "../audit";
 import { decryptSecret, encryptionReady, encryptSecret } from "../crypto";
 import { getDb } from "../db";
-import { accounts, brokerConnections, brokerUsers, instruments, transactions } from "../db/schema";
+import { accounts, brokerConnections, brokerUsers, instruments, quotes, transactions } from "../db/schema";
 import { notFound, UserFacingError } from "../errors";
 import { assertRateLimit } from "../rate-limit";
 import { assertFullAccess, hasFullAccess } from "./access";
@@ -324,6 +324,14 @@ async function syncAccount(userId: string, user: BrokerUser, account: SyncedAcco
         note: `Matched to ${account.institution || "the broker"}'s holdings`,
       })
       .onConflictDoNothing();
+  }
+
+  // 3. The broker's own price for each holding, so a real portfolio never needs made-up prices.
+  const source = `${account.institution || "Your broker"} via ${provider.status().label}`;
+  for (const h of held) {
+    if (!h.price || !(Number(h.price) > 0)) continue;
+    const quote = { instrumentId: h.instrumentId, price: h.price, previousClose: null, currency: h.currency, asOf: now, source, delayMinutes: 0, fetchedAt: now };
+    await db.insert(quotes).values(quote).onConflictDoUpdate({ target: quotes.instrumentId, set: quote });
   }
 }
 

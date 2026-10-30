@@ -126,3 +126,35 @@ describe("valuePortfolio", () => {
     expect(v.totals.dayChange.toFixed()).toBe("1000");
   });
 });
+
+describe("where prices came from", () => {
+  const ledger = buildLedger([t({ instrumentId: "ASML", quantity: "2", price: "500" }), t({ instrumentId: "DEMO", quantity: "1", price: "10" })]);
+  const value = (prices: Map<string, PriceInfo>) =>
+    valuePortfolio({
+      positions: ledger.positions,
+      cash: [],
+      instruments: new Map([
+        ["ASML", inst("ASML", "EUR")],
+        ["DEMO", inst("DEMO", "EUR")],
+      ]),
+      prices,
+      fx,
+      baseCurrency: "EUR",
+    });
+
+  it("names the real sources and says when demo prices are mixed in", () => {
+    const v = value(
+      new Map([
+        ["ASML", { ...price("600", "EUR"), source: "DEGIRO via SnapTrade" }],
+        ["DEMO", { ...price("12", "EUR"), isDemo: true }],
+      ]),
+    );
+    expect(v.priceSources).toEqual(["DEGIRO via SnapTrade"]);
+    expect(v.usesDemoPrices).toBe(true);
+  });
+
+  it("leaves today's change unknown, not 0%, when no price has a previous close", () => {
+    expect(value(new Map([["ASML", price("600", "EUR")]])).totals.dayChangePct).toBeNull();
+    expect(value(new Map([["ASML", price("600", "EUR", "600")]])).totals.dayChangePct!.toFixed()).toBe("0");
+  });
+});

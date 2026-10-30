@@ -63,6 +63,8 @@ export type PortfolioValuation = {
   /** Holdings left out of totals, with the reason. */
   excluded: { symbol: string; reason: string }[];
   usesDemoPrices: boolean;
+  /** Where the real (not demo) prices came from, e.g. "DEGIRO via SnapTrade". */
+  priceSources: string[];
   oldestPriceAsOf: string | null;
 };
 
@@ -105,6 +107,7 @@ export function valuePortfolio(input: {
   let realized = ZERO;
   let income = ZERO;
   let usesDemoPrices = false;
+  const sources = new Set<string>();
   let oldest: string | null = null;
 
   for (const [instrumentId, list] of byInstrument) {
@@ -141,6 +144,7 @@ export function valuePortfolio(input: {
       excluded.push({ symbol: instrument.symbol, reason: "No price available" });
     } else {
       if (price.isDemo) usesDemoPrices = true;
+      else sources.add(price.source);
       if (!oldest || price.asOf < oldest) oldest = price.asOf;
       marketValue = quantity.times(d(price.price));
       // Quotes may arrive in a different currency than the position (e.g. ADRs); convert first.
@@ -227,7 +231,8 @@ export function valuePortfolio(input: {
       cash: cashBase,
       netContributions: contributions,
       dayChange,
-      dayChangePct: marketValue.minus(dayChange).gt(0) ? dayChange.div(marketValue.minus(dayChange)) : null,
+      // Unknown, not 0%, when no holding has yesterday's price to compare with.
+      dayChangePct: valued.some((h) => h.dayChangeBase) && marketValue.minus(dayChange).gt(0) ? dayChange.div(marketValue.minus(dayChange)) : null,
     },
     allocation: {
       assetClass: slice((h) => ASSET_CLASS_LABEL[h.instrument.assetClass] ?? "Other"),
@@ -237,6 +242,7 @@ export function valuePortfolio(input: {
     },
     excluded,
     usesDemoPrices,
+    priceSources: [...sources].sort(),
     oldestPriceAsOf: oldest,
   };
 }

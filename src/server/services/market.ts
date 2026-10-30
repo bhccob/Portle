@@ -44,18 +44,22 @@ export async function getPrices(rows: Pick<InstrumentRow, "id" | "symbol" | "exc
   const status = provider.status();
 
   const toInfo = (q: { price: string; previousClose: string | null; currency: string; asOf: string; source: string; isDemo: boolean; delayMinutes: number }): PriceInfo => q;
+  const db = getDb();
+  const ids = rows.map((r) => r.id);
 
   if (status.isDemo) {
-    const qs = await provider.getQuotes(rows.map((r) => ({ symbol: r.symbol, exchange: r.exchange })));
+    // A real price Portle already holds, such as the member's own broker's, beats a made-up one.
+    const real = viewer === "practice" ? new Map() : new Map((await db.select().from(quotes).where(inArray(quotes.instrumentId, ids))).map((c) => [c.instrumentId, c]));
+    const qs = await provider.getQuotes(rows.filter((r) => !real.has(r.id)).map((r) => ({ symbol: r.symbol, exchange: r.exchange })));
     for (const r of rows) {
+      const c = real.get(r.id);
       const q = qs.get(refKey(r));
-      if (q) out.set(r.id, toInfo(q));
+      if (c) out.set(r.id, stored(c, false));
+      else if (q) out.set(r.id, toInfo(q));
     }
     return out;
   }
 
-  const db = getDb();
-  const ids = rows.map((r) => r.id);
   const [cached, checks] = await Promise.all([
     db.select().from(quotes).where(inArray(quotes.instrumentId, ids)),
     db.select().from(priceChecks).where(inArray(priceChecks.instrumentId, ids)),
@@ -90,19 +94,23 @@ export async function getPrices(rows: Pick<InstrumentRow, "id" | "symbol" | "exc
   }
   for (const r of rows) {
     const c = byId.get(r.id);
-    if (c)
-      out.set(r.id, {
-        price: c.price,
-        previousClose: c.previousClose,
-        currency: c.currency,
-        // A closing price belongs to a day, not a moment.
-        asOf: status.dailyCloses ? c.asOf.toISOString().slice(0, 10) : c.asOf.toISOString(),
-        source: c.source,
-        isDemo: false,
-        delayMinutes: c.delayMinutes,
-      });
+    if (c) out.set(r.id, stored(c, !!status.dailyCloses));
   }
   return out;
+}
+
+/** A price kept in the quotes table, from the market data provider or a member's broker. */
+function stored(c: Omit<typeof quotes.$inferSelect, "fetchedAt">, dailyCloses: boolean): PriceInfo {
+  return {
+    price: c.price,
+    previousClose: c.previousClose,
+    currency: c.currency,
+    // A closing price belongs to a day, not a moment.
+    asOf: dailyCloses ? c.asOf.toISOString().slice(0, 10) : c.asOf.toISOString(),
+    source: c.source,
+    isDemo: false,
+    delayMinutes: c.delayMinutes,
+  };
 }
 
 export type FxContext = { fx: FxConverter; label: string; asOf: string; isDemo: boolean };
