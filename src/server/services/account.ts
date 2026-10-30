@@ -33,6 +33,7 @@ export async function exportUserData(userId: string) {
     thesisNotes: await db.select().from(s.thesisNotes).where(eq(s.thesisNotes.userId, userId)),
     journal: await db.select().from(s.journalEntries).where(eq(s.journalEntries.userId, userId)),
     costs: await db.select().from(s.costs).where(eq(s.costs.userId, userId)),
+    experience: await db.select().from(s.profileExperience).where(eq(s.profileExperience.userId, userId)),
     collections: collectionsRows,
     collectionItems: collectionsRows.length ? await db.select().from(s.collectionItems).where(inArray(s.collectionItems.collectionId, collectionsRows.map((c) => c.id))) : [],
     paperAccounts: paperAccountRows,

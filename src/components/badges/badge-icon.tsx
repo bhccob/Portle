@@ -1,3 +1,6 @@
+import { BriefcaseBusiness, CodeXml } from "lucide-react";
+import { PortleMark } from "@/components/brand/logo";
+import { isMilestone } from "@/domain/badges";
 import { cn } from "@/lib/cn";
 
 /**
@@ -6,7 +9,6 @@ import { cn } from "@/lib/cn";
  * Pebble, Quartz, Amethyst, Geode, Diamond. Every level is also named in text.
  */
 const GLYPHS: Record<string, React.ReactNode> = {
-  member: <path d="M8 5h8M8 19h8M9 5c0 4 6 4 6 7s-6 3-6 7M15 5c0 4-6 4-6 7s6 3 6 7" />,
   "first-specimen": <path d="M7 5h8l3 3v11H7zM10 11h5M10 14h5" />,
   "fault-line": <path d="M12 5l4 3v7l-4 3-4-3V8l4-3zM11 7l2 3-2 2 2 3" />,
   "growth-rings": (
@@ -39,6 +41,22 @@ const GLYPHS: Record<string, React.ReactNode> = {
   hearth: <path d="M5.5 18.5h13M7 18.5V11l5-4 5 4v7.5" />,
   "good-counsel": <path d="M5 7h9v6H9l-3 2.5V13H5zM14 10h5v5.5h-1v2l-2.5-2H11V13" />,
   early: <path d="M12 19.5v-7M12 12.5c0-3 2-5 5-5 0 3-2 5-5 5zM12 14.5c0-2.6-1.8-4.2-4.6-4.2 0 2.6 1.8 4.2 4.6 4.2z" />,
+  broker: <path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71" />,
+  "first-holding": <path d="M12 4v16M6 8l6-4 6 4M5 14l7 6 7-6" />,
+  budget: <path d="M6 4h12v16l-2-1.5-2 1.5-2-1.5-2 1.5-2-1.5L6 20zM9 9h6M9 13h4" />,
+  circle: (
+    <>
+      <circle cx="9" cy="9" r="3" />
+      <circle cx="16" cy="10" r="2.5" />
+      <path d="M4 19c.6-3 2.6-4.5 5-4.5s4.4 1.5 5 4.5M14.5 15.2c2.3-.4 4.2.8 5 3.3" />
+    </>
+  ),
+};
+
+/** Tiles for Relics without levels: Early member is teal, one-off milestones are blue. */
+const SPECIAL_TILE: Record<string, { bg: string; rim: string }> = {
+  early: { bg: "#0f9c94", rim: "#9fe1cb" },
+  milestone: { bg: "#2b8fd9", rim: "#b5d4f4" },
 };
 
 /** One stone per level: tile, rim, glyph colour and the gem in the corner, which grows. */
@@ -61,7 +79,7 @@ export function BadgeIcon({
   className,
 }: {
   badgeKey: string;
-  /** 1 to 5. Ignored for Founder and Early member, which have one look. */
+  /** 1 to 5. Ignored for Early member and milestones, which have one look. */
   level: number;
   label: string;
   locked?: boolean;
@@ -69,22 +87,13 @@ export function BadgeIcon({
   className?: string;
 }) {
   const box = cn(SIZES[size], "shrink-0", locked && "opacity-35 grayscale", className);
-  if (badgeKey === "founder")
+  const tile = badgeKey === "early" ? SPECIAL_TILE.early : isMilestone(badgeKey) ? SPECIAL_TILE.milestone : null;
+  if (tile)
     return (
       <svg viewBox="0 0 32 32" className={box} role="img" aria-label={label}>
-        <rect x="1" y="1" width="30" height="30" rx="9" fill="#1d1850" stroke="#ff9340" strokeWidth="1.6" />
-        <rect x="9.5" y="8.5" width="4.6" height="15.5" rx="2.3" fill="#b9adfa" />
-        <circle cx="16.6" cy="13.6" r="5.8" fill="none" stroke="#ffffff" strokeWidth="2" strokeDasharray="5.8 2" />
-        <circle cx="16.6" cy="13.6" r="2.2" fill="#ff9340" />
-        <path d="M25 3.6l1.1 2.3 2.3 1.1-2.3 1.1L25 10.4l-1.1-2.3L21.6 7l2.3-1.1z" fill="#ffd7b0" />
-      </svg>
-    );
-  if (badgeKey === "early")
-    return (
-      <svg viewBox="0 0 32 32" className={box} role="img" aria-label={label}>
-        <rect x="1" y="1" width="30" height="30" rx="9" fill="#0f9c94" stroke="#9fe1cb" strokeWidth="1.4" />
+        <rect x="1" y="1" width="30" height="30" rx="9" fill={tile.bg} stroke={tile.rim} strokeWidth="1.4" />
         <g transform="translate(4 4)" fill="none" stroke="#ffffff" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-          {GLYPHS.early}
+          {GLYPHS[badgeKey]}
         </g>
       </svg>
     );
@@ -93,9 +102,16 @@ export function BadgeIcon({
     <svg viewBox="0 0 32 32" className={box} role="img" aria-label={label}>
       <rect x="1" y="1" width="30" height="30" rx="9" fill={s.bg} stroke={s.rim} strokeWidth="1.4" />
       {s.ring ? <rect x="4" y="4" width="24" height="24" rx="7" fill="none" stroke={s.rim} strokeOpacity="0.45" /> : null}
-      <g transform="translate(4 4.5) scale(0.95)" fill="none" stroke={s.glyph} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-        {GLYPHS[badgeKey] ?? GLYPHS["first-specimen"]}
-      </g>
+      {badgeKey === "years" ? (
+        // Years shows how many, like an anniversary.
+        <text x="16" y="22.4" textAnchor="middle" fontSize="17" fontWeight="900" fill={s.glyph} style={{ fontFamily: "var(--font-display)" }}>
+          {Math.min(Math.max(level, 1), STONES.length)}
+        </text>
+      ) : (
+        <g transform="translate(4 4.5) scale(0.95)" fill="none" stroke={s.glyph} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+          {GLYPHS[badgeKey] ?? GLYPHS["first-specimen"]}
+        </g>
+      )}
       {s.gem ? (
         <path
           d={`M25 ${7 - s.gem.r}l${s.gem.r} ${s.gem.r}-${s.gem.r} ${s.gem.r}-${s.gem.r}-${s.gem.r}z`}
@@ -109,22 +125,29 @@ export function BadgeIcon({
   );
 }
 
-/** The tag beside the handle of whoever runs this Portle. */
-export function FounderTag({ size = "md", className }: { size?: "sm" | "md"; className?: string }) {
+/** The titles of whoever runs this Portle, beside their handle. Founder carries the Portle mark. */
+export const OWNER_ROLES = ["Founder", "CEO", "Developer"] as const;
+export type OwnerRole = (typeof OWNER_ROLES)[number];
+
+const ROLE_ICON: Record<OwnerRole, React.ReactNode> = {
+  Founder: <PortleMark compact className="size-full" />,
+  CEO: <BriefcaseBusiness className="size-full" strokeWidth={2.2} />,
+  Developer: <CodeXml className="size-full" strokeWidth={2.2} />,
+};
+
+export function RoleTag({ role, size = "md", className }: { role: OwnerRole; size?: "sm" | "md"; className?: string }) {
   return (
     <span
       className={cn(
-        "inline-flex shrink-0 items-center gap-1 rounded-[8px] bg-[#1d1850] font-display font-semibold tracking-[0.01em] text-[#f6f4fc] dark:bg-[#2f2a7a]",
-        size === "sm" ? "h-5 rounded-[6px] pr-1.5 pl-1 text-[0.6875rem]" : "h-6 pr-2 pl-1.5 text-[0.78125rem]",
+        "inline-flex shrink-0 items-center gap-1 bg-selected font-display font-semibold tracking-[0.01em] text-accent",
+        size === "sm" ? "h-5 rounded-[6px] pr-1.5 pl-1 text-[0.6875rem]" : "h-6 rounded-[8px] pr-2 pl-1.5 text-[0.78125rem]",
         className,
       )}
     >
-      <svg viewBox="0 0 32 32" className={size === "sm" ? "size-3" : "size-3.5"} aria-hidden>
-        <rect x="6" y="5" width="7" height="24" rx="3.5" fill="#b9adfa" />
-        <circle cx="17" cy="13" r="9" fill="none" stroke="#ffffff" strokeWidth="3" strokeDasharray="9 3" />
-        <circle cx="17" cy="13" r="3.4" fill="#ff9340" />
-      </svg>
-      Founder
+      <span className={size === "sm" ? "size-3" : "size-3.5"} aria-hidden>
+        {ROLE_ICON[role]}
+      </span>
+      {role}
     </span>
   );
 }

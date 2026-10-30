@@ -6,9 +6,10 @@ import type { ActionResult } from "@/server/errors";
 import { setBadgeDisplayed } from "@/server/services/badges";
 import { requireMember } from "@/server/session";
 
-export async function setBadgeDisplayAction(key: string, displayed: boolean): Promise<ActionResult> {
-  const { user } = await requireMember();
+/** Shows or hides one of your Relics on your profile. */
+export async function setRelicDisplayAction(key: string, displayed: boolean): Promise<ActionResult> {
+  const { user, profile } = await requireMember();
   const res = await runAction(() => setBadgeDisplayed(user.id, key.slice(0, 40), displayed));
-  if (res.ok) revalidatePath("/badges");
+  if (res.ok) revalidatePath(`/u/${profile.handle}`);
   return res;
 }

@@ -2,6 +2,7 @@ import { sql } from "drizzle-orm";
 import {
   boolean,
   index,
+  integer,
   jsonb,
   pgEnum,
   pgTable,
@@ -35,6 +36,21 @@ export const profiles = pgTable(
       .default(sql`'{}'::text[]`),
     /** How long they have invested, if they said (see domain/topics EXPERIENCE). Only they see it. */
     experience: text(),
+    /** The LinkedIn-style parts of a profile (see domain/profile-layout). Shown to whoever may see the profile. */
+    headline: text().notNull().default(""),
+    location: text().notNull().default(""),
+    bannerStyle: text().notNull().default("dial"),
+    links: jsonb().$type<Partial<Record<"website" | "linkedin" | "github" | "x", string>>>().notNull().default({}),
+    investingSince: integer(),
+    approach: text(),
+    horizon: text(),
+    /** Section order and which are switched off; null means the default order, all shown. */
+    sections: jsonb().$type<{ key: string; visible: boolean }[]>(),
+    /** Up to three of their own theses to pin at the top, still subject to each thesis's audience. */
+    featuredThesisIds: uuid()
+      .array()
+      .notNull()
+      .default(sql`'{}'::uuid[]`),
     theme: text().notNull().default("system"),
     onboardedAt: ts(),
     createdAt: ts().notNull().defaultNow(),
@@ -160,3 +176,22 @@ export const accessInvites = pgTable("access_invites", {
   email: text().primaryKey(),
   createdAt: ts().notNull().defaultNow(),
 });
+
+/** Work or study on a profile, like LinkedIn's Experience. Shown to whoever may see the profile. */
+export const profileExperience = pgTable(
+  "profile_experience",
+  {
+    id: uuid().primaryKey().defaultRandom(),
+    userId: text()
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    title: text().notNull(),
+    organisation: text().notNull().default(""),
+    startYear: integer().notNull(),
+    /** Null while it's still going. */
+    endYear: integer(),
+    description: text().notNull().default(""),
+    createdAt: ts().notNull().defaultNow(),
+  },
+  (t) => [index().on(t.userId)],
+);

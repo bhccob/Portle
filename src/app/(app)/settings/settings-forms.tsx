@@ -3,65 +3,20 @@
 import { useActionState, useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { fieldError, useResultToast } from "@/components/forms/use-result";
-import { Avatar } from "@/components/ui/avatar";
+import { useResultToast } from "@/components/forms/use-result";
 import { Button } from "@/components/ui/button";
-import { Field, Input, MultiSelect, Select, Textarea } from "@/components/ui/field";
+import { Field, Input, Select } from "@/components/ui/field";
 import { Dialog } from "@/components/ui/overlay";
 import { Callout } from "@/components/ui/states";
-import { topicLabel } from "@/domain/topics";
 import { authClient, authErrorMessage } from "@/lib/auth-client";
-import { updatePrivacyAction, updateProfileAction } from "./actions";
-
-export function ProfileForm({ profile, interests }: { profile: { displayName: string; bio: string; interests: string[]; avatarHue: string; handle: string }; interests: readonly string[] }) {
-  const [state, action, pending] = useActionState(updateProfileAction, null);
-  const [hue, setHue] = useState(profile.avatarHue);
-  const [name, setName] = useState(profile.displayName);
-  useResultToast(state);
-  return (
-    <form action={action} className="space-y-5">
-      <div className="flex items-center gap-4">
-        <Avatar name={name} hue={hue} size="lg" />
-        <Field label="Avatar colour" className="flex-1">
-          {(p) => <input {...p} type="range" name="avatarHue" min={0} max={359} value={hue} onChange={(e) => setHue(e.target.value)} className="w-full accent-[var(--primary)]" />}
-        </Field>
-      </div>
-      <div className="grid gap-4 sm:grid-cols-2">
-        <Field label="Display name" error={fieldError(state, "displayName")}>
-          {(p) => <Input {...p} name="displayName" value={name} onChange={(e) => setName(e.target.value)} required maxLength={40} />}
-        </Field>
-        <Field label="Handle" hint="Handles can't be changed yet.">
-          {(p) => <Input {...p} value={`@${profile.handle}`} disabled readOnly />}
-        </Field>
-      </div>
-      <Field label="Bio" optional hint="Up to 280 characters. Don't include account details.">
-        {(p) => <Textarea {...p} name="bio" defaultValue={profile.bio} maxLength={280} className="min-h-20" />}
-      </Field>
-      <Field label="Interests" optional hint="Portle suggests Guilds around them.">
-        {(p) => (
-          <MultiSelect
-            {...p}
-            name="interests"
-            defaultValue={profile.interests.filter((i) => interests.includes(i))}
-            options={interests.map((i) => ({ value: i, label: topicLabel(i) }))}
-            placeholder="Pick a few"
-            className="h-11"
-          />
-        )}
-      </Field>
-      <Button type="submit" loading={pending}>
-        Save profile
-      </Button>
-    </form>
-  );
-}
+import { updatePrivacyAction } from "./actions";
 
 type Privacy = Record<string, string | boolean>;
 const ROWS: { name: string; label: string; hint: string; options?: [string, string][] }[] = [
   { name: "profileVisibility", label: "Your profile", hint: "Name, bio and interests." },
   { name: "allocationVisibility", label: "Allocation percentages", hint: "By asset class, region and sector. Never values." },
   { name: "holdingsVisibility", label: "Holdings by weight", hint: "Symbols and percentages. Never quantities or values." },
-  { name: "relicsVisibility", label: "Badges", hint: "Only the ones you choose to show." },
+  { name: "relicsVisibility", label: "Relics", hint: "Only the ones you choose to show." },
   { name: "guildsVisibility", label: "Guild memberships", hint: "Private Guilds stay hidden from non-members regardless." },
   { name: "activityVisibility", label: "Activity", hint: "Reserved for future activity summaries." },
   { name: "thesesDefaultVisibility", label: "Default for new theses", hint: "You can change it per thesis." },

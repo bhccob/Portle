@@ -231,7 +231,7 @@ export function LandingSections() {
           Little rewards for good habits.
         </h2>
         <p className="l-lede">
-          Earn badges for the habits that make you a better investor: writing down your reasons, revisiting them, being honest when you were wrong. Each one levels up from Pebble to Diamond. Never for
+          Collect Relics for the habits that make you a better investor: writing down your reasons, revisiting them, being honest when you were wrong. Each one levels up from Pebble to Diamond. Never for
           how much you made.
         </p>
         <ul className="l-relic-row">
@@ -244,7 +244,7 @@ export function LandingSections() {
             </li>
           ))}
         </ul>
-        <p className="l-relic-note">16 badges with up to five levels each. Show the ones you&rsquo;ve earned on your profile, to whoever you choose.</p>
+        <p className="l-relic-note">16 Relics with up to five levels each. Show the ones you&rsquo;ve earned on your profile, to whoever you choose.</p>
       </section>
 
       <section className="l-faq" aria-labelledby="faq-title">

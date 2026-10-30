@@ -3,9 +3,9 @@
 import { useOptimistic, useTransition } from "react";
 import { toast } from "sonner";
 import { Switch } from "@/components/ui/overlay";
-import { setBadgeDisplayAction } from "./actions";
+import { setRelicDisplayAction } from "@/app/actions/relics";
 
-export function BadgeDisplayToggle({ badgeKey, displayed }: { badgeKey: string; displayed: boolean }) {
+export function RelicDisplayToggle({ relicKey, displayed }: { relicKey: string; displayed: boolean }) {
   const [, start] = useTransition();
   const [on, set] = useOptimistic(displayed, (_: boolean, v: boolean) => v);
   return (
@@ -16,7 +16,7 @@ export function BadgeDisplayToggle({ badgeKey, displayed }: { badgeKey: string; 
         onCheckedChange={(v) =>
           start(async () => {
             set(v);
-            const r = await setBadgeDisplayAction(badgeKey, v);
+            const r = await setRelicDisplayAction(relicKey, v);
             if (!r.ok) toast.error(r.error);
           })
         }

@@ -375,10 +375,10 @@ export default async function HomePage() {
           ) : null}
 
           {next ? (
-            <Panel title="Next badge">
+            <Panel title="Next Relic">
               <ul>
                 <RowLink
-                  href="/badges"
+                  href={`/u/${profile.handle}`}
                   lead={<BadgeIcon badgeKey={next.key} level={next.level + 1} size="md" label={next.name} />}
                   title={`${next.name} · ${next.ladder[next.level]?.name ?? next.levelName}`}
                   sub={next.progress!.toNext}

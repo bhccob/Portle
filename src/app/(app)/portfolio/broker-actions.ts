@@ -6,6 +6,7 @@ import { z } from "zod";
 import { runAction } from "@/server/action";
 import { UserFacingError, type ActionResult } from "@/server/errors";
 import { addBrokerAccounts, disconnectBroker, startBrokerConnection, syncBrokerConnection } from "@/server/services/brokers";
+import { syncBadgesQuietly } from "@/server/services/badges";
 import { requireMember } from "@/server/session";
 import { siteUrl } from "@/server/site-url";
 
@@ -32,6 +33,7 @@ export async function addAccountsAction(_: ActionResult | null, form: FormData):
     copied = results.every((r) => r.ok);
   });
   if (!res.ok) return res;
+  await syncBadgesQuietly(user.id);
   revalidatePath("/", "layout");
   // The accounts are in either way. If the first copy failed, Connections shows why and offers Sync now.
   redirect(copied ? "/portfolio?synced=1" : "/settings/connections");

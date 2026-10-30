@@ -5,6 +5,7 @@ import { z } from "zod";
 import { runAction } from "@/server/action";
 import type { ActionResult } from "@/server/errors";
 import { addCost, deleteCost, updateCost } from "@/server/services/spending";
+import { syncBadgesQuietly } from "@/server/services/badges";
 import { requireMember } from "@/server/session";
 
 const fields = (form: FormData) => ({
@@ -26,7 +27,10 @@ export async function saveCostAction(_: ActionResult | null, form: FormData): Pr
     },
     id ? "Saved." : "Added.",
   );
-  if (res.ok) revalidatePath("/spending");
+  if (res.ok) {
+    await syncBadgesQuietly(user.id);
+    revalidatePath("/spending");
+  }
   return res;
 }
 

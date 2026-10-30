@@ -1,10 +1,10 @@
 /**
- * Badges reward process, not outcomes: research, revision, reflection,
+ * Members see these as Relics. They reward process, not outcomes: research, revision, reflection,
  * consistency, learning and helping others. No rule references trade
  * frequency, position size, leverage or profit.
  *
- * Most badges level up through five stones, and the icon changes at each one.
- * Founder and Early member are special: they have one level and can't be worked for.
+ * Most level up through five stones, and the icon changes at each one. One-level Relics
+ * are milestones, and Early member is special: it can't be worked for.
  */
 export type BadgeMetrics = {
   thesesCreated: number;
@@ -23,16 +23,26 @@ export type BadgeMetrics = {
   commentsOnOthersTheses: number;
   privacyPreviewed: number;
   memberDays: number;
+  brokersLinked: number;
+  costsTracked: number;
+  friends: number;
+  holdingsRecorded: number;
 };
 
 export const LEVEL_NAMES = ["Pebble", "Quartz", "Amethyst", "Geode", "Diamond"] as const;
+/** How rare each stone is, shown beside a Relic's level. One-level milestones count as Uncommon. */
+export const LEVEL_RARITY = ["Common", "Uncommon", "Rare", "Epic", "Legendary"] as const;
+
+export type BadgeCategory = "Time on Portle" | "Research" | "Reflection" | "Practice" | "Portfolio" | "Community" | "Privacy";
 
 export type BadgeDefinition = {
   key: string;
   name: string;
   description: string;
+  /** The small label above the name in the Relics panel. */
+  category: BadgeCategory;
   metric: keyof BadgeMetrics;
-  /** What each level needs, lowest first. One entry for a badge that doesn't level up. */
+  /** What each level needs, lowest first. One entry for a milestone that doesn't level up. */
   levels: number[];
   /** The transparent rule for reaching `n`, shown to the member verbatim. */
   rule: (n: number) => string;
@@ -41,29 +51,25 @@ export type BadgeDefinition = {
 };
 
 const plural = (n: number, [one, many]: [string, string]) => `${n} ${n === 1 ? one : many}`;
-const AGE = new Map([
-  [30, "1 month"],
-  [90, "3 months"],
-  [180, "6 months"],
-  [365, "1 year"],
-  [730, "2 years"],
-]);
+const YEAR = 365;
 
-/** The keys predate badges (they were Relics), so members keep what they earned. */
+/** Most keys predate the levels (they were single Relics), so members keep what they earned. */
 export const BADGES: BadgeDefinition[] = [
   {
-    key: "member",
-    name: "Member",
-    description: "Time on Portle. Keep coming back and time does the rest.",
+    key: "years",
+    name: "Years",
+    description: "Years on Portle. Keep coming back and time does the rest: a new level every year.",
+    category: "Time on Portle",
     metric: "memberDays",
-    levels: [30, 90, 180, 365, 730],
-    rule: (n) => `Be a member for ${AGE.get(n) ?? plural(n, ["day", "days"])}.`,
+    levels: [1, 2, 3, 4, 5].map((y) => y * YEAR),
+    rule: (n) => `Be a member for ${plural(Math.round(n / YEAR), ["year", "years"])}.`,
     unit: ["day", "days"],
   },
   {
     key: "first-specimen",
     name: "Thesis writer",
     description: "Theses in your archive, each with your reasons written down.",
+    category: "Research",
     metric: "thesesCreated",
     levels: [1, 5, 10, 25, 50],
     rule: (n) => `Write ${plural(n, ["thesis", "theses"])}.`,
@@ -73,6 +79,7 @@ export const BADGES: BadgeDefinition[] = [
     key: "fault-line",
     name: "Fault lines",
     description: "Theses that say what would prove you wrong.",
+    category: "Research",
     metric: "thesesWithInvalidation",
     levels: [1, 3, 10, 25, 50],
     rule: (n) => `Write down what would prove you wrong on ${plural(n, ["thesis", "theses"])}.`,
@@ -82,6 +89,7 @@ export const BADGES: BadgeDefinition[] = [
     key: "growth-rings",
     name: "Growth rings",
     description: "Your reasoning grew in layers as the evidence changed.",
+    category: "Research",
     metric: "thesisRevisions",
     levels: [1, 5, 15, 30, 60],
     rule: (n) => `Revise your theses ${plural(n, ["time", "times"])} after the first draft.`,
@@ -91,6 +99,7 @@ export const BADGES: BadgeDefinition[] = [
     key: "closing-note",
     name: "Closing notes",
     description: "Theses you concluded with a written review of how they played out.",
+    category: "Research",
     metric: "thesesClosedWithReview",
     levels: [1, 3, 10, 20, 40],
     rule: (n) => `Close ${plural(n, ["thesis", "theses"])} as validated or invalidated, with a note saying why.`,
@@ -100,15 +109,27 @@ export const BADGES: BadgeDefinition[] = [
     key: "honest-ledger",
     name: "Honest ledger",
     description: "Times you said plainly that a thesis was wrong, and why.",
+    category: "Research",
     metric: "invalidatedWithReview",
     levels: [1, 3, 5, 10, 20],
     rule: (n) => `Mark ${plural(n, ["thesis", "theses"])} invalidated, with a note explaining what you learned.`,
     unit: ["honest review", "honest reviews"],
   },
   {
+    key: "watchkeeper",
+    name: "Watchkeeper",
+    description: "Securities you're studying on one watchlist.",
+    category: "Research",
+    metric: "watchlistSize",
+    levels: [5, 10, 25, 50, 100],
+    rule: (n) => `Keep ${plural(n, ["security", "securities"])} on one watchlist.`,
+    unit: ["security", "securities"],
+  },
+  {
     key: "lamplighter",
     name: "Journal keeper",
     description: "Days you wrote in your journal.",
+    category: "Reflection",
     metric: "journalDays",
     levels: [7, 30, 60, 120, 365],
     rule: (n) => `Write in your journal on ${plural(n, ["day", "days"])}.`,
@@ -118,6 +139,7 @@ export const BADGES: BadgeDefinition[] = [
     key: "unbroken-seam",
     name: "Streak",
     description: "Your longest run of journal days in a row.",
+    category: "Reflection",
     metric: "journalLongestStreak",
     levels: [3, 7, 14, 30, 100],
     rule: (n) => `Write in your journal ${n} days in a row.`,
@@ -127,6 +149,7 @@ export const BADGES: BadgeDefinition[] = [
     key: "rehearsal",
     name: "Rehearsal",
     description: "Practice trades that test a thesis before real money does.",
+    category: "Practice",
     metric: "thesisLinkedPaperOrders",
     levels: [3, 10, 25, 50, 100],
     rule: (n) => `Make ${plural(n, ["practice trade", "practice trades"])} linked to a thesis.`,
@@ -136,15 +159,37 @@ export const BADGES: BadgeDefinition[] = [
     key: "post-mortem",
     name: "Post-mortem",
     description: "Journal entries looking back at a practice trade.",
+    category: "Practice",
     metric: "paperReflections",
     levels: [1, 5, 15, 30, 60],
     rule: (n) => `Write ${plural(n, ["journal entry", "journal entries"])} about a practice trade.`,
     unit: ["reflection", "reflections"],
   },
   {
+    key: "first-holding",
+    name: "First holding",
+    description: "The first thing you own, written down in Portle.",
+    category: "Portfolio",
+    metric: "holdingsRecorded",
+    levels: [1],
+    rule: () => "Record a holding, by hand, from a CSV or from your broker.",
+    unit: ["holding", "holdings"],
+  },
+  {
+    key: "broker",
+    name: "Broker linked",
+    description: "You linked a broker, so your holdings update by themselves.",
+    category: "Portfolio",
+    metric: "brokersLinked",
+    levels: [1],
+    rule: () => "Link a broker to Portle.",
+    unit: ["broker", "brokers"],
+  },
+  {
     key: "cartographer",
     name: "Cartographer",
     description: "Accounts you keep track of in Portle.",
+    category: "Portfolio",
     metric: "accountsTracked",
     levels: [2, 3, 4, 6, 10],
     rule: (n) => `Track holdings in ${plural(n, ["account", "accounts"])}.`,
@@ -154,33 +199,37 @@ export const BADGES: BadgeDefinition[] = [
     key: "clean-import",
     name: "Clean imports",
     description: "Broker exports imported without a single error.",
+    category: "Portfolio",
     metric: "cleanImports",
     levels: [1, 3, 10, 25, 50],
     rule: (n) => `Import ${plural(n, ["CSV", "CSVs"])} with no errors.`,
     unit: ["import", "imports"],
   },
   {
-    key: "watchkeeper",
-    name: "Watchkeeper",
-    description: "Securities you're studying on one watchlist.",
-    metric: "watchlistSize",
-    levels: [5, 10, 25, 50, 100],
-    rule: (n) => `Keep ${plural(n, ["security", "securities"])} on one watchlist.`,
-    unit: ["security", "securities"],
+    key: "budget",
+    name: "Budget keeper",
+    description: "Regular costs you keep track of on Spending.",
+    category: "Portfolio",
+    metric: "costsTracked",
+    levels: [1, 5, 10, 20, 30],
+    rule: (n) => `Track ${plural(n, ["regular cost", "regular costs"])} on Spending.`,
+    unit: ["cost", "costs"],
   },
   {
-    key: "veil",
-    name: "Privacy check",
-    description: "You looked at your profile the way others see it.",
-    metric: "privacyPreviewed",
-    levels: [1],
-    rule: () => "Preview your profile as someone else sees it.",
-    unit: ["preview", "previews"],
+    key: "circle",
+    name: "Circle",
+    description: "Friends you share your reasoning with.",
+    category: "Community",
+    metric: "friends",
+    levels: [1, 3, 5, 10, 25],
+    rule: (n) => `Have ${plural(n, ["friend", "friends"])} on Portle.`,
+    unit: ["friend", "friends"],
   },
   {
     key: "hearth",
     name: "Guild member",
     description: "Guilds you belong to.",
+    category: "Community",
     metric: "guildMemberships",
     levels: [1, 2, 3, 5, 8],
     rule: (n) => `Join ${plural(n, ["Guild", "Guilds"])}.`,
@@ -190,16 +239,26 @@ export const BADGES: BadgeDefinition[] = [
     key: "good-counsel",
     name: "Good counsel",
     description: "Considered responses to other people's reasoning.",
+    category: "Community",
     metric: "commentsOnOthersTheses",
     levels: [1, 10, 25, 50, 100],
     rule: (n) => `Comment on other members' theses ${plural(n, ["time", "times"])}.`,
     unit: ["comment", "comments"],
   },
+  {
+    key: "veil",
+    name: "Privacy check",
+    description: "You looked at your profile the way others see it.",
+    category: "Privacy",
+    metric: "privacyPreviewed",
+    levels: [1],
+    rule: () => "Preview your profile as someone else sees it.",
+    unit: ["preview", "previews"],
+  },
 ];
 
-/** Badges that can't be worked for: they say who someone is to Portle. */
+/** Relics that can't be worked for: they say when someone joined. Owners wear titles beside their handle instead. */
 export const SPECIAL_BADGES = [
-  { key: "founder", name: "Founder", description: "Started Portle. Whoever runs this Portle has it, with full access to everything." },
   { key: "early", name: "Early member", description: "Joined before Portle opened to everyone. It can't be earned later." },
 ] as const;
 export type SpecialBadgeKey = (typeof SPECIAL_BADGES)[number]["key"];
@@ -207,9 +266,27 @@ export type SpecialBadgeKey = (typeof SPECIAL_BADGES)[number]["key"];
 export const BADGE_BY_KEY = new Map(BADGES.map((b) => [b.key, b]));
 export const SPECIAL_BY_KEY = new Map<string, (typeof SPECIAL_BADGES)[number]>(SPECIAL_BADGES.map((b) => [b.key, b]));
 
+/** One-level Relics are milestones: they get their own blue tile instead of the five stones. */
+export const isMilestone = (key: string) => BADGE_BY_KEY.get(key)?.levels.length === 1;
+
 /** A level's short label for the ladder: "5 theses", "1 year". */
 export function levelLabel(def: BadgeDefinition, n: number) {
-  return def.metric === "memberDays" ? (AGE.get(n) ?? plural(n, def.unit)) : plural(n, def.unit);
+  return def.metric === "memberDays" ? plural(Math.round(n / YEAR), ["year", "years"]) : plural(n, def.unit);
+}
+
+/** Time on Portle in words: "1 year, 2 months", "5 months", "12 days". */
+export function memberFor(days: number) {
+  const years = Math.floor(days / YEAR);
+  const months = Math.floor((days % YEAR) / 30.44);
+  if (years) return months ? `${plural(years, ["year", "years"])}, ${plural(months, ["month", "months"])}` : plural(years, ["year", "years"]);
+  return months ? plural(months, ["month", "months"]) : plural(Math.max(days, 0), ["day", "days"]);
+}
+
+/** "10 more months" for time on Portle, "3 more theses" for everything else. */
+function remaining(def: BadgeDefinition, value: number, next: number) {
+  const left = Math.max(1, next - value);
+  if (def.metric === "memberDays" && left >= 31) return plural(Math.max(1, Math.round(left / 30.44)), ["more month", "more months"]);
+  return plural(left, def.unit).replace(/^(\d+)/, "$1 more");
 }
 
 /** How many levels the metric has reached: 0 when the first isn't reached yet. */
@@ -228,7 +305,7 @@ export function badgeProgress(def: BadgeDefinition, metrics: BadgeMetrics, reach
     maxLevel: def.levels.length,
     next,
     /** "3 more theses", or null at the top level. */
-    toNext: next === null ? null : plural(Math.max(1, next - value), def.unit).replace(/^(\d+)/, "$1 more"),
+    toNext: next === null ? null : remaining(def, value, next),
     /** How far toward the next level's count, 0 to 1: 1 of 5 theses is a fifth of the way. */
     fraction: next === null ? 1 : Math.min(1, Math.max(0, value / next)),
   };

@@ -5,8 +5,10 @@ import {
   badgeLevel,
   badgeProgress,
   LEVEL_NAMES,
+  LEVEL_RARITY,
   levelLabel,
   longestStreak,
+  memberFor,
   SPECIAL_BADGES,
   SPECIAL_BY_KEY,
   type BadgeMetrics,
@@ -15,7 +17,10 @@ import { getDb } from "../db";
 import {
   accounts,
   auditEvents,
+  brokerConnections,
   comments,
+  costs,
+  friendships,
   guildMembers,
   importBatches,
   journalEntries,
@@ -29,7 +34,6 @@ import {
   watchlists,
 } from "../db/schema";
 import { notFound } from "../errors";
-import { founderIds, getAccess } from "./access";
 import { notify } from "./notifications";
 
 const count = sql<number>`count(*)::int`;
@@ -154,7 +158,31 @@ export async function computeMetrics(userId: string): Promise<BadgeMetrics> {
     commentsOnOthersTheses,
     privacyPreviewed,
     memberDays: member ? Math.floor((Date.now() - member.createdAt.getTime()) / 86400_000) : 0,
+    ...(await milestoneMetrics(userId)),
   };
+}
+
+/** Counts for the Portfolio and Community Relics: brokers ever linked, costs, friends and holdings recorded. */
+async function milestoneMetrics(userId: string) {
+  const db = getDb();
+  const one = async (q: Promise<{ n: number }[]>) => (await q)[0]?.n ?? 0;
+  const [brokersLinked, costsTracked, friends, holdingsRecorded] = await Promise.all([
+    one(db.select({ n: count }).from(brokerConnections).where(eq(brokerConnections.userId, userId))),
+    one(db.select({ n: count }).from(costs).where(eq(costs.userId, userId))),
+    one(
+      db
+        .select({ n: count })
+        .from(friendships)
+        .where(and(eq(friendships.status, "accepted"), sql`${userId} in (${friendships.userLow}, ${friendships.userHigh})`)),
+    ),
+    one(
+      db
+        .select({ n: sql<number>`count(distinct ${transactions.instrumentId})::int` })
+        .from(transactions)
+        .where(and(eq(transactions.userId, userId), isNotNull(transactions.instrumentId))),
+    ),
+  ]);
+  return { brokersLinked, costsTracked, friends, holdingsRecorded };
 }
 
 /** Early member goes to everyone who joins before EARLY_MEMBER_UNTIL (a date). Until that's set Portle isn't public, so everyone qualifies. */
@@ -169,10 +197,9 @@ function joinedEarly(createdAt: Date) {
  */
 export async function syncBadges(userId: string) {
   const db = getDb();
-  const [metrics, rows, access, [member]] = await Promise.all([
+  const [metrics, rows, [member]] = await Promise.all([
     computeMetrics(userId),
     db.select().from(userRelics).where(eq(userRelics.userId, userId)),
-    getAccess(userId),
     db.select({ createdAt: user.createdAt }).from(user).where(eq(user.id, userId)),
   ]);
   const byKey = new Map(rows.map((r) => [r.relicKey, r]));
@@ -197,17 +224,14 @@ export async function syncBadges(userId: string) {
     await notify(db, {
       userId,
       kind: "relic",
-      title: before ? `${def.name} is now ${LEVEL_NAMES[level - 1]}` : `Badge earned: ${def.name}`,
+      title: before ? `${def.name} is now ${LEVEL_NAMES[level - 1]}` : `Relic earned: ${def.name}`,
       body: def.levels[level] ? `Next: ${def.rule(def.levels[level])}` : "That's the top level.",
-      href: "/badges",
+      href: "/relics",
     });
   }
 
-  // Special badges follow who someone is: Founder only while they run this Portle.
-  if (access.owner && !byKey.has("founder")) {
-    const [row] = await db.insert(userRelics).values({ userId, relicKey: "founder", evidence: "owner" }).onConflictDoNothing().returning();
-    if (row) byKey.set("founder", row);
-  } else if (!access.owner && byKey.has("founder")) {
+  // Owners wear titles beside their handle rather than a Founder Relic; clear the one an earlier version gave.
+  if (byKey.has("founder")) {
     await db.delete(userRelics).where(and(eq(userRelics.userId, userId), eq(userRelics.relicKey, "founder")));
     byKey.delete("founder");
   }
@@ -218,12 +242,12 @@ export async function syncBadges(userId: string) {
   return { metrics, rows: [...byKey.values()] };
 }
 
-/** Best-effort wrapper for use after user actions: a badge failure must never fail the action. */
+/** Best-effort wrapper for use after user actions: a Relic failure must never fail the action. */
 export async function syncBadgesQuietly(userId: string) {
   try {
     await syncBadges(userId);
   } catch {
-    // Badges catch up the next time the member opens a page that syncs them.
+    // Relics catch up the next time the member opens a page that syncs them.
   }
 }
 
@@ -231,45 +255,65 @@ type Row = typeof userRelics.$inferSelect;
 
 /** One badge as every screen shows it. Locked badges have level 0. */
 function view(key: string, row: Row | undefined, metrics?: BadgeMetrics) {
+  const unlockedAt = row?.awardedAt ?? null;
   const special = SPECIAL_BY_KEY.get(key);
   if (special) {
     return {
       key,
       name: special.name,
       description: special.description,
+      category: "Time on Portle" as string,
       special: true,
+      milestone: false,
       level: 1,
       maxLevel: 1,
       levelName: special.name,
+      rarity: "Rare",
+      unlockedAt,
       levelAt: row?.levelAt ?? null,
+      /** "1 year, 2 months" for time on Portle; nothing for the rest. */
+      span: null as string | null,
       displayed: row?.displayed ?? true,
-      progress: null,
+      progress: null as null | { toNext: string | null; fraction: number; nextName: string | null; nextRule: string | null },
+      howTo: special.description,
       ladder: [] as { level: number; name: string; label: string; rule: string }[],
     };
   }
   const def = BADGE_BY_KEY.get(key)!;
   const progress = metrics ? badgeProgress(def, metrics, row?.level ?? 0) : null;
   const level = progress?.level ?? row?.level ?? 0;
+  const milestone = def.levels.length === 1;
   return {
     key,
     name: def.name,
     description: def.description,
+    category: def.category as string,
     special: false,
+    milestone,
     level,
     maxLevel: def.levels.length,
-    levelName: level ? LEVEL_NAMES[level - 1] : "Not yet",
+    levelName: milestone ? (level ? "Unlocked" : "Not yet") : level ? LEVEL_NAMES[level - 1] : "Not yet",
+    rarity: milestone ? "Uncommon" : LEVEL_RARITY[Math.max(level, 1) - 1],
+    unlockedAt,
     levelAt: row?.levelAt ?? null,
+    span: def.metric === "memberDays" && metrics ? memberFor(metrics.memberDays) : null,
     displayed: row?.displayed ?? true,
-    progress: progress && { toNext: progress.toNext, fraction: progress.fraction, nextRule: progress.next === null ? null : def.rule(progress.next) },
-    ladder: def.levels.map((n, i) => ({ level: i + 1, name: LEVEL_NAMES[i], label: levelLabel(def, n), rule: def.rule(n) })),
+    progress: progress && {
+      toNext: progress.toNext,
+      fraction: progress.fraction,
+      nextName: progress.next === null ? null : LEVEL_NAMES[progress.level],
+      nextRule: progress.next === null ? null : def.rule(progress.next),
+    },
+    /** How to earn it, for milestones and Relics not unlocked yet. */
+    howTo: def.rule(def.levels[0]),
+    ladder: milestone ? [] : def.levels.map((n, i) => ({ level: i + 1, name: LEVEL_NAMES[i], label: levelLabel(def, n), rule: def.rule(n) })),
   };
 }
 export type BadgeView = ReturnType<typeof view>;
 
-/** Strongest first: Founder, Early member, then the highest level, then the most recent. */
-const RANK: Record<string, number> = { founder: 0, early: 1 };
+/** Strongest first: Early member, then the highest level, then the most recent. */
 const order = (a: BadgeView, b: BadgeView) =>
-  (RANK[a.key] ?? 2) - (RANK[b.key] ?? 2) || b.level - a.level || (b.levelAt?.getTime() ?? 0) - (a.levelAt?.getTime() ?? 0);
+  Number(b.special) - Number(a.special) || b.level - a.level || (b.levelAt?.getTime() ?? 0) - (a.levelAt?.getTime() ?? 0);
 
 /** The member's own badges: what they've earned, and what they can still unlock. Syncs first. */
 export async function listBadges(userId: string) {
@@ -282,18 +326,18 @@ export async function listBadges(userId: string) {
   return { earned: [...specials, ...all.filter((b) => b.level > 0)].sort(order).map(fresh), locked: all.filter((b) => b.level === 0) };
 }
 
-/** The badges a member shows on their profile. Founder only while they still run this Portle. */
+/** The Relics a member shows on their profile, with how far each is from its next level. */
 export async function shownBadges(userId: string) {
-  const [rows, founders] = await Promise.all([
+  const [rows, metrics] = await Promise.all([
     getDb()
       .select()
       .from(userRelics)
       .where(and(eq(userRelics.userId, userId), eq(userRelics.displayed, true))),
-    founderIds(),
+    computeMetrics(userId),
   ]);
   return rows
-    .filter((r) => (BADGE_BY_KEY.has(r.relicKey) || SPECIAL_BY_KEY.has(r.relicKey)) && (r.relicKey !== "founder" || founders.has(userId)))
-    .map((r) => view(r.relicKey, r))
+    .filter((r) => BADGE_BY_KEY.has(r.relicKey) || SPECIAL_BY_KEY.has(r.relicKey))
+    .map((r) => view(r.relicKey, r, metrics))
     .sort(order);
 }
 
@@ -303,5 +347,5 @@ export async function setBadgeDisplayed(userId: string, key: string, displayed: 
     .set({ displayed })
     .where(and(eq(userRelics.userId, userId), eq(userRelics.relicKey, key)))
     .returning({ key: userRelics.relicKey });
-  if (!res.length) throw notFound("Badge");
+  if (!res.length) throw notFound("Relic");
 }

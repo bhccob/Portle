@@ -50,6 +50,13 @@
       "when": 1793358098748,
       "tag": "0006_badge_levels",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1793360614862,
+      "tag": "0007_profile_page",
+      "breakpoints": true
     }
   ]
 }

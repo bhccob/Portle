@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { runAction } from "@/server/action";
 import type { ActionResult } from "@/server/errors";
 import { blockUser, createPost, deletePost, removeFriend, respondFriendRequest, sendFriendRequest, unblockUser } from "@/server/services/social";
+import { syncBadgesQuietly } from "@/server/services/badges";
 import { requireMember } from "@/server/session";
 
 export async function createPostAction(_: ActionResult | null, form: FormData): Promise<ActionResult> {
@@ -46,6 +47,11 @@ export async function friendAction(kind: "request" | "accept" | "decline" | "rem
     else if (kind === "block") await blockUser(user.id, otherId);
     else await unblockUser(user.id, otherId);
   }, messages[kind]);
+  if (res.ok && kind === "accept") {
+    // Both of you have one more friend for the Circle Relic.
+    await syncBadgesQuietly(user.id);
+    await syncBadgesQuietly(otherId);
+  }
   if (res.ok) revalidatePath("/", "layout");
   return res;
 }

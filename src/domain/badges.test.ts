@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { BADGES, BADGE_BY_KEY, badgeLevel, badgeProgress, LEVEL_NAMES, longestStreak, type BadgeMetrics } from "./badges";
+import { BADGES, BADGE_BY_KEY, badgeLevel, badgeProgress, isMilestone, LEVEL_NAMES, longestStreak, memberFor, type BadgeMetrics } from "./badges";
 
 const zero: BadgeMetrics = {
   thesesCreated: 0,
@@ -18,6 +18,10 @@ const zero: BadgeMetrics = {
   commentsOnOthersTheses: 0,
   privacyPreviewed: 0,
   memberDays: 0,
+  brokersLinked: 0,
+  costsTracked: 0,
+  friends: 0,
+  holdingsRecorded: 0,
 };
 const theses = BADGE_BY_KEY.get("first-specimen")!;
 
@@ -46,7 +50,7 @@ describe("badge levels", () => {
       expect([...b.levels].sort((x, y) => x - y)).toEqual(b.levels);
       expect(b.levels.every((n) => b.rule(n).length > 10)).toBe(true);
     }
-    expect(BADGE_BY_KEY.get("member")!.rule(365)).toBe("Be a member for 1 year.");
+    expect(BADGE_BY_KEY.get("years")!.rule(730)).toBe("Be a member for 2 years.");
   });
 
   it("never rewards trading volume or profit", () => {
@@ -54,6 +58,23 @@ describe("badge levels", () => {
     for (const banned of ["profit", "return", "trades", "volume", "gain"]) {
       expect(metricNames.some((m) => m.includes(banned))).toBe(false);
     }
+  });
+});
+
+describe("time on Portle", () => {
+  const years = BADGE_BY_KEY.get("years")!;
+  it("levels up once a year and counts down in months", () => {
+    expect(badgeProgress(years, { ...zero, memberDays: 60 })).toMatchObject({ level: 0, toNext: "10 more months" });
+    expect(badgeProgress(years, { ...zero, memberDays: 400 })).toMatchObject({ level: 1, toNext: "11 more months" });
+    expect(badgeProgress(years, { ...zero, memberDays: 720 }).toNext).toBe("10 more days");
+    expect(memberFor(425)).toBe("1 year, 1 month");
+    expect(memberFor(20)).toBe("20 days");
+  });
+
+  it("treats one-level Relics as milestones", () => {
+    expect(isMilestone("broker")).toBe(true);
+    expect(isMilestone("first-specimen")).toBe(false);
+    expect(badgeLevel(BADGE_BY_KEY.get("broker")!, { ...zero, brokersLinked: 1 })).toBe(1);
   });
 });
 

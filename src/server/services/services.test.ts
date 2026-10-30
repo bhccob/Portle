@@ -285,7 +285,7 @@ describe("guilds", () => {
   });
 });
 
-describe("badges", () => {
+describe("relics", () => {
   it("awards from server-side metrics exactly once, at the right level", async () => {
     await syncBadges(alice);
     await syncBadges(alice);
@@ -296,7 +296,7 @@ describe("badges", () => {
     // Portle isn't public yet, so every member so far is an early member.
     expect(earned.map((b) => b.key)).toContain("early");
     const notes = await db.select().from(s.notifications).where(eq(s.notifications.userId, alice));
-    expect(notes.filter((n) => n.title === "Badge earned: Thesis writer")).toHaveLength(1);
+    expect(notes.filter((n) => n.title === "Relic earned: Thesis writer")).toHaveLength(1);
   });
 
   it("counts watchlist breadth and says what the next level needs", async () => {

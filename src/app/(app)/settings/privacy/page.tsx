@@ -41,7 +41,7 @@ function PreviewCard({ title, preview }: { title: string; preview: Preview }) {
             <dd className="text-fg-muted">{preview.view.theses.length}</dd>
           </div>
           <div>
-            <dt className="text-xs text-fg-subtle">Badges shown</dt>
+            <dt className="text-xs text-fg-subtle">Relics shown</dt>
             <dd className="text-fg-muted">{preview.view.relics.length}</dd>
           </div>
         </dl>

@@ -88,13 +88,21 @@ export function MenuItem({ className, destructive, ...props }: React.ComponentPr
 export const MenuSeparator = () => <M.Separator className="my-1 h-px bg-line" />;
 export const MenuLabel = ({ children }: { children: React.ReactNode }) => <M.Label className="px-2.5 py-1.5 text-xs text-fg-subtle">{children}</M.Label>;
 
-export function Tip({ content, children }: { content: React.ReactNode; children: React.ReactNode }) {
+/** A small hover label. Extra props reach the trigger, so a Tip can itself be another trigger's child (a Dialog's, say). */
+export function Tip({
+  content,
+  side,
+  children,
+  ...props
+}: { content: React.ReactNode; side?: "top" | "bottom"; children: React.ReactNode } & Omit<React.ComponentProps<typeof T.Trigger>, "content">) {
   return (
     <T.Provider delayDuration={250}>
       <T.Root>
-        <T.Trigger asChild>{children}</T.Trigger>
+        <T.Trigger asChild {...props}>
+          {children}
+        </T.Trigger>
         <T.Portal>
-          <T.Content sideOffset={6} className="glass-2 z-50 max-w-64 rounded-[var(--radius-md)] px-2.5 py-1.5 text-xs text-fg">
+          <T.Content side={side} sideOffset={6} className="glass-2 z-50 max-w-64 rounded-[var(--radius-md)] px-2.5 py-1.5 text-xs text-fg">
             {content}
           </T.Content>
         </T.Portal>
