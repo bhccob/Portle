@@ -48,26 +48,25 @@ export function useConnect(reconnectId?: string) {
   return { connect, pending, error };
 }
 
-/** "Connect your broker": three promises, then SnapTrade's page. Without full access, the ask instead. */
+/** "Connect your broker": three promises, then SnapTrade's page. A second broker on the free plan asks for Plus instead. */
 export function ConnectBrokerSheet({
   configured,
   full = false,
   access,
+  linked = 0,
   trigger,
 }: {
   configured: boolean;
   full?: boolean;
   access: AccessInfo;
+  /** Brokers this member has linked already. */
+  linked?: number;
   trigger: React.ReactNode;
 }) {
   const { connect, pending, error } = useConnect();
-  if (configured && !access.full)
+  if (configured && !access.full && linked > 0)
     return (
-      <Dialog
-        title="Connect your broker"
-        description={`Broker linking is part of full access, which ${access.ownerName === "the owner" ? "the owner turns" : `${access.ownerName} turns`} on for each person.`}
-        trigger={trigger}
-      >
+      <Dialog title="Connect another broker" description="The free plan links one broker. More brokers come with Portle Plus." trigger={trigger}>
         <AccessRequest access={access} />
         <ButtonLink href="/portfolio/import" variant="secondary" className="mt-3 w-full">
           <FileUp className="size-4" aria-hidden /> Import a CSV instead
@@ -125,7 +124,7 @@ const row = "group flex w-full items-start gap-3.5 border-t border-line py-4 tex
 const rowIcon = "grid size-11 shrink-0 place-items-center rounded-[14px] bg-field text-fg [&_svg]:size-[22px]";
 
 /** The three ways to add what you own, when Portfolio is empty. */
-export function AddWays({ configured, full = false, access }: { configured: boolean; full?: boolean; access: AccessInfo }) {
+export function AddWays({ configured, full = false, access, linked = 0 }: { configured: boolean; full?: boolean; access: AccessInfo; linked?: number }) {
   const [typing, setTyping] = useState(false);
   return (
     <div className="mx-auto max-w-[560px]">
@@ -135,6 +134,7 @@ export function AddWays({ configured, full = false, access }: { configured: bool
             configured={configured}
             full={full}
             access={access}
+            linked={linked}
             trigger={
               <button type="button" className="flex w-full items-start gap-3.5 text-left">
                 <span className={cn(rowIcon, "bg-selected text-accent")}>

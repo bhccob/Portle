@@ -7,10 +7,10 @@ import { getBrokerProvider, NotConfiguredError, type BrokerAccount, type BrokerS
 import { audit } from "../audit";
 import { decryptSecret, encryptionReady, encryptSecret } from "../crypto";
 import { getDb } from "../db";
-import { accounts, brokerConnections, brokerUsers, instruments, quotes, transactions } from "../db/schema";
+import { accounts, brokerConnections, brokerUsers, instruments, memberPrices, transactions } from "../db/schema";
 import { notFound, UserFacingError } from "../errors";
 import { assertRateLimit } from "../rate-limit";
-import { assertFullAccess, hasFullAccess } from "./access";
+import { hasFullAccess } from "./access";
 import { ensurePortfolio, ledgerRows } from "./portfolio";
 
 /**
@@ -28,6 +28,8 @@ const FULL =
 const MAYBE_FULL =
   "SnapTrade couldn't open a new connection. During early access Portle can link only a few brokers, so the spots may be taken. A CSV export from your broker works just as well.";
 const START_FAILED = "SnapTrade didn't answer just now. Try again in a minute, or import a CSV instead.";
+const ONE_FREE = "The free plan links one broker. A second one comes with Portle Plus.";
+const NOT_SYNCING = "On the free plan only your first broker keeps syncing. Portle Plus syncs them all.";
 const SETUP = "Broker linking isn't set up correctly on this Portle yet, so nothing was sent to SnapTrade. A CSV export from your broker works in the meantime.";
 const FIRST_HISTORY_YEARS = 5;
 const OVERLAP_DAYS = 30;
@@ -109,9 +111,16 @@ async function ownedConnection(userId: string, connectionId: string) {
   return c;
 }
 
+/** The links that keep syncing: all of them with Plus, otherwise the first one the member made. */
+async function syncableIds(userId: string) {
+  const links = await listBrokerConnections(userId);
+  return new Set(((await hasFullAccess(userId)) ? links : links.slice(0, 1)).map((c) => c.id));
+}
+
 /** The provider's sign-in page, to link a new broker or repair one that was signed out. */
 export async function startBrokerConnection(userId: string, returnUrl: string, reconnectConnectionId?: string) {
-  await assertFullAccess(userId, "Linking a broker");
+  // The free plan links one broker; repairing a link that exists is always fine.
+  if (!reconnectConnectionId && !(await hasFullAccess(userId)) && (await listBrokerConnections(userId)).length) throw new UserFacingError(ONE_FREE, "forbidden");
   assertRateLimit(`broker-connect:${userId}`, 10, 3600_000);
   const reconnect = reconnectConnectionId ? ((await ownedConnection(userId, reconnectConnectionId)).externalId ?? undefined) : undefined;
   // Repairing a link doesn't take a new spot.
@@ -326,12 +335,15 @@ async function syncAccount(userId: string, user: BrokerUser, account: SyncedAcco
       .onConflictDoNothing();
   }
 
-  // 3. The broker's own price for each holding, so a real portfolio never needs made-up prices.
+  // 3. The broker's own price for each holding, kept for this member only, so a real portfolio never needs made-up prices.
   const source = `${account.institution || "Your broker"} via ${provider.status().label}`;
   for (const h of held) {
     if (!h.price || !(Number(h.price) > 0)) continue;
-    const quote = { instrumentId: h.instrumentId, price: h.price, previousClose: null, currency: h.currency, asOf: now, source, delayMinutes: 0, fetchedAt: now };
-    await db.insert(quotes).values(quote).onConflictDoUpdate({ target: quotes.instrumentId, set: quote });
+    const price = { userId, instrumentId: h.instrumentId, price: h.price, currency: h.currency, asOf: now, source, own: false };
+    await db
+      .insert(memberPrices)
+      .values(price)
+      .onConflictDoUpdate({ target: [memberPrices.userId, memberPrices.instrumentId], set: price });
   }
 }
 
@@ -340,7 +352,7 @@ export async function syncBrokerConnection(userId: string, connectionId: string)
   const conn = await ownedConnection(userId, connectionId);
   const user = await brokerUser(userId, false);
   if (!user || conn.status === "disconnected") return { ok: false, error: "This broker is no longer connected." };
-  if (!(await hasFullAccess(userId))) return { ok: false, error: "Syncing a broker is part of full access." };
+  if (!(await syncableIds(userId)).has(conn.id)) return { ok: false, error: NOT_SYNCING };
   const db = getDb();
   const linked = await db
     .select({ id: accounts.id, externalId: accounts.externalId, institution: accounts.institution })
@@ -362,9 +374,11 @@ export async function syncBrokerConnection(userId: string, connectionId: string)
 
 /** Syncs every linked broker last synced more than `hours` ago. Used quietly when the member opens Portfolio. */
 export async function syncStaleBrokerConnections(userId: string, hours = 6) {
-  if (!(await hasFullAccess(userId))) return 0;
+  const allowed = await syncableIds(userId);
   const cutoff = new Date(Date.now() - hours * 3600_000);
-  const due = (await listBrokerConnections(userId)).filter((c) => c.status === "active" && c.accounts > 0 && (!c.lastSyncAt || c.lastSyncAt < cutoff));
+  const due = (await listBrokerConnections(userId)).filter(
+    (c) => allowed.has(c.id) && c.status === "active" && c.accounts > 0 && (!c.lastSyncAt || c.lastSyncAt < cutoff),
+  );
   for (const c of due) await syncBrokerConnection(userId, c.id);
   return due.length;
 }

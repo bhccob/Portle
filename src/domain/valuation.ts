@@ -5,6 +5,8 @@ import { d, sum, ZERO, type Dec } from "./money";
 export type InstrumentInfo = {
   id: string;
   symbol: string;
+  /** Where it is listed; "OWN:…" for something a member priced by hand. */
+  exchange?: string;
   name: string;
   assetClass: string;
   currency: string;

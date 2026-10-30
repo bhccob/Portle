@@ -1,64 +1,99 @@
 import Link from "next/link";
+import { cookies } from "next/headers";
 import { after } from "next/server";
-import { FileUp, Info, Lock, PlugZap, Wallet } from "lucide-react";
+import { ChevronRight, Info, Lock, Plus, Star, Wallet } from "lucide-react";
 import { AccessButton } from "@/components/access/access-client";
 import { LineChart } from "@/components/charts/line-chart";
-import { Ring, RingLegend, ringColor } from "@/components/charts/ring";
-import { holdingSlices } from "@/components/charts/ring-data";
+import { OrbitRing, type OrbitSlice } from "@/components/charts/orbit-ring";
+import { ringColor } from "@/components/charts/ring";
+import { foldSlices } from "@/components/charts/ring-geometry";
+import { HideNumbersButton } from "@/components/shell/hide-numbers";
 import { SourceBadge } from "@/components/ui/badge";
-import { Button, ButtonLink } from "@/components/ui/button";
-import { Change, Money } from "@/components/ui/finance";
+import { ButtonLink } from "@/components/ui/button";
+import { Change, Money, Secret } from "@/components/ui/finance";
+import { LogoTile } from "@/components/ui/logo-tile";
 import { PageHeader, Panel, Stat } from "@/components/ui/panel";
 import { Callout, EmptyState } from "@/components/ui/states";
 import { LinkTabs } from "@/components/ui/tabs";
-import { formatMoney, formatPercent, formatQuantity } from "@/lib/format";
+import { d, type Dec } from "@/domain/money";
+import { formatMoney, formatPercent, formatQuantity, maskFor } from "@/lib/format";
 import { accessInfo } from "@/server/services/access";
 import { brokerSpotsFull, brokerStatus, listBrokerConnections, syncStaleBrokerConnections } from "@/server/services/brokers";
-import type { Range } from "@/server/services/market";
-import { getPerformance, getValuation } from "@/server/services/portfolio";
+import { logosFor, type LogoInfo } from "@/server/services/logos";
+import { ensureDefaultWatchlist, getPrices, isOwnListing, listWatchlists, type Range } from "@/server/services/market";
+import { getPerformance, getValuation, listOwnItems } from "@/server/services/portfolio";
+import { getPrivacy } from "@/server/services/profile";
 import { requireMember } from "@/server/session";
-import { AddWays, ConnectBrokerSheet } from "./broker-client";
-import { AddTransactionDialog, BaseCurrencySelect, LoadSampleButton } from "./portfolio-forms";
+import { AddWays } from "./broker-client";
+import {
+  AccountPicker,
+  AddInvestmentsButton,
+  CurrencyPicker,
+  ManageMenu,
+  ReturnPicker,
+  ShareButton,
+  SortPicker,
+  WatchlistSheet,
+  type ManageProps,
+  type MixPreview,
+  type ReturnFigure,
+} from "./portfolio-client";
+import { AddTransactionDialog, LoadSampleButton } from "./portfolio-forms";
 
 export const metadata = { title: "My portfolio" };
 
 const RANGES: Range[] = ["1M", "3M", "6M", "YTD", "1Y", "3Y"];
-const DIMS = [
-  ["holdings", "Holdings"],
-  ["assetClass", "Type"],
-  ["sector", "Sector"],
-  ["region", "Region"],
-  ["currency", "Currency"],
-] as const;
-type Dim = (typeof DIMS)[number][0];
+const RING = 216;
 
-const INTRO = "What you really own, as you recorded it. Portle never moves money, and only you see the amounts.";
+type Row = {
+  id: string;
+  label: string;
+  sub: string;
+  href: string | null;
+  kind?: "cash" | "own";
+  logo: LogoInfo | null;
+  colour: string;
+  share: number;
+  value: Dec | null;
+  quantity: Dec | null;
+  todayValue: Dec | null;
+  todayPct: Dec | null;
+  allValue: Dec | null;
+  allPct: Dec | null;
+};
+
+const signOf = (v: Dec | null | undefined) => (!v ? 0 : v.gt(0) ? 1 : v.lt(0) ? -1 : 0);
 
 export default async function PortfolioPage({ searchParams }: { searchParams: Promise<Record<string, string | undefined>> }) {
   const sp = await searchParams;
   const { user } = await requireMember();
   const range = (RANGES.includes(sp.range as Range) ? sp.range : "1Y") as Range;
-  const dim = (DIMS.find(([k]) => k === sp.dim)?.[0] ?? "holdings") as Dim;
-  const data = await getValuation(user.id, { accountId: sp.account });
+  const sort = sp.sort === "return" || sp.sort === "name" ? sp.sort : "value";
+  const access = await accessInfo(user.id);
+  // Looking at one account at a time is part of Plus; the free plan always sees everything together.
+  const accountId = access.full ? sp.account : undefined;
+  const data = await getValuation(user.id, { accountId });
   const { valuation: v, accounts, portfolio } = data;
   const base = portfolio.baseCurrency;
-  const qs = (patch: Record<string, string | undefined>) => {
-    const p = new URLSearchParams(Object.entries({ range, dim, account: sp.account, ...patch }).filter(([, x]) => x) as [string, string][]);
-    return `/portfolio?${p}`;
-  };
-  const accountOptions = accounts.map((a) => ({ id: a.id, name: a.name, currency: a.currency }));
+  const jar = await cookies();
+  const hideAmounts = jar.get("portle-hide-amounts")?.value === "1";
+  const ringReturn = jar.get("portle-ring-return")?.value === "all" ? "all" : "today";
   const brokers = brokerStatus();
   const brokersFull = brokers.configured && (await brokerSpotsFull());
-  const access = await accessInfo(user.id);
   const connections = await listBrokerConnections(user.id);
   // Linked brokers catch up quietly after the page is sent, at most every few hours.
   if (connections.length) after(() => syncStaleBrokerConnections(user.id).catch(() => undefined));
+  const qs = (patch: Record<string, string | undefined>) => {
+    const p = new URLSearchParams(Object.entries({ range, sort: sort === "value" ? undefined : sort, account: accountId, ...patch }).filter(([, x]) => x) as [string, string][]);
+    return `/portfolio?${p}`;
+  };
+  const accountOptions = accounts.map((a) => ({ id: a.id, name: a.name, currency: a.currency }));
 
   if (!accounts.length) {
     return (
       <>
         <PageHeader title="Add what you own" description="Only you ever see the amounts. Portle never moves money." />
-        <AddWays configured={brokers.configured} full={brokersFull} access={access} />
+        <AddWays configured={brokers.configured} full={brokersFull} access={access} linked={connections.length} />
         <p className="mt-8 text-center text-sm text-fg-muted">
           Just looking around? <LoadSampleButton />
         </p>
@@ -67,95 +102,221 @@ export default async function PortfolioPage({ searchParams }: { searchParams: Pr
   }
 
   const synced = connections.filter((c) => c.accounts > 0);
-  const oldestSync = synced.reduce<Date | null>((min, c) => (c.lastSyncAt && (!min || c.lastSyncAt < min) ? c.lastSyncAt : min), null);
-
   const hasHoldings = v.holdings.length > 0;
+  // Some holding has a real price: the member's broker's, their own, or (with Plus) the market's.
+  const priced = v.holdings.some((h) => h.price);
   // Real prices but only demo history: the chart would draw a made-up line, so it waits for a market data plan.
   const noRealHistory = data.market.isDemo && !v.usesDemoPrices;
-  const perf = hasHoldings && !noRealHistory ? await getPerformance(user.id, range, { accountId: sp.account }) : null;
-  const priceKind = v.usesDemoPrices ? "demo" : data.market.isDemo ? "broker" : "delayed";
-  // Prices say where they came from: demo, the member's broker, or the market data plan.
+  const perf = hasHoldings && priced && access.full && !noRealHistory ? await getPerformance(user.id, range, { accountId }) : null;
+  const priceKind = v.usesDemoPrices ? "demo" : data.market.isDemo || !access.full ? "broker" : "delayed";
+  // Prices say where they came from: demo, the member's broker, their own, or the market data plan.
   const priceLabel = v.usesDemoPrices
     ? v.priceSources.length
       ? "Some prices are demo"
       : "Demo prices · synthetic"
     : v.priceSources.length === 1
       ? v.priceSources[0]
-      : data.market.isDemo
+      : data.market.isDemo || !access.full
         ? "Broker prices"
         : data.market.label;
-  // Without full access there are no prices, so the ring and table use what was paid instead.
-  const priced = access.full;
-  const paid = data.paid;
-  const paidSlices = [
-    ...paid.rows.map((r) => ({ label: r.holding.instrument.symbol, percent: Number(r.share ?? 0) })),
-    ...(paid.cash.gt(0) && paid.total.gt(0) ? [{ label: "Cash", percent: Number(paid.cash.div(paid.total)) }] : []),
-  ];
-  const paidOf = new Map(paid.rows.map((r) => [r.holding.instrument.id, r]));
-  const byHolding = priced ? holdingSlices(v.holdings) : paidSlices;
-  const slices = dim === "holdings" || !priced ? byHolding : v.allocation[dim].map((s) => ({ label: s.label, percent: Number(s.percent) }));
-  // A holding keeps its ring colour in the table; ones folded into "Other" take Other's colour.
-  const colourOf = new Map(byHolding.map((s, i) => [s.label, i < 5 || byHolding.length <= 6 ? ringColor(i, s.label) : "var(--chart-7)"]));
+
+  await ensureDefaultWatchlist(user.id);
+  const [lists, ownItems, privacy] = await Promise.all([listWatchlists(user.id), listOwnItems(user.id), getPrivacy(user.id)]);
+  const watch = lists[0]?.items ?? [];
+  const [logos, watchPrices] = await Promise.all([
+    logosFor([...v.holdings.map((h) => ({ id: h.instrument.id, symbol: h.instrument.symbol, exchange: h.instrument.exchange ?? "" })), ...watch.map((i) => i.instrument)]),
+    getPrices(
+      watch.map((i) => i.instrument),
+      { userId: user.id },
+    ),
+  ]);
+
+  // Everything as a share of the whole: priced holdings plus cash, or (with no prices at all) what was paid.
+  const paidOf = new Map(data.paid.rows.map((r) => [r.holding.instrument.id, r.paid]));
+  const cash = v.totals.cash.gt(0) ? v.totals.cash : null;
+  const total = priced ? v.totals.marketValue.plus(cash ?? 0) : data.paid.total;
+  const share = (x: Dec | null) => (x && total.gt(0) ? Number(x.div(total)) : 0);
+  const rows: Row[] = v.holdings.map((h) => {
+    const own = isOwnListing(h.instrument.exchange ?? "");
+    const worth = priced ? h.marketValueBase : (paidOf.get(h.instrument.id) ?? null);
+    return {
+      id: h.instrument.id,
+      label: h.instrument.symbol,
+      sub: own ? "Your own price" : h.instrument.name,
+      href: own ? null : `/markets/${h.instrument.id}`,
+      kind: own ? "own" : undefined,
+      logo: logos.get(h.instrument.id) ?? null,
+      colour: "",
+      share: share(worth),
+      value: worth,
+      quantity: h.quantity,
+      todayValue: h.dayChangeBase,
+      todayPct: h.dayChangePct,
+      allValue: h.unrealizedBase,
+      allPct: h.unrealizedPct,
+    };
+  });
+  if (cash)
+    rows.push({
+      id: "cash",
+      label: "Cash",
+      sub: "In your accounts",
+      href: null,
+      kind: "cash",
+      logo: null,
+      colour: "",
+      share: share(cash),
+      value: cash,
+      quantity: null,
+      todayValue: null,
+      todayPct: null,
+      allValue: null,
+      allPct: null,
+    });
+  const byShare = [...rows].filter((r) => r.share > 0).sort((a, b) => b.share - a.share);
+  // A holding keeps its ring colour in the list; ones folded into "Other" take Other's colour.
+  const folded = foldSlices(
+    byShare.map((r) => ({ label: r.label, percent: r.share })),
+    6,
+  );
+  byShare.forEach((r, i) => (r.colour = folded[i]?.label === r.label ? ringColor(i, r.label) : "var(--chart-7)"));
+  // Table cells: the amount (hidden with "Hide numbers") over its percentage, in the gain or loss colour.
+  const delta = (value: Dec | null, pct: Dec | null) =>
+    pct ? (
+      <span className={signOf(pct) > 0 ? "text-positive" : signOf(pct) < 0 ? "text-negative" : "text-fg-muted"}>
+        {value ? <Money value={value} currency={base} signed className="block text-[0.8125rem] font-medium" /> : null}
+        <span className="num block text-xs">{formatPercent(pct, { signed: true, decimals: 2 })}</span>
+      </span>
+    ) : (
+      <span className="text-fg-subtle">—</span>
+    );
+  const tile = (r: Row, size: number, round = false) => <LogoTile symbol={r.label} logo={r.logo} kind={r.kind} size={size} round={round} fallback={r.colour || "var(--chart-7)"} />;
+  const slices: OrbitSlice[] = byShare.map((r) => ({ label: r.label, percent: r.share, mark: tile(r, 32, true) }));
+  const ordered = [...rows].sort((a, b) =>
+    sort === "name" ? a.label.localeCompare(b.label) : sort === "return" ? Number(b.allPct ?? -Infinity) - Number(a.allPct ?? -Infinity) : b.share - a.share,
+  );
+
+  const figure = (value: Dec | null, pct: Dec | null, note?: string): ReturnFigure =>
+    value || pct
+      ? { money: value ? formatMoney(value, base, { signed: true }) : null, mask: maskFor(base), pct: pct ? formatPercent(pct, { signed: true, decimals: 2 }) : null, tone: signOf(pct ?? value) }
+      : { money: null, mask: maskFor(base), pct: null, tone: 0, note };
+  const todayFig: ReturnFigure = !access.full
+    ? { money: null, mask: maskFor(base), pct: null, tone: 0, locked: true }
+    : figure(v.totals.dayChangePct ? v.totals.dayChange : null, v.totals.dayChangePct, "No price from yesterday yet");
+  const allFig = figure(v.totals.unrealizedPct ? v.totals.unrealized : null, v.totals.unrealizedPct);
+
+  const mix: MixPreview = {
+    assetClass: v.allocation.assetClass.map((s) => ({ label: s.label, percent: Number(s.percent) })),
+    sector: v.allocation.sector.map((s) => ({ label: s.label, percent: Number(s.percent) })),
+    region: v.allocation.region.map((s) => ({ label: s.label, percent: Number(s.percent) })),
+    currency: v.allocation.currency.map((s) => ({ label: s.label, percent: Number(s.percent) })),
+  };
+  const manage: ManageProps = {
+    accounts: accountOptions,
+    access,
+    broker: { configured: brokers.configured, full: brokersFull, linked: connections.length },
+    baseCurrency: base,
+    ownItems: ownItems.map((o) => ({ id: o.id, name: o.name, currency: o.currency, price: o.price })),
+    visibility: { holdings: privacy.holdingsVisibility, allocation: privacy.allocationVisibility },
+  };
+
+  const watchRows = watch.length ? (
+    <ul>
+      {watch.map((i) => {
+        const p = watchPrices.get(i.instrument.id);
+        const day = p?.previousClose && d(p.previousClose).gt(0) ? d(p.price).minus(p.previousClose).div(p.previousClose) : null;
+        return (
+          <li key={i.instrument.id} className="border-t border-line first:border-t-0">
+            <Link href={`/markets/${i.instrument.id}`} className="flex items-center gap-3 py-3">
+              <LogoTile symbol={i.instrument.symbol} logo={logos.get(i.instrument.id)} size={38} />
+              <span className="min-w-0 flex-1">
+                <span className="block font-display text-[0.9375rem] font-semibold text-fg">{i.instrument.symbol}</span>
+                <span className="block truncate text-xs text-fg-subtle">{i.instrument.name}</span>
+              </span>
+              <span className="text-right">
+                <span className="num block text-sm font-semibold text-fg">{p ? formatMoney(p.price, p.currency) : "—"}</span>
+                {day ? <Change percent={day} className="justify-end" /> : null}
+              </span>
+            </Link>
+          </li>
+        );
+      })}
+    </ul>
+  ) : (
+    <p className="py-3 text-sm text-fg-muted">Nothing on your watchlist yet. Find a stock on Markets and add it.</p>
+  );
+  const watchRail = (
+    <>
+      <div className="mb-1 flex items-center justify-between">
+        <h2 className="flex items-center gap-2 font-display text-lg font-bold text-fg">
+          <Star className="size-4 fill-[var(--chart-4)] text-[var(--chart-4)]" aria-hidden /> Watchlist
+          <span className="num grid h-5 min-w-5 place-items-center rounded-full bg-[color-mix(in_srgb,var(--chart-4)_26%,transparent)] px-1.5 text-xs">{watch.length}</span>
+        </h2>
+        <Link href="/markets" className="text-[0.8125rem] font-semibold text-accent hover:underline">
+          See all
+        </Link>
+      </div>
+      {watchRows}
+    </>
+  );
 
   return (
     <>
-      <PageHeader
-        title="My portfolio"
-        description={INTRO}
-        actions={
-          <>
-            <BaseCurrencySelect value={base} />
-            <ConnectBrokerSheet
-              configured={brokers.configured}
-              full={brokersFull}
-              access={access}
-              trigger={
-                <Button variant="secondary">
-                  <PlugZap className="size-4" aria-hidden /> Connect broker
-                </Button>
-              }
-            />
-            <ButtonLink href="/portfolio/import" variant="secondary">
-              <FileUp className="size-4" aria-hidden /> Import CSV
-            </ButtonLink>
-            <AddTransactionDialog accounts={accountOptions} />
-          </>
-        }
-      />
+      {/* The title, and on computers the toolbar: how you're looking at it, then what you can do. */}
+      <div className="mb-4 flex flex-wrap items-center justify-between gap-3 lg:mb-6">
+        <h1 className="font-display text-[1.75rem] leading-tight font-bold tracking-[-0.02em] text-fg lg:text-[2rem]">Portfolio</h1>
+        <div className="hidden flex-wrap items-center justify-end gap-2.5 lg:flex">
+          <AccountPicker accounts={accountOptions} current={accountId} access={access} />
+          <CurrencyPicker value={base} />
+          <HideNumbersButton initial={hideAmounts} className="border border-line-strong bg-field" />
+          <span className="mx-1 h-6 w-px bg-line-strong" aria-hidden />
+          <ShareButton mix={mix} wide />
+          <ManageMenu labelled {...manage} />
+          <AddInvestmentsButton {...manage} />
+        </div>
+      </div>
+
+      {/* Phones: Share and Watchlist first, then the accounts, currency and the bank button. */}
+      <div className="lg:hidden">
+        <div className="grid grid-cols-2 gap-2.5">
+          <ShareButton mix={mix} />
+          <WatchlistSheet count={watch.length}>
+            {watchRows}
+            <div className="mt-1 flex items-center justify-between border-t border-line pt-3 text-[0.8125rem] font-semibold text-accent">
+              <Link href="/markets" className="inline-flex items-center gap-1 hover:underline">
+                <Plus className="size-4" aria-hidden /> Add a stock
+              </Link>
+              <Link href="/markets" className="inline-flex items-center gap-0.5 hover:underline">
+                Open in Markets <ChevronRight className="size-4" aria-hidden />
+              </Link>
+            </div>
+          </WatchlistSheet>
+        </div>
+        <div className="mt-3.5 flex items-center gap-2">
+          <AccountPicker accounts={accountOptions} current={accountId} access={access} />
+          <CurrencyPicker value={base} />
+          <span className="ml-auto">
+            <ManageMenu {...manage} />
+          </span>
+        </div>
+      </div>
 
       {sp.synced ? (
-        <Callout tone="neutral" className="mb-6">
+        <Callout tone="neutral" className="mt-4">
           Your accounts are in. Portle keeps them up to date from your broker, and labels everything it copies.
         </Callout>
       ) : null}
-      {synced.length ? (
-        <div className="-mt-3 mb-6 flex flex-wrap items-center gap-2">
-          <SourceBadge
-            kind="broker"
-            detail={`From ${synced.map((c) => c.institution).join(", ")}`}
-            asOf={oldestSync}
-          />
-          {synced.some((c) => c.status === "error") ? (
-            <Link href="/settings/connections" className="text-[0.8125rem] font-medium text-warning hover:underline">
-              A broker needs you to sign in again
-            </Link>
-          ) : null}
-        </div>
-      ) : null}
-
-      {accounts.length > 1 ? (
-        <LinkTabs
-          className="mb-6 w-fit max-w-full"
-          label="Filter by account"
-          current={sp.account ?? "all"}
-          items={[{ value: "all", label: "All accounts", href: qs({ account: undefined }) }, ...accounts.map((a) => ({ value: a.id, label: a.name, href: qs({ account: a.id }) }))]}
-        />
+      {synced.some((c) => c.status === "error") ? (
+        <Link href="/settings/connections" className="mt-3 inline-block text-[0.8125rem] font-medium text-warning hover:underline">
+          A broker needs you to sign in again
+        </Link>
       ) : null}
 
       {!hasHoldings ? (
         <EmptyState
           icon={Wallet}
           title="Record your first position"
+          className="mt-6"
           action={
             <>
               <AddTransactionDialog accounts={accountOptions} defaultType="transfer_in" />
@@ -170,58 +331,165 @@ export default async function PortfolioPage({ searchParams }: { searchParams: Pr
         </EmptyState>
       ) : (
         <div className="space-y-10">
-          {/* The ring is the page: your mix, with the total and its return in the middle. */}
-          <section aria-label="Your mix" className="grid items-center gap-x-12 gap-y-6 lg:grid-cols-[auto_1fr]">
-            <div className="grid justify-items-center gap-4">
-              {priced ? (
-                <LinkTabs className="w-full max-w-[420px] lg:hidden" label="Group the ring by" current={dim} items={DIMS.map(([k, l]) => ({ value: k, label: l, href: qs({ dim: k }) }))} />
-              ) : null}
-              <Ring slices={slices} label={priced ? `Your mix by ${DIMS.find(([k]) => k === dim)![1].toLowerCase()}` : "Your mix by what you paid"} size={256} thickness={28}>
+          <div className="mt-2 grid gap-x-8 gap-y-4 lg:mt-0 lg:grid-cols-[320px_minmax(0,1fr)] xl:grid-cols-[320px_minmax(0,1fr)_240px]">
+            {/* The ring: your money with each holding's logo floating round it, the total and one return in the middle. */}
+            <section aria-label="Your mix" className="lg:sticky lg:top-8 lg:self-start">
+              <OrbitRing
+                slices={slices}
+                size={RING}
+                thickness={20}
+                label={priced ? "Your mix by value" : "Your mix by what you paid"}
+                other={(n) => <LogoTile symbol={`+${n}`} kind="other" size={32} round />}
+              >
                 <span className="text-[0.8125rem] text-fg-subtle">{priced ? "Total value" : "What you put in"}</span>
-                <span className="num font-display text-[1.75rem] leading-tight font-bold tracking-[-0.02em] text-fg">
-                  {formatMoney(priced ? v.totals.marketValue : paid.total, base)}
+                <span className="num secret font-display text-[1.625rem] leading-tight font-bold tracking-[-0.02em] text-fg" data-mask={maskFor(base)}>
+                  {formatMoney(total, base)}
                 </span>
-                {priced && v.totals.unrealizedPct ? (
-                  <span className="mt-1.5 inline-flex items-center gap-1 rounded-full bg-field px-2.5 py-0.5 text-[0.8125rem]">
-                    <Change percent={v.totals.unrealizedPct} /> <span className="text-fg-subtle">all time</span>
-                  </span>
-                ) : null}
-              </Ring>
+                {priced ? <ReturnPicker initial={ringReturn} today={todayFig} allTime={allFig} access={access} /> : null}
+              </OrbitRing>
               {priced ? (
-                <div className="flex flex-wrap justify-center gap-2">
+                <p className="flex justify-center">
                   <SourceBadge kind={priceKind} detail={priceLabel} asOf={v.oldestPriceAsOf} />
-                  {v.totals.dayChangePct ? (
-                    <span className="inline-flex h-6 items-center gap-1 rounded-full bg-field px-2.5 text-xs text-fg-muted">
-                      Today <Change percent={v.totals.dayChangePct} />
-                    </span>
-                  ) : null}
-                </div>
-              ) : (
-                <AccessButton access={access} />
-              )}
-            </div>
-            <div className="min-w-0">
-              {priced ? (
-                <LinkTabs className="mb-5 hidden w-fit lg:flex" label="Group the ring by" current={dim} items={DIMS.map(([k, l]) => ({ value: k, label: l, href: qs({ dim: k }) }))} />
-              ) : (
-                <p className="mb-5 max-w-[52ch] text-sm text-fg-muted">
-                  Without real prices, Portle shows your holdings at what you paid. Gains and today&apos;s change appear once you have full access.
                 </p>
+              ) : (
+                <div className="mx-auto max-w-[34ch] text-center">
+                  <p className="text-[0.8125rem] text-fg-muted">Portle shows what you paid until it has prices. Link your broker for its prices, or get Plus for market prices.</p>
+                  <AccessButton access={access} className="mt-3" />
+                </div>
               )}
-              <RingLegend slices={slices} className="max-w-md" />
-              <p className="mt-4 flex items-center gap-1.5 text-xs text-fg-subtle">
-                <Lock className="size-3" aria-hidden /> {priced ? "Shares of priced holdings." : "Shares of what you paid."} Friends only ever see percentages, and only if you share
-                them.
-              </p>
-            </div>
-          </section>
+            </section>
+
+            <section aria-label="Holdings" className="min-w-0">
+              <div className="mb-1 flex items-center justify-between gap-3">
+                <h2 className="font-display text-xl font-bold text-fg">Holdings</h2>
+                <SortPicker value={sort} />
+              </div>
+
+              {/* Phones: one row each, value and all-time return on the right. */}
+              <ul className="lg:hidden">
+                {ordered.map((r) => {
+                  const inner = (
+                    <>
+                      {tile(r, 42)}
+                      <span className="min-w-0 flex-1">
+                        <span className="block truncate font-display text-[0.9375rem] font-semibold text-fg">{r.label}</span>
+                        <span className="block truncate text-xs text-fg-subtle">
+                          <span className="num">{formatPercent(r.share)}</span>
+                          {r.quantity ? (
+                            <>
+                              {" · "}
+                              <Secret className="num">{formatQuantity(r.quantity)}</Secret> {r.kind === "own" ? "held" : "shares"}
+                            </>
+                          ) : (
+                            ` · ${base}`
+                          )}
+                        </span>
+                      </span>
+                      <span className="text-right">
+                        {r.value ? (
+                          <Money value={r.value} currency={base} className="block text-[0.9375rem] font-semibold text-fg" />
+                        ) : (
+                          <span className="block text-sm text-fg-muted">No price</span>
+                        )}
+                        {r.allPct ? <Change percent={r.allPct} className="justify-end" /> : null}
+                      </span>
+                    </>
+                  );
+                  return (
+                    <li key={r.id} className="border-t border-line first:border-t-0">
+                      {r.href ? (
+                        <Link href={r.href} className="flex items-center gap-3 py-3">
+                          {inner}
+                        </Link>
+                      ) : (
+                        <div className="flex items-center gap-3 py-3">{inner}</div>
+                      )}
+                    </li>
+                  );
+                })}
+              </ul>
+
+              {/* Computers: position, today and all time side by side. */}
+              <table className="hidden w-full text-sm lg:table">
+                <caption className="sr-only">Your holdings with value, today&apos;s change and all-time return</caption>
+                <thead>
+                  <tr className="border-b border-line text-right text-xs whitespace-nowrap text-fg-subtle">
+                    <th scope="col" className="py-3 text-left font-medium">
+                      Holding
+                    </th>
+                    <th scope="col" className="py-3 pl-3 font-medium">
+                      Position
+                    </th>
+                    <th scope="col" className="py-3 pl-3 font-medium">
+                      <span className="inline-flex items-center gap-1">
+                        {!access.full ? <Lock className="size-3" aria-label="Plus" /> : null}Today
+                      </span>
+                    </th>
+                    <th scope="col" className="py-3 pl-3 font-medium">
+                      All time
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {ordered.map((r) => {
+                    const name = (
+                      <>
+                        {tile(r, 40)}
+                        <span className="min-w-0">
+                          <span className="block font-display font-semibold text-fg group-hover:underline">{r.label}</span>
+                          <span className="block max-w-[130px] truncate text-xs text-fg-subtle">
+                            <span className="num">{formatPercent(r.share)}</span> · {r.sub}
+                          </span>
+                        </span>
+                      </>
+                    );
+                    return (
+                      <tr key={r.id} className="border-t border-line first:border-t-0">
+                        <th scope="row" className="py-3 text-left font-normal">
+                          {r.href ? (
+                            <Link href={r.href} className="group flex min-w-0 items-center gap-3">
+                              {name}
+                            </Link>
+                          ) : (
+                            <span className="flex min-w-0 items-center gap-3">{name}</span>
+                          )}
+                        </th>
+                        <td className="py-3 pl-3 text-right whitespace-nowrap">
+                          {r.value ? <Money value={r.value} currency={base} className="block font-semibold text-fg" /> : <span className="text-fg-muted">No price</span>}
+                          {r.quantity ? (
+                            <span className="block text-xs text-fg-subtle">
+                              <Secret className="num">{formatQuantity(r.quantity)}</Secret> {r.kind === "own" ? "held" : "shares"}
+                            </span>
+                          ) : null}
+                        </td>
+                        <td className="py-3 pl-3 text-right whitespace-nowrap">
+                          {delta(r.todayValue, r.todayPct)}
+                        </td>
+                        <td className="py-3 pl-3 text-right whitespace-nowrap">
+                          {delta(r.allValue, r.allPct)}
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+
+              {/* Between phone and wide screens the watchlist sits under the holdings. */}
+              <div className="mt-8 hidden lg:block xl:hidden">{watchRail}</div>
+            </section>
+
+            <aside aria-label="Watchlist" className="hidden border-l border-line pl-7 xl:block">
+              {watchRail}
+            </aside>
+          </div>
 
           {data.issues.length || (priced && v.excluded.length) ? (
             <Callout tone="warning" title="Some figures need attention">
               <ul className="list-disc space-y-0.5 pl-4">
                 {(priced ? v.excluded : []).map((e) => (
                   <li key={e.symbol}>
-                    <strong>{e.symbol}</strong>: {e.reason}. It is left out of totals rather than estimated.
+                    <strong>{e.symbol}</strong>: {e.reason}
+                    {access.full ? "" : " on the free plan"}. It is left out of totals rather than estimated.
                   </li>
                 ))}
                 {data.issues.slice(0, 5).map((i) => (
@@ -234,98 +502,19 @@ export default async function PortfolioPage({ searchParams }: { searchParams: Pr
             </Callout>
           ) : null}
 
-          <Panel title="Holdings" description={`${v.holdings.length} open position${v.holdings.length === 1 ? "" : "s"}`}>
-            <table className="w-full text-sm">
-              <caption className="sr-only">Open positions with cost, value and unrealized profit or loss</caption>
-              <thead>
-                <tr className="text-left text-xs text-fg-subtle">
-                  <th scope="col" className="py-2 pr-3 font-medium">
-                    Security
-                  </th>
-                  <th scope="col" className="hidden px-3 py-2 text-right font-medium md:table-cell">
-                    Quantity
-                  </th>
-                  <th scope="col" className="hidden px-3 py-2 text-right font-medium lg:table-cell">
-                    Avg cost
-                  </th>
-                  {priced ? (
-                    <th scope="col" className="hidden px-3 py-2 text-right font-medium md:table-cell">
-                      Price
-                    </th>
-                  ) : null}
-                  <th scope="col" className="hidden px-3 py-2 text-right font-medium sm:table-cell">
-                    {priced ? "Value" : "Paid"} ({base})
-                  </th>
-                  <th scope="col" className="py-2 pl-3 text-right font-medium">
-                    {priced ? "Share · return" : "Share"}
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {v.holdings.map((h) => (
-                  <tr key={h.instrument.id} className="border-t border-line">
-                    <th scope="row" className="py-3 pr-3 text-left font-normal">
-                      <Link href={`/markets/${h.instrument.id}`} className="group flex min-w-0 items-center gap-3">
-                        <span
-                          className="grid size-10 shrink-0 place-items-center rounded-[12px] font-display text-[0.8125rem] font-bold text-white"
-                          style={{ background: colourOf.get(h.instrument.symbol) ?? "var(--chart-7)" }}
-                          aria-hidden
-                        >
-                          {h.instrument.symbol.slice(0, 2)}
-                        </span>
-                        <span className="min-w-0">
-                          <span className="block font-semibold text-fg group-hover:underline">{h.instrument.symbol}</span>
-                          <span className="block max-w-[min(240px,40vw)] truncate text-xs text-fg-subtle">{h.instrument.name}</span>
-                        </span>
-                      </Link>
-                    </th>
-                    <td className="num hidden px-3 py-3 text-right text-fg md:table-cell">{formatQuantity(h.quantity)}</td>
-                    <td className="num hidden px-3 py-3 text-right text-fg-muted lg:table-cell">
-                      {h.averageCost ? formatMoney(h.averageCost, h.instrument.currency) : <span title="Cost basis unknown">Unknown</span>}
-                    </td>
-                    {priced ? (
-                      <td className="num hidden px-3 py-3 text-right text-fg-muted md:table-cell">
-                        {h.price ? (
-                          <>
-                            {formatMoney(h.price.price, h.price.currency)}
-                            {h.dayChangePct ? (
-                              <span className="block">
-                                <Change percent={h.dayChangePct} />
-                              </span>
-                            ) : null}
-                          </>
-                        ) : (
-                          "No price"
-                        )}
-                      </td>
-                    ) : null}
-                    <td className="num hidden px-3 py-3 text-right font-medium text-fg sm:table-cell">
-                      {formatMoney(priced ? h.marketValueBase : h.costBasisBase, base)}
-                    </td>
-                    <td className="py-3 pl-3 text-right">
-                      <span className="num block font-display font-semibold text-fg">
-                        {priced ? (h.weight ? formatPercent(h.weight) : "—") : paidOf.get(h.instrument.id)?.share ? formatPercent(paidOf.get(h.instrument.id)!.share!) : "—"}
-                      </span>
-                      {priced && h.unrealizedPct ? (
-                        <span className="mt-1 inline-flex rounded-full bg-field px-2 py-0.5">
-                          <Change percent={h.unrealizedPct} />
-                        </span>
-                      ) : null}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </Panel>
-
           <Panel
             title="Value over time"
             actions={
-              priced && !noRealHistory ? <LinkTabs label="Chart range" current={range} items={RANGES.map((r) => ({ value: r, label: r, href: qs({ range: r }) }))} /> : null
+              access.full && priced && !noRealHistory ? <LinkTabs label="Chart range" current={range} items={RANGES.map((r) => ({ value: r, label: r, href: qs({ range: r }) }))} /> : null
             }
           >
             {perf?.available ? (
               <LineChart points={perf.points.map((p) => ({ date: p.date, value: Number(p.value) }))} mode="money" currency={base} label="Holdings value" height={200} />
+            ) : !access.full ? (
+              <Callout tone="neutral" icon={Lock}>
+                Value over time needs market prices, which come with Portle Plus.
+                <AccessButton access={access} className="mt-2 flex w-fit" />
+              </Callout>
             ) : (
               <Callout tone="neutral" icon={Info}>
                 {noRealHistory
@@ -339,7 +528,7 @@ export default async function PortfolioPage({ searchParams }: { searchParams: Pr
               <Stat
                 label="Unrealized P/L"
                 value={priced ? <Change value={v.totals.unrealized} percent={v.totals.unrealizedPct} currency={base} size="md" /> : "—"}
-                hint={priced ? "Open positions vs. cost" : "Needs real prices"}
+                hint={priced ? "Open positions vs. cost" : "Needs prices"}
               />
               <Stat label="Realized P/L" value={<Change value={v.totals.realized} currency={base} size="md" />} hint="Closed lots, after fees" />
               <Stat label="Dividends & income" value={<Money value={v.totals.income} currency={base} />} />

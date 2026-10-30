@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { foldSlices, ringSegments } from "./ring-geometry";
+import { foldSlices, orbitAngles, ringSegments } from "./ring-geometry";
 
 describe("ring geometry", () => {
   it("lays slices end to end round the ring, each shortened by the gap", () => {
@@ -36,5 +36,17 @@ describe("ring geometry", () => {
   it("leaves short lists alone", () => {
     const slices = [{ label: "A", percent: 1 }];
     expect(foldSlices(slices, 6)).toBe(slices);
+  });
+
+  it("puts each mark in the middle of its slice, clockwise from the top", () => {
+    const [a, b] = orbitAngles([0.5, 0.5], 0.1);
+    expect(a).toBeCloseTo(Math.PI / 2);
+    expect(b).toBeCloseTo((3 * Math.PI) / 2);
+  });
+
+  it("nudges marks on small neighbouring slices apart", () => {
+    const angles = orbitAngles([0.9, 0.04, 0.03, 0.03], 0.5);
+    for (let i = 1; i < angles.length; i++) expect(angles[i] - angles[i - 1]).toBeGreaterThanOrEqual(0.5 - 1e-6);
+    expect(angles[0] + 2 * Math.PI - angles[angles.length - 1]).toBeGreaterThanOrEqual(0.5 - 1e-6);
   });
 });

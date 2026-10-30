@@ -55,15 +55,28 @@ export function Dialog({
 
 export const DialogClose = D.Close;
 
-export function Menu({ trigger, children, align = "end" }: { trigger: React.ReactNode; children: React.ReactNode; align?: "start" | "end" }) {
+/** `modal={false}` for menus whose items open a sheet, so the page stays clickable once the sheet closes. */
+export function Menu({
+  trigger,
+  children,
+  align = "end",
+  modal = true,
+  className,
+}: {
+  trigger: React.ReactNode;
+  children: React.ReactNode;
+  align?: "start" | "end";
+  modal?: boolean;
+  className?: string;
+}) {
   return (
-    <M.Root>
+    <M.Root modal={modal}>
       <M.Trigger asChild>{trigger}</M.Trigger>
       <M.Portal>
         <M.Content
           align={align}
           sideOffset={6}
-          className="glass-2 z-50 min-w-48 rounded-[var(--radius-lg)] p-1.5 data-[state=open]:animate-[menu-in_var(--dur)_var(--ease-out)]"
+          className={cn("glass-2 z-50 min-w-48 rounded-[var(--radius-lg)] p-1.5 data-[state=open]:animate-[menu-in_var(--dur)_var(--ease-out)]", className)}
         >
           {children}
         </M.Content>

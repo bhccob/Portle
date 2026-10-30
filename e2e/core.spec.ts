@@ -1,5 +1,5 @@
 import { expect, test, type Browser, type Page } from "@playwright/test";
-import { TEST_PASSWORD, testUser, watchCsp } from "./fixtures";
+import { switchPlusOn, TEST_PASSWORD, testUser, watchCsp } from "./fixtures";
 
 /** Reads the newest link for `email` from the development mailbox. */
 async function mailLink(page: Page, email: string, contains: string) {
@@ -60,13 +60,13 @@ test.describe.serial("a new member's core journey", () => {
 
   test("creates an account and records a holding", async () => {
     await page.goto("/portfolio");
-    // Three ways in. Without SnapTrade keys it says it isn't switched on yet; with them, a member without full access asks for it.
+    // Three ways in. Without SnapTrade keys it says it isn't switched on yet; with them, the free plan links its first broker.
     await page.getByRole("button", { name: /Connect your broker/ }).click();
     await expect(
       page
         .getByRole("dialog")
         .getByText(/isn.t switched on yet/)
-        .or(page.getByRole("button", { name: "Send request" }))
+        .or(page.getByRole("dialog").getByText(/spots are taken/))
         .or(page.getByRole("button", { name: "Continue to SnapTrade" })),
     ).toBeVisible();
     await page.keyboard.press("Escape");
@@ -84,7 +84,7 @@ test.describe.serial("a new member's core journey", () => {
     await dialog.getByLabel("Price per unit").fill("650");
     await dialog.getByRole("button", { name: "Save transaction" }).click();
     await expect(page.getByRole("rowheader", { name: /ASML/ })).toBeVisible();
-    // Prices come with full access; without it Portfolio shows what was paid.
+    // Without a broker or Plus, Portfolio shows what was paid.
     await expect(page.getByText("Demo prices · synthetic").or(page.getByText("What you put in").first())).toBeVisible();
   });
 
@@ -104,7 +104,11 @@ test.describe.serial("a new member's core journey", () => {
     await expect(page.locator("article header").getByText(/Revisit \d/)).toBeVisible();
     await expect(page.getByLabel("Revisit on")).not.toHaveValue("");
 
+    // Practice is part of Plus: the free plan sees what it is and how to get it.
     await page.goto("/lab");
+    await expect(page.getByRole("heading", { name: "Practice with Plus" })).toBeVisible();
+    await switchPlusOn(me.email);
+    await page.reload();
     await page.getByRole("combobox", { name: "Security" }).fill("MSFT");
     await page.getByRole("option", { name: /MSFT/ }).first().click();
     await page.getByLabel("Quantity").fill("2");

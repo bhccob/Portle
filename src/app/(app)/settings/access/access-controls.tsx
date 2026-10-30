@@ -33,11 +33,11 @@ export function RemoveAccess({ memberId, name, brokers }: { memberId: string; na
   const [pending, start] = useTransition();
   return (
     <Dialog
-      title={`Remove ${name}'s full access?`}
+      title={`Take Plus away from ${name}?`}
       description={
-        brokers
-          ? "Their prices switch off and their broker link is disconnected, which frees the spot. What was already copied stays in their Portle as a record."
-          : "Their real prices switch off. They can ask again later."
+        brokers > 1
+          ? "Market prices and Practice switch off, and every broker after their first is disconnected, which frees those spots. What was already copied stays in their Portle as a record."
+          : "Market prices and Practice switch off. Their first broker keeps working on the free plan, and they can ask again later."
       }
       trigger={
         <Button size="sm" variant="secondary">
@@ -55,12 +55,12 @@ export function RemoveAccess({ memberId, name, brokers }: { memberId: string; na
           onClick={() =>
             start(async () => {
               const r = await removeAccessAction(memberId);
-              if (r.ok) toast.success("Full access removed.");
+              if (r.ok) toast.success("Plus removed.");
               else toast.error(r.error);
             })
           }
         >
-          Remove access
+          Remove Plus
         </Button>
       </div>
     </Dialog>
@@ -73,7 +73,7 @@ export function InviteByEmail() {
   useResultToast(state, {
     silentSuccess: true,
     onSuccess: (d) => {
-      toast.success(d.joined ? "They're in." : "Done. They'll have full access when they sign up with that email.");
+      toast.success(d.joined ? "They're in." : "Done. They'll have Plus when they sign up with that email.");
       reset();
     },
   });

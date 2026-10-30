@@ -1,4 +1,5 @@
 import {
+  boolean,
   date,
   index,
   integer,
@@ -166,6 +167,42 @@ export const quotes = pgTable("quotes", {
   asOf: ts().notNull(),
   source: text().notNull(),
   delayMinutes: integer().notNull().default(0),
+  fetchedAt: ts().notNull().defaultNow(),
+});
+
+/**
+ * Prices that belong to one member rather than to the market: their own broker's latest price
+ * for a holding, or a price they set themselves for something without a ticker (`own`).
+ * Kept apart from `quotes` so a broker's price is only ever shown to the member it came from.
+ */
+export const memberPrices = pgTable(
+  "member_prices",
+  {
+    userId: text()
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    instrumentId: uuid()
+      .notNull()
+      .references(() => instruments.id, { onDelete: "cascade" }),
+    price: dec().notNull(),
+    currency: text().notNull(),
+    asOf: ts().notNull(),
+    source: text().notNull(),
+    own: boolean().notNull().default(false),
+  },
+  (t) => [primaryKey({ columns: [t.userId, t.instrumentId] })],
+);
+
+/**
+ * Company logos, fetched once by ticker and served from Portle so the logo service never learns who owns what.
+ * `tile` is the colour behind the logo, worked out from the logo itself; `data` is empty when none was found.
+ */
+export const logos = pgTable("logos", {
+  symbol: text().primaryKey(),
+  data: text(),
+  contentType: text(),
+  tile: text().notNull().default("#ffffff"),
+  ownBackground: boolean().notNull().default(false),
   fetchedAt: ts().notNull().defaultNow(),
 });
 

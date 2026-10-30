@@ -30,7 +30,8 @@ async function emailOf(userId: string) {
 }
 
 /**
- * Whether a member has full access: real prices and broker linking. Read once per request.
+ * Whether a member has Portle Plus (stored as "full access"): market prices, Practice, more than one broker
+ * and looking at one account at a time. Read once per request.
  * An email the owner let in ahead of time turns into full access here, the first time it's checked.
  */
 export const getAccess = cache(async (userId: string): Promise<Access> => {
@@ -54,7 +55,7 @@ export async function hasFullAccess(userId: string) {
 
 /** Throws when the member lacks full access, with words they can act on. */
 export async function assertFullAccess(userId: string, what: string) {
-  if (!(await hasFullAccess(userId))) throw new UserFacingError(`${what} is part of full access. Ask for it from Markets or Portfolio.`, "forbidden");
+  if (!(await hasFullAccess(userId))) throw new UserFacingError(`${what} is part of Portle Plus. Ask for it from your Portfolio.`, "forbidden");
 }
 
 async function assertOwner(userId: string) {
@@ -111,7 +112,7 @@ export async function requestAccess(userId: string, note: string) {
       userId: owner.id,
       kind: "access",
       actorId: userId,
-      title: `${me?.name ?? "A member"} asked for full access`,
+      title: `${me?.name ?? "A member"} asked for Portle Plus`,
       body: clean,
       href: "/settings/access",
     });
@@ -132,21 +133,21 @@ export async function decideAccess(ownerId: string, memberId: string, allow: boo
       userId: memberId,
       kind: "access",
       actorId: ownerId,
-      title: "You have full access",
-      body: "Real prices and broker linking are on for you.",
+      title: "You have Portle Plus",
+      body: "Market prices, Practice and more brokers are on for you.",
       href: "/portfolio",
     });
   await audit(db, { userId: ownerId, action: allow ? "access.granted" : "access.declined", entityType: "user", entityId: memberId });
 }
 
 /**
- * Takes full access away. Their broker links are disconnected so they stop costing a spot;
+ * Takes Plus away. Brokers beyond the free plan's one are disconnected so they stop costing a spot;
  * the accounts and history already copied stay in Portle as records.
  */
 export async function removeAccess(ownerId: string, memberId: string) {
   await assertOwner(ownerId);
-  if (ownerEmails().has(await emailOf(memberId))) throw new UserFacingError("Owners always have full access. Remove them from OWNER_EMAILS instead.");
-  for (const c of await listBrokerConnections(memberId)) await disconnectBroker(memberId, c.id, false);
+  if (ownerEmails().has(await emailOf(memberId))) throw new UserFacingError("Owners always have Portle Plus. Remove them from OWNER_EMAILS instead.");
+  for (const c of (await listBrokerConnections(memberId)).slice(1)) await disconnectBroker(memberId, c.id, false);
   const db = getDb();
   await db.delete(fullAccess).where(eq(fullAccess.userId, memberId));
   await audit(db, { userId: ownerId, action: "access.removed", entityType: "user", entityId: memberId });
@@ -168,8 +169,8 @@ export async function inviteByEmail(ownerId: string, rawEmail: string) {
       userId: member.id,
       kind: "access",
       actorId: ownerId,
-      title: "You have full access",
-      body: "Real prices and broker linking are on for you.",
+      title: "You have Portle Plus",
+      body: "Market prices, Practice and more brokers are on for you.",
       href: "/portfolio",
     });
     return { joined: true };

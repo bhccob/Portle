@@ -6,7 +6,19 @@ import { MAX_IMPORT_BYTES } from "@/domain/csv-import";
 import { runAction } from "@/server/action";
 import { UserFacingError, type ActionResult } from "@/server/errors";
 import { assertRateLimit } from "@/server/rate-limit";
-import { archiveAccount, createAccount, deleteTransaction, addTransaction, importCsv, loadSamplePortfolio, setBaseCurrency } from "@/server/services/portfolio";
+import {
+  addOwnItem,
+  archiveAccount,
+  createAccount,
+  deleteTransaction,
+  addTransaction,
+  importCsv,
+  loadSamplePortfolio,
+  setBaseCurrency,
+  setOwnPrice,
+} from "@/server/services/portfolio";
+import { updateHoldingVisibility } from "@/server/services/profile";
+import { createPost } from "@/server/services/social";
 import { syncBadgesQuietly } from "@/server/services/badges";
 import { requireMember } from "@/server/session";
 
@@ -52,6 +64,58 @@ export async function addTransactionAction(_: ActionResult | null, form: FormDat
     revalidatePath("/home");
     await syncBadgesQuietly(user.id);
   }
+  return res;
+}
+
+/** Gold coins, a watch: something with no ticker, valued at the member's own price. */
+export async function addOwnItemAction(_: ActionResult | null, form: FormData): Promise<ActionResult> {
+  const { user } = await requireMember();
+  const num = (k: string) => s(form, k)?.replace(",", ".");
+  const res = await runAction(async () => {
+    assertRateLimit(`txn:${user.id}`, 120, 3600_000);
+    await addOwnItem(user.id, {
+      accountId: s(form, "accountId") ?? "",
+      name: s(form, "name") ?? "",
+      quantity: num("quantity") ?? "",
+      price: num("price") ?? "",
+      cost: num("cost") ?? null,
+      currency: s(form, "currency") ?? "",
+      tradeDate: s(form, "tradeDate") ?? "",
+    });
+  }, "Added at your own price.");
+  if (res.ok) {
+    revalidatePath("/portfolio", "layout");
+    revalidatePath("/home");
+  }
+  return res;
+}
+
+export async function setOwnPriceAction(instrumentId: string, price: string): Promise<ActionResult> {
+  const { user } = await requireMember();
+  const res = await runAction(() => setOwnPrice(user.id, instrumentId, price.trim().replace(",", ".")), "Price updated.");
+  if (res.ok) revalidatePath("/portfolio", "layout");
+  return res;
+}
+
+export async function holdingVisibilityAction(_: ActionResult | null, form: FormData): Promise<ActionResult> {
+  const { user } = await requireMember();
+  const res = await runAction(
+    () => updateHoldingVisibility(user.id, { holdingsVisibility: s(form, "holdingsVisibility") ?? "private", allocationVisibility: s(form, "allocationVisibility") ?? "private" }),
+    "Saved. Your profile shows it now.",
+  );
+  if (res.ok) revalidatePath("/", "layout");
+  return res;
+}
+
+/** Posts the member's mix to Circle as percentages, worked out on the server at the moment they share. */
+export async function shareMixAction(_: ActionResult | null, form: FormData): Promise<ActionResult> {
+  const { user } = await requireMember();
+  const dimension = (s(form, "dimension") ?? "assetClass") as "assetClass" | "sector" | "region" | "currency";
+  const words = { assetClass: "type", sector: "sector", region: "region", currency: "currency" }[dimension] ?? "type";
+  const res = await runAction(async () => {
+    await createPost(user.id, { body: s(form, "body") ?? `My mix by ${words}`, audience: (s(form, "audience") ?? "friends") as "friends", insightDimension: dimension });
+  }, "Shared to Circle.");
+  if (res.ok) revalidatePath("/", "layout");
   return res;
 }
 

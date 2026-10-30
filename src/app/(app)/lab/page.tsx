@@ -1,12 +1,15 @@
 import Link from "next/link";
-import { FlaskConical } from "lucide-react";
+import { ChartLine, FlaskConical, List, RotateCcw } from "lucide-react";
+import { AskAccessSheet, type AccessInfo } from "@/components/access/access-client";
 import { Ring } from "@/components/charts/ring";
 import { practiceSlices } from "@/components/charts/ring-data";
 import { Badge, SourceBadge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Change } from "@/components/ui/finance";
 import { Panel, Stat } from "@/components/ui/panel";
 import { EmptyState } from "@/components/ui/states";
 import { formatDate, formatMoney, formatPercent, formatQuantity } from "@/lib/format";
+import { accessInfo } from "@/server/services/access";
 import { getInstrument } from "@/server/services/market";
 import { getLab } from "@/server/services/paper";
 import { listOwnTheses, listSharedTheses } from "@/server/services/theses";
@@ -22,6 +25,8 @@ const dashedTile = "grid size-10 shrink-0 place-items-center rounded-[12px] font
 export default async function LabPage({ searchParams }: { searchParams: Promise<{ instrument?: string; thesis?: string }> }) {
   const sp = await searchParams;
   const { user, viewer } = await requireViewer();
+  const access = await accessInfo(user.id);
+  if (!access.full) return <PracticeWithPlus access={access} />;
   const [lab, mine, shared, inst] = await Promise.all([
     getLab(user.id),
     listOwnTheses(user.id),
@@ -52,7 +57,7 @@ export default async function LabPage({ searchParams }: { searchParams: Promise<
             <div className="justify-self-center">
               <Ring slices={slices} label="Practice mix" size={216} thickness={24} dashed>
                 <span className="text-[0.8125rem] text-fg-muted">Pretend value</span>
-                <span className="num font-display text-[1.625rem] leading-tight font-bold tracking-[-0.02em] text-practice-strong">{formatMoney(lab.equity, ccy)}</span>
+                <span className="num secret font-display text-[1.625rem] leading-tight font-bold tracking-[-0.02em] text-practice-strong">{formatMoney(lab.equity, ccy)}</span>
                 <span className="mt-1 text-[0.8125rem]">
                   <Change percent={lab.totalReturn} /> <span className="text-fg-subtle">since start</span>
                 </span>
@@ -62,8 +67,8 @@ export default async function LabPage({ searchParams }: { searchParams: Promise<
               <dl className="grid grid-cols-2 gap-x-6 gap-y-5">
                 <Stat label="Started with" value={formatMoney(lab.account.startingCash, ccy, { decimals: 0 })} hint="Pretend money" />
                 <Stat label="Return since start" value={<Change percent={lab.totalReturn} size="md" />} hint="Simulated" />
-                <Stat label="Pretend cash" value={formatMoney(lab.cash, ccy)} />
-                <Stat label="Positions value" value={formatMoney(lab.holdingsValue, ccy)} />
+                <Stat label="Pretend cash" value={<span className="secret">{formatMoney(lab.cash, ccy)}</span>} />
+                <Stat label="Positions value" value={<span className="secret">{formatMoney(lab.holdingsValue, ccy)}</span>} />
               </dl>
               {lab.usesDemoPrices ? <SourceBadge kind="demo" className="mt-5" detail="Valued with demo prices" /> : null}
             </div>
@@ -110,9 +115,9 @@ export default async function LabPage({ searchParams }: { searchParams: Promise<
                           </span>
                         </Link>
                       </th>
-                      <td className="num hidden px-3 py-3 text-right sm:table-cell">{formatQuantity(p.quantity)}</td>
+                      <td className="num secret hidden px-3 py-3 text-right sm:table-cell">{formatQuantity(p.quantity)}</td>
                       <td className="num hidden px-3 py-3 text-right text-fg-muted md:table-cell">{formatMoney(p.costBasis.div(p.quantity), ccy)}</td>
-                      <td className="num px-3 py-3 text-right">{p.marketValue ? formatMoney(p.marketValue, ccy) : "No price"}</td>
+                      <td className="num secret px-3 py-3 text-right">{p.marketValue ? formatMoney(p.marketValue, ccy) : "No price"}</td>
                       <td className="hidden py-3 pl-3 text-right sm:table-cell">
                         {p.unrealized ? <Change value={p.unrealized} percent={p.costBasis.gt(0) ? p.unrealized.div(p.costBasis) : null} currency={ccy} /> : "—"}
                       </td>
@@ -175,6 +180,47 @@ export default async function LabPage({ searchParams }: { searchParams: Promise<
             </div>
           </Panel>
         </div>
+      </div>
+    </div>
+  );
+}
+
+const PRACTICE_PERKS = [
+  [ChartLine, "Buy and sell at real market prices"],
+  [List, "See every pretend order, and why one didn't go through"],
+  [RotateCcw, "Start over whenever you like"],
+] as const;
+
+/** Practice on the free plan: what the room is for, and the way to Plus. */
+function PracticeWithPlus({ access }: { access: AccessInfo }) {
+  const ask = access.ownerName === "the owner" ? "Ask for Plus" : `Ask ${access.ownerName} for Plus`;
+  return (
+    <div className="practice-room">
+      <div className="mx-auto grid max-w-[30rem] justify-items-center pt-4 text-center">
+        <Ring slices={[]} label="Practice money" size={190} thickness={22} dashed>
+          <span className="num font-display text-[1.5rem] leading-tight font-bold text-practice-strong">$100,000</span>
+          <span className="text-[0.8125rem] text-fg-muted">practice money</span>
+        </Ring>
+        <h1 className="mt-6 font-display text-[1.75rem] leading-tight font-bold tracking-[-0.02em] text-practice-strong">Practice with Plus</h1>
+        <p className="mt-2 text-[0.9375rem] text-fg-muted">
+          Try an idea with pretend money before you use your own. Nothing here is real, and nobody sees it unless you share.
+        </p>
+        <ul className="mt-6 w-full rounded-[var(--radius-xl)] border-[1.5px] border-dashed border-[var(--practice-line)] px-4 text-left">
+          {PRACTICE_PERKS.map(([Icon, line]) => (
+            <li key={line} className="flex items-start gap-3 border-t border-dashed border-[var(--practice-line)] py-3 text-sm text-fg first:border-t-0">
+              <Icon className="mt-0.5 size-4 shrink-0 text-practice" aria-hidden /> {line}
+            </li>
+          ))}
+        </ul>
+        <AskAccessSheet
+          access={access}
+          trigger={
+            <Button variant="practice" size="lg" className="mt-6 w-full">
+              {access.status === "requested" ? "Plus requested" : ask}
+            </Button>
+          }
+        />
+        <p className="mt-3 text-[0.8125rem] text-fg-subtle">Part of Portle Plus</p>
       </div>
     </div>
   );

@@ -5,7 +5,6 @@ import type { Db } from "../db";
 import { instruments, notifications, profiles } from "../db/schema";
 import { resetRateLimits } from "../rate-limit";
 import { accessOverview, decideAccess, getAccess, inviteByEmail, removeAccess, requestAccess } from "./access";
-import { startBrokerConnection } from "./brokers";
 import { getPrices } from "./market";
 
 let db: Db;
@@ -28,24 +27,19 @@ afterAll(() => {
   process.env.OWNER_EMAILS = previousOwners;
 });
 
-describe("full access", () => {
+describe("Portle Plus", () => {
   it("is on for owners and off for everyone else until they're let in", async () => {
     expect(await getAccess(owner.id)).toEqual({ full: true, owner: true, status: "granted" });
     const sam = await member("Sam");
     expect(await getAccess(sam.id)).toEqual({ full: false, owner: false, status: "none" });
   });
 
-  it("hides real prices without it, but Practice always has pretend ones", async () => {
+  it("hides market prices without it, but Practice always has pretend ones", async () => {
     const sam = await member("Sam2");
     const [aapl] = await db.select().from(instruments).where(eq(instruments.symbol, "AAPL"));
     expect((await getPrices([aapl], { userId: sam.id })).size).toBe(0);
     expect((await getPrices([aapl], "practice")).get(aapl.id)?.isDemo).toBe(true);
     expect((await getPrices([aapl], { userId: owner.id })).size).toBe(1);
-  });
-
-  it("keeps broker linking for members with full access", async () => {
-    const sam = await member("Sam3");
-    await expect(startBrokerConnection(sam.id, "http://x/back")).rejects.toThrow(/part of full access/);
   });
 
   it("goes from a request with a note to the owner's answer, notifying both", async () => {
@@ -60,7 +54,7 @@ describe("full access", () => {
     await decideAccess(owner.id, lina.id, true);
     expect((await getAccess(lina.id)).full).toBe(true);
     const [toLina] = await db.select().from(notifications).where(eq(notifications.userId, lina.id));
-    expect(toLina.title).toBe("You have full access");
+    expect(toLina.title).toBe("You have Portle Plus");
     expect((await accessOverview(owner.id)).members.map((m) => m.name)).toEqual(expect.arrayContaining(["Bob", "Lina"]));
 
     await removeAccess(owner.id, lina.id);
@@ -80,6 +74,6 @@ describe("full access", () => {
   it("never lets a member see the owner's page or take access from an owner", async () => {
     const eve = await member("Eve");
     await expect(accessOverview(eve.id)).rejects.toThrow(/Only the owner/);
-    await expect(removeAccess(owner.id, owner.id)).rejects.toThrow(/Owners always have full access/);
+    await expect(removeAccess(owner.id, owner.id)).rejects.toThrow(/Owners always have Portle Plus/);
   });
 });

@@ -6,7 +6,7 @@ import { accessOverview, getAccess } from "@/server/services/access";
 import { requireMember } from "@/server/session";
 import { AccessDecision, CancelInvite, InviteByEmail, RemoveAccess } from "./access-controls";
 
-export const metadata = { title: "Full access" };
+export const metadata = { title: "Portle Plus" };
 
 /** The owner's page: who gets real prices and broker linking. Nobody else can open it. */
 export default async function AccessPage() {
@@ -15,7 +15,7 @@ export default async function AccessPage() {
   const o = await accessOverview(user.id);
   return (
     <div className="space-y-8">
-      <Panel title="Full access" description="Who gets real prices and broker linking. Only you see this page.">
+      <Panel title="Portle Plus" description="Who gets market prices, Practice and more than one broker. Only you see this page.">
         <dl className="flex flex-wrap gap-x-8 gap-y-3">
           <div>
             <dt className="text-[0.8125rem] text-fg-subtle">People</dt>
@@ -56,7 +56,7 @@ export default async function AccessPage() {
         )}
       </Panel>
 
-      <Panel title="Has full access">
+      <Panel title="Has Plus">
         <ul>
           {o.members.map((m) => (
             <li key={m.userId} className="flex items-center gap-3 border-t border-line py-3.5 first:border-t-0 first:pt-0">

@@ -159,7 +159,7 @@ export default async function MarketsPage({ searchParams }: { searchParams: Prom
 
           <Panel title="Sectors today" description="Average move of listed stocks in each sector">
             {sectors.size === 0 ? (
-              <p className="text-sm text-fg-muted">{access.full ? "No sector data." : "Sector moves need real prices, which come with full access."}</p>
+              <p className="text-sm text-fg-muted">{access.full ? "No sector data." : "Sector moves need market prices, which come with Portle Plus."}</p>
             ) : (
               <ul className="space-y-2">
                 {[...sectors.entries()]

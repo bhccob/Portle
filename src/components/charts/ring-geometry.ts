@@ -33,3 +33,35 @@ export function foldSlices<T extends RingSlice>(slices: T[], max: number): (T | 
 }
 
 const round = (n: number) => Math.round(n * 1000) / 1000;
+
+/**
+ * Where marks sit round the ring, in radians clockwise from the top: each slice's middle, then
+ * neighbours nudged apart until they are at least `minGap` apart, so small slices' logos never overlap.
+ */
+export function orbitAngles(shares: number[], minGap: number) {
+  const total = shares.reduce((a, b) => a + Math.max(b, 0), 0);
+  if (total <= 0) return shares.map(() => 0);
+  let at = 0;
+  const angles = shares.map((s) => {
+    const span = (Math.max(s, 0) / total) * 2 * Math.PI;
+    const mid = at + span / 2;
+    at += span;
+    return mid;
+  });
+  if (angles.length < 2 || angles.length * minGap > 2 * Math.PI) return angles;
+  for (let round = 0; round < 200; round++) {
+    let moved = false;
+    for (let i = 0; i < angles.length; i++) {
+      const j = (i + 1) % angles.length;
+      const gap = angles[j] - angles[i] + (j === 0 ? 2 * Math.PI : 0);
+      if (gap < minGap - 1e-9) {
+        const push = (minGap - gap) / 2;
+        angles[i] -= push;
+        angles[j] += push;
+        moved = true;
+      }
+    }
+    if (!moved) break;
+  }
+  return angles;
+}

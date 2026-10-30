@@ -10,10 +10,10 @@ import { valuePortfolio, type InstrumentInfo, type PortfolioValuation } from "@/
 import { getMarketDataProvider } from "@/integrations/market-data";
 import { audit } from "../audit";
 import { getDb } from "../db";
-import { accounts, importBatches, instruments, portfolios, transactions } from "../db/schema";
+import { accounts, importBatches, instruments, memberPrices, portfolios, transactions } from "../db/schema";
 import { notFound, UserFacingError } from "../errors";
 import { getAccess, hasFullAccess } from "./access";
-import { getBars, getFx, getPrices, rangeStart, type Range } from "./market";
+import { getBars, getFx, getPrices, ownListing, rangeStart, type Range } from "./market";
 
 /** Holdings at what was paid for them, for members without real prices. Nothing here depends on a price. */
 function paidView(v: PortfolioValuation) {
@@ -195,6 +195,7 @@ async function instrumentMap(ids: string[]) {
 const toInfo = (r: typeof instruments.$inferSelect): InstrumentInfo => ({
   id: r.id,
   symbol: r.symbol,
+  exchange: r.exchange,
   name: r.name,
   assetClass: r.assetClass,
   currency: r.currency,
@@ -236,7 +237,7 @@ export async function getValuation(userId: string, opts: { accountId?: string } 
 
 /** Holdings-sleeve value series and time-weighted return over a range. */
 export async function getPerformance(userId: string, range: Range, opts: { accountId?: string } = {}) {
-  if (!(await hasFullAccess(userId))) return { available: false as const, reason: "Value over time needs real prices, which come with full access." };
+  if (!(await hasFullAccess(userId))) return { available: false as const, reason: "Value over time needs market prices, which come with Portle Plus." };
   const portfolio = await ensurePortfolio(userId);
   const txns = await ledgerRows(userId, opts.accountId ? [opts.accountId] : undefined);
   const instIds = [...new Set(txns.map((t) => t.instrumentId).filter((x): x is string => !!x))];
@@ -433,4 +434,64 @@ export async function loadSamplePortfolio(userId: string) {
       });
     }
   });
+}
+
+// ---------- Things without a ticker ----------
+
+export const ownItemInput = z.object({
+  accountId: z.uuid(),
+  name: z.string().trim().min(1, "Give it a name.").max(40, "Keep the name under 40 characters."),
+  quantity: decimalString,
+  price: decimalString,
+  cost: decimalString.optional().nullable(),
+  currency: z.string().refine(isCurrency, "Choose a currency."),
+  tradeDate: z.iso.date("Choose a valid date."),
+});
+
+/**
+ * Gold coins, a watch, anything with no market price: Portle lists it for this member only
+ * and values it at the price they set, labelled "Your own price".
+ */
+export async function addOwnItem(userId: string, raw: z.input<typeof ownItemInput>) {
+  const input = ownItemInput.parse(raw);
+  if (d(input.quantity).lte(0)) throw new UserFacingError("Enter how many you have.");
+  if (d(input.price).lte(0)) throw new UserFacingError("Enter what one is worth today.");
+  await ownedAccount(userId, input.accountId);
+  const db = getDb();
+  const [inst] = await db
+    .insert(instruments)
+    .values({ symbol: input.name, exchange: ownListing(userId), name: input.name, assetClass: "other", currency: input.currency })
+    .onConflictDoUpdate({ target: [instruments.symbol, instruments.exchange], set: { currency: input.currency } })
+    .returning();
+  await addTransaction(userId, {
+    accountId: input.accountId,
+    type: "transfer_in",
+    instrumentId: inst.id,
+    tradeDate: input.tradeDate,
+    quantity: input.quantity,
+    price: input.cost || null,
+  });
+  await setOwnPrice(userId, inst.id, input.price, true);
+  return inst;
+}
+
+/** A new price for something the member values themselves. */
+export async function setOwnPrice(userId: string, instrumentId: string, price: string, adding = false) {
+  if (!/^\d{1,15}(\.\d{1,10})?$/.test(price) || d(price).lte(0)) throw new UserFacingError("Enter what one is worth today.");
+  const db = getDb();
+  const [inst] = await db.select().from(instruments).where(eq(instruments.id, instrumentId));
+  if (!inst || inst.exchange !== ownListing(userId)) throw notFound("Item");
+  const row = { userId, instrumentId, price, currency: inst.currency, asOf: new Date(), source: "Your own price", own: true };
+  if (adding) await db.insert(memberPrices).values(row).onConflictDoUpdate({ target: [memberPrices.userId, memberPrices.instrumentId], set: row });
+  else await db.update(memberPrices).set({ price, asOf: row.asOf }).where(and(eq(memberPrices.userId, userId), eq(memberPrices.instrumentId, instrumentId)));
+}
+
+/** What the member values themselves, for "Update a price". */
+export async function listOwnItems(userId: string) {
+  return getDb()
+    .select({ id: instruments.id, name: instruments.name, currency: instruments.currency, price: memberPrices.price, asOf: memberPrices.asOf })
+    .from(memberPrices)
+    .innerJoin(instruments, eq(instruments.id, memberPrices.instrumentId))
+    .where(and(eq(memberPrices.userId, userId), eq(memberPrices.own, true)))
+    .orderBy(asc(instruments.name));
 }

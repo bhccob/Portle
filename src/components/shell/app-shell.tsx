@@ -10,6 +10,7 @@ import { Avatar } from "@/components/ui/avatar";
 import { Menu, MenuItem, MenuLabel, MenuSeparator } from "@/components/ui/overlay";
 import { buttonClass } from "@/components/ui/button";
 import { cn } from "@/lib/cn";
+import { HideNumbersButton } from "./hide-numbers";
 import { isActive, MORE_NAV, PRIMARY_NAV, UTILITY_NAV, type NavItem } from "./nav-config";
 import { WriteSheet } from "./write-sheet";
 
@@ -112,7 +113,7 @@ function AccountMenu({ me, withName }: { me: Me; withName?: boolean }) {
   );
 }
 
-export function AppShell({ me, unread, children }: { me: Me; unread: number; children: React.ReactNode }) {
+export function AppShell({ me, unread, hideAmounts, children }: { me: Me; unread: number; hideAmounts: boolean; children: React.ReactNode }) {
   const pathname = usePathname();
   const Bell = UTILITY_NAV[0].icon;
 
@@ -154,6 +155,7 @@ export function AppShell({ me, unread, children }: { me: Me; unread: number; chi
           {UTILITY_NAV.map((item) => (
             <SideLink key={item.href} item={item} pathname={pathname} badge={item.href === "/notifications" ? unread : undefined} />
           ))}
+          <HideNumbersButton initial={hideAmounts} withLabel />
           <div className="pt-2">
             <AccountMenu me={me} withName />
           </div>
@@ -167,6 +169,7 @@ export function AppShell({ me, unread, children }: { me: Me; unread: number; chi
           Portle
         </Link>
         <div className="flex items-center gap-1.5">
+          <HideNumbersButton initial={hideAmounts} />
           <WriteSheet
             trigger={
               <button type="button" aria-label="Write" className="grid size-10 place-items-center rounded-full text-fg hover:bg-field">

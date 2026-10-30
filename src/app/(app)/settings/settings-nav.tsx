@@ -11,10 +11,10 @@ const ITEMS = [
   { href: "/settings/account", label: "Data & account" },
 ];
 
-/** `owner` adds Full access, the page where the owner decides who gets real prices and broker linking. */
+/** `owner` adds Portle Plus, the page where the owner decides who gets Plus. */
 export function SettingsNav({ owner = false }: { owner?: boolean }) {
   const path = usePathname();
-  const items = owner ? [...ITEMS, { href: "/settings/access", label: "Full access" }] : ITEMS;
+  const items = owner ? [...ITEMS, { href: "/settings/access", label: "Portle Plus" }] : ITEMS;
   return (
     <nav aria-label="Settings" className="relative flex gap-1 overflow-x-auto lg:flex-col">
       {items.map((i) => {

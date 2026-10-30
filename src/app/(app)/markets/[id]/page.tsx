@@ -119,9 +119,9 @@ export default async function InstrumentPage({ params, searchParams }: { params:
           <Panel title="Your position" actions={<PrivateNote>Private</PrivateNote>}>
             {holding ? (
               <dl className="grid grid-cols-2 gap-4">
-                <Stat label="Quantity" value={formatQuantity(holding.quantity)} />
-                <Stat label="Average cost" value={holding.averageCost ? formatMoney(holding.averageCost, inst.currency) : "Unknown"} />
-                <Stat label={`Value (${valuation.portfolio.baseCurrency})`} value={formatMoney(holding.marketValueBase, valuation.portfolio.baseCurrency)} />
+                <Stat label="Quantity" value={<span className="secret">{formatQuantity(holding.quantity)}</span>} />
+                <Stat label="Average cost" value={holding.averageCost ? <span className="secret">{formatMoney(holding.averageCost, inst.currency)}</span> : "Unknown"} />
+                <Stat label={`Value (${valuation.portfolio.baseCurrency})`} value={<span className="secret">{formatMoney(holding.marketValueBase, valuation.portfolio.baseCurrency)}</span>} />
                 <Stat label="Weight" value={holding.weight ? formatPercent(holding.weight) : "—"} />
                 <Stat className="col-span-2" label="Unrealized" value={holding.unrealizedBase ? <Change value={holding.unrealizedBase} percent={holding.unrealizedPct} currency={valuation.portfolio.baseCurrency} size="md" /> : "—"} />
               </dl>

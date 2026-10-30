@@ -5,7 +5,7 @@ import { demoFx, getFxProvider } from "@/integrations/fx";
 import { getMarketDataProvider, refKey, type Bar, type MarketDataProvider } from "@/integrations/market-data";
 import { DemoMarketDataProvider } from "@/integrations/market-data/demo";
 import { getDb } from "../db";
-import { fxRates, guildMembers, instruments, priceBars, priceChecks, quotes, watchlistItems, watchlists } from "../db/schema";
+import { fxRates, guildMembers, instruments, memberPrices, priceBars, priceChecks, quotes, watchlistItems, watchlists } from "../db/schema";
 import { forbidden, notFound, UserFacingError } from "../errors";
 import { hasFullAccess } from "./access";
 
@@ -28,7 +28,14 @@ function isFresh(at: Date | null | undefined, dailyCloses: boolean | undefined, 
 }
 
 /**
- * Whose prices: a member's, which are real only with full access, or the Practice room's,
+ * Things a member added without a ticker (gold coins, a watch) are listed under "OWN:<their id>".
+ * Nobody else finds them in search, and they only ever have the member's own price.
+ */
+export const ownListing = (userId: string) => `OWN:${userId}`;
+export const isOwnListing = (exchange: string) => exchange.startsWith("OWN:");
+
+/**
+ * Whose prices: a member's (market prices need Plus; their broker's and their own work on the free plan), or the Practice room's,
  * which are always pretend so practising never spends the data plan.
  */
 export type PriceFor = { userId: string } | "practice";
@@ -39,35 +46,47 @@ const practiceProvider: MarketDataProvider = new DemoMarketDataProvider();
 export async function getPrices(rows: Pick<InstrumentRow, "id" | "symbol" | "exchange">[], viewer: PriceFor): Promise<Map<string, PriceInfo>> {
   const out = new Map<string, PriceInfo>();
   if (!rows.length) return out;
-  if (viewer !== "practice" && !(await hasFullAccess(viewer.userId))) return out;
-  const provider = viewer === "practice" ? practiceProvider : getMarketDataProvider();
-  const status = provider.status();
-
-  const toInfo = (q: { price: string; previousClose: string | null; currency: string; asOf: string; source: string; isDemo: boolean; delayMinutes: number }): PriceInfo => q;
   const db = getDb();
   const ids = rows.map((r) => r.id);
+  // Prices that belong to the member: ones they set themselves, and their own broker's latest.
+  const mine =
+    viewer === "practice"
+      ? new Map<string, MemberPrice>()
+      : new Map(
+          (await db.select().from(memberPrices).where(and(eq(memberPrices.userId, viewer.userId), inArray(memberPrices.instrumentId, ids)))).map((m) => [m.instrumentId, m]),
+        );
+  const plus = viewer === "practice" || (await hasFullAccess(viewer.userId));
+  // Something priced by hand has no market price, and the free plan has no market data at all.
+  for (const [id, m] of mine) if (m.own || !plus) out.set(id, fromMember(m));
+  if (!plus) return out;
+
+  const provider = viewer === "practice" ? practiceProvider : getMarketDataProvider();
+  const status = provider.status();
+  const wanted = rows.filter((r) => !out.has(r.id) && !isOwnListing(r.exchange));
 
   if (status.isDemo) {
-    // A real price Portle already holds, such as the member's own broker's, beats a made-up one.
-    const real = viewer === "practice" ? new Map() : new Map((await db.select().from(quotes).where(inArray(quotes.instrumentId, ids))).map((c) => [c.instrumentId, c]));
-    const qs = await provider.getQuotes(rows.filter((r) => !real.has(r.id)).map((r) => ({ symbol: r.symbol, exchange: r.exchange })));
-    for (const r of rows) {
-      const c = real.get(r.id);
+    // The member's broker knows the real price, which beats a made-up one.
+    const qs = await provider.getQuotes(wanted.filter((r) => !mine.has(r.id)).map((r) => ({ symbol: r.symbol, exchange: r.exchange })));
+    for (const r of wanted) {
+      const m = mine.get(r.id);
       const q = qs.get(refKey(r));
-      if (c) out.set(r.id, stored(c, false));
-      else if (q) out.set(r.id, toInfo(q));
+      if (m) out.set(r.id, fromMember(m));
+      else if (q) out.set(r.id, { price: q.price, previousClose: q.previousClose, currency: q.currency, asOf: q.asOf, source: q.source, isDemo: q.isDemo, delayMinutes: q.delayMinutes });
     }
     return out;
   }
 
-  const [cached, checks] = await Promise.all([
-    db.select().from(quotes).where(inArray(quotes.instrumentId, ids)),
-    db.select().from(priceChecks).where(inArray(priceChecks.instrumentId, ids)),
-  ]);
+  const wantedIds = wanted.map((r) => r.id);
+  const [cached, checks] = wantedIds.length
+    ? await Promise.all([
+        db.select().from(quotes).where(inArray(quotes.instrumentId, wantedIds)),
+        db.select().from(priceChecks).where(inArray(priceChecks.instrumentId, wantedIds)),
+      ])
+    : [[], []];
   const byId = new Map(cached.map((c) => [c.instrumentId, c]));
   const checkedAt = new Map(checks.map((c) => [c.instrumentId, c.quoteCheckedAt]));
   // A security the provider didn't know is not asked about again until the next close.
-  const stale = rows.filter((r) => !isFresh(byId.get(r.id)?.fetchedAt, status.dailyCloses) && !isFresh(checkedAt.get(r.id), status.dailyCloses));
+  const stale = wanted.filter((r) => !isFresh(byId.get(r.id)?.fetchedAt, status.dailyCloses) && !isFresh(checkedAt.get(r.id), status.dailyCloses));
   if (stale.length && status.configured) {
     const fresh = await provider.getQuotes(stale.map((r) => ({ symbol: r.symbol, exchange: r.exchange })));
     const now = new Date();
@@ -92,14 +111,24 @@ export async function getPrices(rows: Pick<InstrumentRow, "id" | "symbol" | "exc
       byId.set(r.id, values);
     }
   }
-  for (const r of rows) {
+  // The market's price first; the member's broker fills in what the data plan doesn't cover.
+  for (const r of wanted) {
     const c = byId.get(r.id);
+    const m = mine.get(r.id);
     if (c) out.set(r.id, stored(c, !!status.dailyCloses));
+    else if (m) out.set(r.id, fromMember(m));
   }
   return out;
 }
 
-/** A price kept in the quotes table, from the market data provider or a member's broker. */
+type MemberPrice = typeof memberPrices.$inferSelect;
+
+/** A price from the member's own broker, or one they set themselves. Neither knows yesterday's close. */
+function fromMember(m: MemberPrice): PriceInfo {
+  return { price: m.price, previousClose: null, currency: m.currency, asOf: m.asOf.toISOString(), source: m.source, isDemo: false, delayMinutes: 0 };
+}
+
+/** A price kept in the quotes table, from the market data provider. */
 function stored(c: Omit<typeof quotes.$inferSelect, "fetchedAt">, dailyCloses: boolean): PriceInfo {
   return {
     price: c.price,
@@ -218,12 +247,14 @@ export async function getIndices(viewer: { userId: string }, days = 92) {
 export async function searchInstruments(q: string, limit = 20) {
   const term = q.trim().slice(0, 60);
   const db = getDb();
-  if (!term) return db.select().from(instruments).where(sql`${instruments.exchange} <> ''`).orderBy(asc(instruments.symbol)).limit(limit);
+  // Things members added by hand never show up for anyone.
+  const listed = sql`${instruments.exchange} not like 'OWN:%'`;
+  if (!term) return db.select().from(instruments).where(and(listed, sql`${instruments.exchange} <> ''`)).orderBy(asc(instruments.symbol)).limit(limit);
   const like = `%${term.replace(/[%_\\]/g, "\\$&")}%`;
   return db
     .select()
     .from(instruments)
-    .where(or(ilike(instruments.symbol, like), ilike(instruments.name, like), ilike(instruments.isin, like)))
+    .where(and(listed, or(ilike(instruments.symbol, like), ilike(instruments.name, like), ilike(instruments.isin, like))))
     .orderBy(sql`case when upper(${instruments.symbol}) = upper(${term}) then 0 else 1 end`, asc(instruments.symbol))
     .limit(limit);
 }

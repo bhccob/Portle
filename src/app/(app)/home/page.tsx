@@ -111,7 +111,8 @@ export default async function HomePage() {
           {/* Real money comes first, with its ring. */}
           <section aria-labelledby="real-title">
             {v.holdings.length ? (
-              val.access.full ? (
+              // Priced by the member's broker, their own price or (with Plus) the market; otherwise what was paid.
+              v.holdings.some((h) => h.price) ? (
                 <Link href="/portfolio" className="group flex items-center gap-5">
                   <Ring slices={holdingSlices(v.holdings)} label="Your mix" size={120} thickness={16} />
                   <span className="min-w-0">
@@ -119,7 +120,7 @@ export default async function HomePage() {
                       <Lock className="size-3.5" aria-hidden /> My real portfolio
                     </span>
                     <span className="num mt-1 block font-display text-[2.125rem] leading-none font-bold tracking-[-0.02em] text-fg group-hover:underline">
-                      {formatMoney(v.totals.marketValue, base)}
+                      <span className="secret">{formatMoney(v.totals.marketValue.plus(v.totals.cash.gt(0) ? v.totals.cash : 0), base)}</span>
                     </span>
                     {v.totals.dayChangePct ? (
                       <span className="mt-2 block text-sm">
@@ -143,10 +144,10 @@ export default async function HomePage() {
                       <Lock className="size-3.5" aria-hidden /> What you put in
                     </span>
                     <span className="num mt-1 block font-display text-[2.125rem] leading-none font-bold tracking-[-0.02em] text-fg group-hover:underline">
-                      {formatMoney(val.paid.total, base)}
+                      <span className="secret">{formatMoney(val.paid.total, base)}</span>
                     </span>
                     <span className="mt-2 block text-sm text-fg-subtle">
-                      {val.access.status === "requested" ? "Real prices: access requested" : "Real prices come with full access"}
+                      {val.access.status === "requested" ? "Market prices: Plus requested" : "Market prices come with Portle Plus"}
                     </span>
                   </span>
                 </Link>
@@ -323,7 +324,7 @@ export default async function HomePage() {
                 <FlaskConical className="size-3.5" aria-hidden /> Practice money
               </span>
               <span className="mt-1.5 flex flex-wrap items-baseline gap-x-2 font-display">
-                <span className="num text-[1.25rem] font-bold text-practice-strong">{formatMoney(lab.equity, lab.account.currency)}</span>
+                <span className="num secret text-[1.25rem] font-bold text-practice-strong">{formatMoney(lab.equity, lab.account.currency)}</span>
                 <span className="num text-[0.8125rem] font-semibold text-practice">
                   {lab.totalReturn ? `${formatPercent(lab.totalReturn, { signed: true, decimals: 2 })} ` : ""}pretend
                 </span>

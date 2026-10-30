@@ -6,6 +6,7 @@ import { decideOrder, paperPositions, type PaperConfig } from "@/domain/paper";
 import { getDb, type Tx } from "../db";
 import { instruments, paperAccounts, paperFills, paperLedger, paperOrders, theses } from "../db/schema";
 import { notFound, UserFacingError } from "../errors";
+import { assertFullAccess } from "./access";
 import { getPrices } from "./market";
 import { notify } from "./notifications";
 import { buildViewer } from "./viewer";
@@ -96,6 +97,7 @@ async function book(tx: Tx, acc: typeof paperAccounts.$inferSelect, order: typeo
  * returns the original order instead of creating a duplicate.
  */
 export async function placeOrder(userId: string, raw: z.input<typeof orderInput>) {
+  await assertFullAccess(userId, "Practice");
   const input = orderInput.parse(raw);
   const db = getDb();
   const acc0 = await ensurePaperAccount(userId);
@@ -202,6 +204,7 @@ export async function processOpenOrders(userId: string) {
 }
 
 export async function resetLab(userId: string, startingCash: string) {
+  await assertFullAccess(userId, "Practice");
   if (!["10000", "50000", "100000"].includes(startingCash)) throw new UserFacingError("Choose a starting balance.");
   const acc = await ensurePaperAccount(userId);
   await getDb().transaction(async (tx) => {
@@ -216,6 +219,7 @@ export async function resetLab(userId: string, startingCash: string) {
 }
 
 export async function updateLabAssumptions(userId: string, input: { feeFlat: string; feeBps: string; slippageBps: string }) {
+  await assertFullAccess(userId, "Practice");
   const schema = z.object({
     feeFlat: z.string().regex(/^\d{1,4}(\.\d{1,2})?$/, "Flat fee: 0–9999.99"),
     feeBps: z.string().regex(/^\d{1,3}(\.\d{1,2})?$/, "Fee in basis points: 0–999"),

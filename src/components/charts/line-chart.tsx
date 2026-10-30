@@ -127,7 +127,7 @@ export function LineChart({
           style={{ left: `clamp(0px, calc(${(hover! / (points.length - 1)) * 100}% - 70px), calc(100% - 140px))` }}
         >
           <div className="text-fg-subtle">{formatDate(h.date)}</div>
-          <div className="num font-semibold text-fg">{fmt(h.value)}</div>
+          <div className={cn("num font-semibold text-fg", mode === "money" && "secret")}>{fmt(h.value)}</div>
         </div>
       ) : null}
     </figure>

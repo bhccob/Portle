@@ -9,7 +9,7 @@ import { requireMember } from "@/server/session";
 
 const memberId = z.string().min(1).max(64);
 
-/** A member asks the owner for full access (real prices and broker linking), with an optional note. */
+/** A member asks the owner for Portle Plus, with an optional note. */
 export async function requestAccessAction(_: ActionResult | null, form: FormData): Promise<ActionResult> {
   const { user } = await requireMember();
   const res = await runAction(async () => {
@@ -28,7 +28,7 @@ export async function decideAccessAction(member: string, allow: boolean): Promis
 
 export async function removeAccessAction(member: string): Promise<ActionResult> {
   const { user } = await requireMember();
-  const res = await runAction(() => removeAccess(user.id, memberId.parse(member)), "Full access removed.");
+  const res = await runAction(() => removeAccess(user.id, memberId.parse(member)), "Plus removed.");
   if (res.ok) revalidatePath("/settings/access");
   return res;
 }

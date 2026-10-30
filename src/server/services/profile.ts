@@ -216,6 +216,17 @@ export async function getPrivacy(userId: string) {
   return created;
 }
 
+/** Who sees your holdings and your mix: the two privacy settings Portfolio's "Holding visibility" changes. */
+export async function updateHoldingVisibility(userId: string, raw: { holdingsVisibility: string; allocationVisibility: string }) {
+  const input = z.object({ holdingsVisibility: audience, allocationVisibility: audience }).parse(raw);
+  await getPrivacy(userId);
+  await getDb()
+    .update(privacySettings)
+    .set({ ...input, updatedAt: new Date() })
+    .where(eq(privacySettings.userId, userId));
+  await audit(getDb(), { userId, action: "privacy.updated" });
+}
+
 export async function updatePrivacy(userId: string, raw: z.input<typeof privacyInput>) {
   const input = privacyInput.parse(raw);
   await getPrivacy(userId);

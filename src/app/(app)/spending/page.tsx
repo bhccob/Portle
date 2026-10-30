@@ -80,7 +80,7 @@ export default async function SpendingPage({ searchParams }: { searchParams: Pro
 
           <section aria-label="Where it goes" className="flex flex-wrap items-center gap-x-8 gap-y-5">
             <Ring slices={legend.map((l) => ({ label: l.label, percent: l.percent }))} label={`Your costs by category, ${word}`} size={184} thickness={22}>
-              <span className="num font-display text-[1.625rem] leading-tight font-bold tracking-[-0.02em] text-fg">{money(s.total)}</span>
+              <span className="num secret font-display text-[1.625rem] leading-tight font-bold tracking-[-0.02em] text-fg">{money(s.total)}</span>
               <span className="text-[0.8125rem] text-fg-subtle">{word}</span>
             </Ring>
             <ul className="grid min-w-[200px] flex-1 gap-2 text-[0.9375rem]">
@@ -88,7 +88,7 @@ export default async function SpendingPage({ searchParams }: { searchParams: Pro
                 <li key={l.label} className="flex items-center gap-2.5">
                   <span className="size-2.5 shrink-0 rounded-[3px]" style={{ background: ringColor(i, l.label) }} aria-hidden />
                   <span className="min-w-0 flex-1 truncate text-fg-muted">{l.label}</span>
-                  <span className="num font-display font-semibold text-fg">{money(l.amount)}</span>
+                  <span className="num secret font-display font-semibold text-fg">{money(l.amount)}</span>
                 </li>
               ))}
             </ul>
@@ -111,7 +111,7 @@ export default async function SpendingPage({ searchParams }: { searchParams: Pro
                       <span className="block truncate font-medium text-fg">{i.name}</span>
                       <span className="block text-[0.8125rem] text-fg-subtle">{formatDate(i.next!)}</span>
                     </span>
-                    <span className="num font-display font-semibold text-fg">{formatMoney(i.amount, i.currency)}</span>
+                    <span className="num secret font-display font-semibold text-fg">{formatMoney(i.amount, i.currency)}</span>
                   </li>
                 ))}
               </ul>
@@ -147,7 +147,7 @@ export default async function SpendingPage({ searchParams }: { searchParams: Pro
                           </span>
                         </span>
                         <span className="shrink-0 text-right">
-                          <span className="num block font-display font-semibold text-fg">{formatMoney(i.per.toFixed(2), i.currency)}</span>
+                          <span className="num secret block font-display font-semibold text-fg">{formatMoney(i.per.toFixed(2), i.currency)}</span>
                           <span className="block text-[0.75rem] text-fg-subtle">{word}</span>
                         </span>
                       </button>

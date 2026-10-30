@@ -1,11 +1,37 @@
 import { ArrowDownRight, ArrowUpRight, Minus } from "lucide-react";
 import { cn } from "@/lib/cn";
-import { formatMoney, formatPercent, sign } from "@/lib/format";
+import { formatMoney, formatPercent, maskFor, sign } from "@/lib/format";
 
 type Num = string | { toFixed(): string } | null | undefined;
 
-export function Money({ value, currency, className, compact }: { value: Num; currency: string; className?: string; compact?: boolean }) {
-  return <span className={cn("num", className)}>{formatMoney(value, currency, { compact })}</span>;
+/** An amount of the member's own money. Hidden as dots while "Hide numbers" is on. */
+export function Money({
+  value,
+  currency,
+  className,
+  compact,
+  signed,
+}: {
+  value: Num;
+  currency: string;
+  className?: string;
+  compact?: boolean;
+  signed?: boolean;
+}) {
+  return (
+    <span className={cn("num secret", className)} data-mask={maskFor(currency)}>
+      {formatMoney(value, currency, { compact, signed })}
+    </span>
+  );
+}
+
+/** A share count, hidden like amounts. */
+export function Secret({ children, className, mask }: { children: React.ReactNode; className?: string; mask?: string }) {
+  return (
+    <span className={cn("secret", className)} data-mask={mask}>
+      {children}
+    </span>
+  );
 }
 
 /**
@@ -29,9 +55,16 @@ export function Change({
   const Icon = s > 0 ? ArrowUpRight : s < 0 ? ArrowDownRight : Minus;
   const tone = s > 0 ? "text-positive" : s < 0 ? "text-negative" : "text-neutral";
   const word = s > 0 ? "up" : s < 0 ? "down" : "unchanged";
+  const money = value !== undefined && currency ? formatMoney(value, currency, { signed: true }) : null;
+  const pct = percent !== undefined && percent !== null ? formatPercent(percent, { signed: true, decimals: 2 }) : null;
+  // The amount hides with "Hide numbers"; a percentage never does.
   const parts = [
-    value !== undefined && currency ? formatMoney(value, currency, { signed: true }) : null,
-    percent !== undefined && percent !== null ? formatPercent(percent, { signed: true, decimals: 2 }) : null,
+    money ? (
+      <span key="m" className="secret" data-mask={maskFor(currency!)}>
+        {money}
+      </span>
+    ) : null,
+    pct,
   ].filter(Boolean);
   if (!parts.length) return <span className="text-fg-subtle">—</span>;
   return (

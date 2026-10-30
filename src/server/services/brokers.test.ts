@@ -157,6 +157,39 @@ describe("connecting a broker", () => {
     expect((await getPrices([held], "practice")).get(held.id)?.source).not.toBe("DEGIRO via Fake");
   });
 
+  it("links and syncs one broker on the free plan, with only that broker's prices, and asks for Plus for a second", async () => {
+    const u = await createUser(db, "Freebie");
+    await startBrokerConnection(u.id, "http://x/back");
+    broker.positions["acc-main"] = [{ ...asml, quantity: "2", averagePrice: "600", price: "712.4" }];
+    await addBrokerAccounts(u.id, ["acc-main"]);
+    const [acc] = await db.select().from(accounts).where(eq(accounts.userId, u.id));
+    expect(await syncBrokerConnection(u.id, acc.brokerConnectionId!)).toEqual({ ok: true });
+
+    const rows = await db
+      .select()
+      .from(instruments)
+      .where(inArray(instruments.symbol, ["ASML", "AAPL"]));
+    const prices = await getPrices(rows, { userId: u.id });
+    // The broker's price, and no made-up one for something the broker didn't price.
+    expect([...prices.values()].map((p) => p.source)).toEqual(["DEGIRO via Fake"]);
+
+    await expect(startBrokerConnection(u.id, "http://x/back")).rejects.toThrow(/free plan links one broker/);
+    // Repairing the one link is always allowed.
+    expect(await startBrokerConnection(u.id, "http://x/back", acc.brokerConnectionId!)).toContain("fix=auth-1");
+  });
+
+  it("keeps a member's broker price to that member", async () => {
+    const a = await createTestUser(db, "Holder");
+    await startBrokerConnection(a.id, "http://x/back");
+    broker.positions["acc-main"] = [{ ...asml, quantity: "1", averagePrice: "600", price: "699" }];
+    await addBrokerAccounts(a.id, ["acc-main"]);
+    const [held] = await db.select().from(instruments).where(eq(instruments.symbol, "ASML"));
+    expect((await getPrices([held], { userId: a.id })).get(held.id)?.source).toBe("DEGIRO via Fake");
+
+    const b = await createTestUser(db, "Neighbour");
+    expect((await getPrices([held], { userId: b.id })).get(held.id)?.source).not.toBe("DEGIRO via Fake");
+  });
+
   it("says plainly when the broker signed Portle out", async () => {
     const u = await createTestUser(db, "SignedOut");
     await startBrokerConnection(u.id, "http://localhost:3000/portfolio/connected");

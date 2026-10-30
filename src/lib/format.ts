@@ -22,6 +22,14 @@ export function formatMoney(value: Num, currency: string, opts: { compact?: bool
   }).format(s as unknown as number);
 }
 
+/** What an amount shows while numbers are hidden: "€••••". */
+export function maskFor(currency: string) {
+  const symbol =
+    new Intl.NumberFormat(LOCALE, { style: "currency", currency, currencyDisplay: "narrowSymbol" }).formatToParts(0).find((p) => p.type === "currency")
+      ?.value ?? "";
+  return `${symbol}••••`;
+}
+
 export function formatNumber(value: Num, opts: { decimals?: number; maxDecimals?: number; signed?: boolean; compact?: boolean } = {}) {
   const s = str(value);
   if (s === null) return "—";

@@ -86,9 +86,9 @@ export default async function TransactionsPage({ searchParams }: { searchParams:
                       <td className="num px-5 py-2.5 whitespace-nowrap text-fg-muted">{formatDate(tx.tradeDate)}</td>
                       <td className="px-3 py-2.5 text-fg">{TYPE_LABEL[tx.type]}</td>
                       <td className="px-3 py-2.5">{instrument ? <span className="font-medium text-fg">{instrument.symbol}</span> : <span className="text-fg-subtle">Cash</span>}</td>
-                      <td className="num px-3 py-2.5 text-right">{tx.type === "split" ? `×${formatQuantity(tx.splitRatio)}` : tx.quantity ? formatQuantity(tx.quantity) : "—"}</td>
-                      <td className="num px-3 py-2.5 text-right">{tx.price ? formatMoney(tx.price, tx.currency) : tx.amount ? formatMoney(tx.amount, tx.currency) : "—"}</td>
-                      <td className="num px-3 py-2.5 text-right text-fg-muted">{Number(tx.fee) ? formatMoney(tx.fee, tx.currency) : "—"}</td>
+                      <td className="num secret px-3 py-2.5 text-right">{tx.type === "split" ? `×${formatQuantity(tx.splitRatio)}` : tx.quantity ? formatQuantity(tx.quantity) : "—"}</td>
+                      <td className="num secret px-3 py-2.5 text-right">{tx.price ? formatMoney(tx.price, tx.currency) : tx.amount ? formatMoney(tx.amount, tx.currency) : "—"}</td>
+                      <td className="num secret px-3 py-2.5 text-right text-fg-muted">{Number(tx.fee) ? formatMoney(tx.fee, tx.currency) : "—"}</td>
                       <td className="px-3 py-2.5">
                         <span className="mr-2 text-fg-muted">{account.name}</span>
                         <SourceBadge kind={tx.source === "csv" ? "imported" : tx.source === "broker" ? "broker" : "manual"} />

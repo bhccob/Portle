@@ -393,6 +393,33 @@
     font-feature-settings: "tnum" 1, "lnum" 1;
   }
 
+  /* Hide numbers: amounts and share counts become dots, percentages stay. Marked with .secret, set per device. */
+  [data-hide-amounts] .secret {
+    position: relative;
+    white-space: nowrap;
+    color: transparent !important;
+  }
+  [data-hide-amounts] span.secret {
+    display: inline-block;
+    min-width: 2.6em;
+  }
+  [data-hide-amounts] .secret * {
+    visibility: hidden;
+  }
+  [data-hide-amounts] .secret::after {
+    content: "••••";
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+    color: var(--fg-muted);
+    letter-spacing: 0.08em;
+    text-align: inherit;
+    visibility: visible;
+  }
+  [data-hide-amounts] .secret[data-mask]::after {
+    content: attr(data-mask);
+  }
+
   .prose-archive {
     max-width: 68ch;
     line-height: 1.7;

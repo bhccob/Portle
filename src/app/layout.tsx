@@ -30,8 +30,15 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   // "porfael-theme" is the pre-rename cookie; it is honoured until it is next rewritten.
   const theme = jar.get("portle-theme")?.value ?? jar.get("porfael-theme")?.value;
   const dataTheme = theme === "light" || theme === "dark" ? theme : undefined;
+  const hideAmounts = jar.get("portle-hide-amounts")?.value === "1";
   return (
-    <html lang="en" data-theme={dataTheme} className={`${ui.variable} ${display.variable} h-full`} suppressHydrationWarning>
+    <html
+      lang="en"
+      data-theme={dataTheme}
+      data-hide-amounts={hideAmounts ? "" : undefined}
+      className={`${ui.variable} ${display.variable} h-full`}
+      suppressHydrationWarning
+    >
       <body className="min-h-full">
         <div className="archive-light" aria-hidden />
         {children}
