@@ -36,6 +36,14 @@ export function canInteract(viewer: Viewer | null, resource: Resource): boolean 
   return canView(viewer, resource);
 }
 
+/**
+ * Who may write on a profile. "private" switches comments off for everyone, the owner too;
+ * otherwise it's the usual rule, so blocks still apply and the owner can always reply.
+ */
+export function canCommentOnProfile(viewer: Viewer | null, ownerId: string, audience: Audience): boolean {
+  return audience !== "private" && canInteract(viewer, { ownerId, audience });
+}
+
 export type GuildRole = "owner" | "admin" | "member";
 
 export type GuildAction =
@@ -76,8 +84,6 @@ export function canRemoveMember(actor: GuildRole | null, target: GuildRole): boo
 
 export type PrivacySettings = {
   profileVisibility: Audience;
-  allocationVisibility: Audience;
-  holdingsVisibility: Audience;
   activityVisibility: Audience;
   thesesDefaultVisibility: Audience;
   journalDefaultVisibility: Audience;
@@ -90,8 +96,6 @@ export function profileAccess(viewer: Viewer | null, ownerId: string, settings: 
   const can = (audience: Audience) => canView(viewer, { ownerId, audience });
   return {
     profile: can(settings.profileVisibility),
-    allocation: can(settings.allocationVisibility),
-    holdings: can(settings.holdingsVisibility),
     activity: can(settings.activityVisibility),
     guilds: can(settings.guildsVisibility),
     relics: can(settings.relicsVisibility),

@@ -1,8 +1,6 @@
 import { EyeOff, Lock } from "lucide-react";
-import { AllocationRing } from "@/components/charts/allocation";
 import { Panel } from "@/components/ui/panel";
 import { Callout } from "@/components/ui/states";
-import { formatPercent } from "@/lib/format";
 import { getPrivacy, previewProfileAs } from "@/server/services/profile";
 import { syncBadgesQuietly } from "@/server/services/badges";
 import { requireMember } from "@/server/session";
@@ -29,20 +27,16 @@ function PreviewCard({ title, preview }: { title: string; preview: Preview }) {
             </dd>
           </div>
           <div>
-            <dt className="text-xs text-fg-subtle">Allocation</dt>
-            <dd>{preview.view.allocation?.[0]?.slices.length ? <AllocationRing label="Preview allocation" slices={preview.view.allocation[0].slices} max={4} /> : <span className="text-fg-muted">Hidden</span>}</dd>
-          </div>
-          <div>
-            <dt className="text-xs text-fg-subtle">Holdings by weight</dt>
-            <dd className="text-fg-muted">{preview.view.holdings ? preview.view.holdings.slice(0, 4).map((h) => `${h.symbol} ${formatPercent(h.percent)}`).join(" · ") || "None priced" : "Hidden"}</dd>
-          </div>
-          <div>
             <dt className="text-xs text-fg-subtle">Theses they can read</dt>
             <dd className="text-fg-muted">{preview.view.theses.length}</dd>
           </div>
           <div>
             <dt className="text-xs text-fg-subtle">Relics shown</dt>
             <dd className="text-fg-muted">{preview.view.relics.length}</dd>
+          </div>
+          <div>
+            <dt className="text-xs text-fg-subtle">Can comment on your profile</dt>
+            <dd className="text-fg-muted">{preview.view.canComment ? "Yes" : "No"}</dd>
           </div>
         </dl>
       )}

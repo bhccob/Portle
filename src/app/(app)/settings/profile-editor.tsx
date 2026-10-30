@@ -10,15 +10,18 @@ import { Button } from "@/components/ui/button";
 import { Field, Input, MultiSelect, Select, Textarea } from "@/components/ui/field";
 import { Dialog, Switch } from "@/components/ui/overlay";
 import { Callout } from "@/components/ui/states";
+import { AboutEditor } from "@/components/profile/about-editor";
 import {
   APPROACHES,
   BANNERS,
   BANNER_STYLES,
+  COMMENT_AUDIENCES,
   HORIZONS,
   LINKS,
   LINK_KEYS,
   SECTION_LABEL,
   type BannerStyle,
+  type CommentAudience,
   type LinkKey,
   type SectionSetting,
 } from "@/domain/profile-layout";
@@ -41,6 +44,7 @@ export type EditableProfile = {
   horizon: string | null;
   sections: SectionSetting[];
   featuredThesisIds: string[];
+  commentAudience: CommentAudience;
 };
 
 const YEARS = (() => {
@@ -178,8 +182,13 @@ export function ProfileEditor({
       <Field label="Location" optional error={e("location")}>
         {(p) => <Input {...p} name="location" defaultValue={profile.location} maxLength={60} placeholder="Rotterdam, NL" className="h-11" />}
       </Field>
-      <Field label="About" optional error={e("bio")} hint="Up to 600 characters. Don't include account details.">
-        {(p) => <Textarea {...p} name="bio" defaultValue={profile.bio} maxLength={600} className="min-h-28" />}
+      <Field
+        label="About me"
+        optional
+        error={e("bio")}
+        hint="The buttons add headings, lists, quotes and links, or type the marks yourself. Pictures and colours aren't allowed, so every profile stays readable. Don't include account details."
+      >
+        {(p) => <AboutEditor {...p} name="bio" defaultValue={profile.bio} />}
       </Field>
 
       <fieldset className="space-y-4">
@@ -257,12 +266,7 @@ export function ProfileEditor({
         </Field>
       </fieldset>
 
-      <Field
-        label="Featured theses"
-        optional
-        error={e("featuredThesisIds")}
-        hint="Pin up to three. Each one is still only shown to the people it's shared with."
-      >
+      <Field label="Pinned theses" optional error={e("featuredThesisIds")} hint="Pin up to three. Each one is still only shown to the people it's shared with.">
         {(p) => (
           <MultiSelect
             {...p}
@@ -283,6 +287,18 @@ export function ProfileEditor({
         </p>
         <SectionOrder value={sections} onChange={setSections} />
       </fieldset>
+
+      <Field label="Who can comment" hint="You can delete any comment on your profile. People can delete their own.">
+        {(p) => (
+          <Select {...p} name="commentAudience" defaultValue={profile.commentAudience} className="h-11 sm:max-w-sm">
+            {COMMENT_AUDIENCES.map(([v, l]) => (
+              <option key={v} value={v}>
+                {l}
+              </option>
+            ))}
+          </Select>
+        )}
+      </Field>
 
       {state && !state.ok && !state.fieldErrors ? <Callout tone="negative">{state.error}</Callout> : null}
       <Button type="submit" size="lg" loading={pending}>

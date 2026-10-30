@@ -51,8 +51,6 @@ async function main() {
 
   await updatePrivacy(ada.id, {
     profileVisibility: "friends",
-    allocationVisibility: "friends",
-    holdingsVisibility: "private",
     activityVisibility: "friends",
     thesesDefaultVisibility: "friends",
     journalDefaultVisibility: "private",

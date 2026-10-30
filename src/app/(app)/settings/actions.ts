@@ -28,6 +28,7 @@ export async function updateProfileAction(_: ActionResult | null, form: FormData
         horizon: orNull("horizon") as never,
         sections: parseSections(text("sections")),
         featuredThesisIds: form.getAll("featuredThesisIds").map(String),
+        commentAudience: (text("commentAudience") || "friends") as never,
       }),
     "Profile saved.",
   );
@@ -88,8 +89,6 @@ export async function updatePrivacyAction(_: ActionResult | null, form: FormData
     () =>
       updatePrivacy(user.id, {
         profileVisibility: a("profileVisibility"),
-        allocationVisibility: a("allocationVisibility"),
-        holdingsVisibility: a("holdingsVisibility"),
         activityVisibility: a("activityVisibility"),
         thesesDefaultVisibility: a("thesesDefaultVisibility"),
         journalDefaultVisibility: a("journalDefaultVisibility"),

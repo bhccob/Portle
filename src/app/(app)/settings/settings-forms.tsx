@@ -13,9 +13,7 @@ import { updatePrivacyAction } from "./actions";
 
 type Privacy = Record<string, string | boolean>;
 const ROWS: { name: string; label: string; hint: string; options?: [string, string][] }[] = [
-  { name: "profileVisibility", label: "Your profile", hint: "Name, bio and interests." },
-  { name: "allocationVisibility", label: "Allocation percentages", hint: "By asset class, region and sector. Never values." },
-  { name: "holdingsVisibility", label: "Holdings by weight", hint: "Symbols and percentages. Never quantities or values." },
+  { name: "profileVisibility", label: "Your profile", hint: "Name, About me and how you invest. Never what you own." },
   { name: "relicsVisibility", label: "Relics", hint: "Only the ones you choose to show." },
   { name: "guildsVisibility", label: "Guild memberships", hint: "Private Guilds stay hidden from non-members regardless." },
   { name: "activityVisibility", label: "Activity", hint: "Reserved for future activity summaries." },

@@ -42,6 +42,7 @@ export async function exportUserData(userId: string) {
     paperLedger: paperIds.length ? await db.select().from(s.paperLedger).where(inArray(s.paperLedger.paperAccountId, paperIds)) : [],
     posts: await db.select().from(s.posts).where(eq(s.posts.userId, userId)),
     comments: await db.select().from(s.comments).where(eq(s.comments.userId, userId)),
+    profileComments: await db.select().from(s.profileComments).where(eq(s.profileComments.authorId, userId)),
     reactions: await db.select().from(s.reactions).where(eq(s.reactions.userId, userId)),
     bookmarks: await db.select().from(s.bookmarks).where(eq(s.bookmarks.userId, userId)),
     friendships: await db.select().from(s.friendships).where(or(eq(s.friendships.userLow, userId), eq(s.friendships.userHigh, userId))),

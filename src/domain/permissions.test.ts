@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { canRemoveMember, canView, guildCan, profileAccess, type Viewer } from "./permissions";
+import { canCommentOnProfile, canRemoveMember, canView, guildCan, profileAccess, type Viewer } from "./permissions";
 
 const viewer = (userId: string, opts: Partial<Omit<Viewer, "userId">> = {}): Viewer => ({
   userId,
@@ -63,14 +63,33 @@ describe("profileAccess", () => {
   it("applies each privacy setting independently", () => {
     const access = profileAccess(viewer("b", { friendIds: new Set(["a"]) }), "a", {
       profileVisibility: "friends",
-      allocationVisibility: "friends",
-      holdingsVisibility: "private",
       activityVisibility: "private",
       thesesDefaultVisibility: "private",
       journalDefaultVisibility: "private",
       guildsVisibility: "public",
       relicsVisibility: "friends",
     });
-    expect(access).toMatchObject({ profile: true, allocation: true, holdings: false, activity: false, guilds: true, relics: true });
+    expect(access).toEqual({ profile: true, activity: false, guilds: true, relics: true });
+  });
+});
+
+describe("canCommentOnProfile", () => {
+  const friend = viewer("b", { friendIds: new Set(["a"]) });
+  const stranger = viewer("c");
+
+  it("lets friends comment by default, and everyone who can see it when the owner opens it up", () => {
+    expect(canCommentOnProfile(friend, "a", "friends")).toBe(true);
+    expect(canCommentOnProfile(stranger, "a", "friends")).toBe(false);
+    expect(canCommentOnProfile(stranger, "a", "public")).toBe(true);
+  });
+
+  it("switches comments off for everyone, the owner too", () => {
+    expect(canCommentOnProfile(friend, "a", "private")).toBe(false);
+    expect(canCommentOnProfile(viewer("a"), "a", "private")).toBe(false);
+    expect(canCommentOnProfile(viewer("a"), "a", "friends")).toBe(true);
+  });
+
+  it("keeps blocked members out", () => {
+    expect(canCommentOnProfile(viewer("c", { blockedIds: new Set(["a"]) }), "a", "public")).toBe(false);
   });
 });

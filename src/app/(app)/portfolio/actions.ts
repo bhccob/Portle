@@ -17,7 +17,6 @@ import {
   setBaseCurrency,
   setOwnPrice,
 } from "@/server/services/portfolio";
-import { updateHoldingVisibility } from "@/server/services/profile";
 import { createPost } from "@/server/services/social";
 import { syncBadgesQuietly } from "@/server/services/badges";
 import { requireMember } from "@/server/session";
@@ -94,16 +93,6 @@ export async function setOwnPriceAction(instrumentId: string, price: string): Pr
   const { user } = await requireMember();
   const res = await runAction(() => setOwnPrice(user.id, instrumentId, price.trim().replace(",", ".")), "Price updated.");
   if (res.ok) revalidatePath("/portfolio", "layout");
-  return res;
-}
-
-export async function holdingVisibilityAction(_: ActionResult | null, form: FormData): Promise<ActionResult> {
-  const { user } = await requireMember();
-  const res = await runAction(
-    () => updateHoldingVisibility(user.id, { holdingsVisibility: s(form, "holdingsVisibility") ?? "private", allocationVisibility: s(form, "allocationVisibility") ?? "private" }),
-    "Saved. Your profile shows it now.",
-  );
-  if (res.ok) revalidatePath("/", "layout");
   return res;
 }
 

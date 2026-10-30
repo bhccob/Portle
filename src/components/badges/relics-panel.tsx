@@ -257,12 +257,14 @@ export function RelicRow({
   mine = false,
   ownerName,
   limit = 10,
+  className = "mt-3",
 }: {
   relics: RelicInfo[];
   locked?: RelicInfo[];
   mine?: boolean;
   ownerName: string;
   limit?: number;
+  className?: string;
 }) {
   const [open, setOpen] = useState(false);
   const [selected, setSelected] = useState(relics[0]?.key ?? "");
@@ -275,7 +277,10 @@ export function RelicRow({
     <>
       {/* One see-through pill around the row, so the Relics read as a set. */}
       <ul
-        className="mt-3 flex w-fit max-w-full flex-wrap items-center gap-[3px] rounded-[10px] bg-[color-mix(in_srgb,var(--fg)_5%,transparent)] p-[3px] shadow-[inset_0_0_0_1px_var(--line)] backdrop-blur-sm"
+        className={cn(
+          "flex w-fit max-w-full flex-wrap items-center gap-[3px] rounded-[10px] bg-[color-mix(in_srgb,var(--fg)_5%,transparent)] p-[3px] shadow-[inset_0_0_0_1px_var(--line)] backdrop-blur-sm",
+          className,
+        )}
         aria-label="Relics"
       >
         {relics.slice(0, limit).map((r) => (

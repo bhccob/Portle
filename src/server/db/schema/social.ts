@@ -84,6 +84,26 @@ export const comments = pgTable(
   (t) => [index().on(t.targetType, t.targetId, t.createdAt)],
 );
 
+/**
+ * Comments on a member's profile, like a guestbook. The profile's owner decides who may
+ * write (profiles.comment_audience) and may delete any of them; authors may delete their own.
+ */
+export const profileComments = pgTable(
+  "profile_comments",
+  {
+    id: uuid().primaryKey().defaultRandom(),
+    profileUserId: text()
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    authorId: text()
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    body: text().notNull(),
+    createdAt: ts().notNull().defaultNow(),
+  },
+  (t) => [index().on(t.profileUserId, t.createdAt), index().on(t.authorId)],
+);
+
 /** Reactions describe the reasoning, not popularity. There is no "like". */
 export const reactionKind = pgEnum("reaction_kind", ["insightful", "agree", "challenge", "question"]);
 

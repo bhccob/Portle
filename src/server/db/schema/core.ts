@@ -46,6 +46,8 @@ export const profiles = pgTable(
     horizon: text(),
     /** Section order and which are switched off; null means the default order, all shown. */
     sections: jsonb().$type<{ key: string; visible: boolean }[]>(),
+    /** Who may write on their profile: friends, every member who can see it ("public"), or nobody ("private"). */
+    commentAudience: audience().notNull().default("friends"),
     /** Up to three of their own theses to pin at the top, still subject to each thesis's audience. */
     featuredThesisIds: uuid()
       .array()

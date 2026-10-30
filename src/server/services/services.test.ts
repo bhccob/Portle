@@ -99,40 +99,35 @@ describe("portfolio", () => {
 });
 
 describe("privacy", () => {
-  it("hides exact values and, by default, allocation from friends", async () => {
+  it("never shows what a member owns on their profile", async () => {
     const view = await getProfileView(await buildViewer(bob), "alice");
-    expect(view.allocation).toBeNull();
-    expect(view.holdings).toBeNull();
+    expect(view).not.toHaveProperty("allocation");
+    expect(view).not.toHaveProperty("holdings");
   });
 
   it("hides friends-only profiles from strangers", async () => {
     await expect(getProfileView(await buildViewer(carol), "alice")).rejects.toThrow(/not found/);
   });
 
-  it("shares percentages only once the owner opts in", async () => {
+  it("keeps money out of the profile under every privacy setting", async () => {
     await updatePrivacy(alice, {
       profileVisibility: "friends",
-      allocationVisibility: "friends",
-      holdingsVisibility: "friends",
-      activityVisibility: "private",
-      thesesDefaultVisibility: "private",
-      journalDefaultVisibility: "private",
-      guildsVisibility: "friends",
-      relicsVisibility: "friends",
+      activityVisibility: "public",
+      thesesDefaultVisibility: "public",
+      journalDefaultVisibility: "friends",
+      guildsVisibility: "public",
+      relicsVisibility: "public",
       discoverable: true,
     });
-    const view = await getProfileView(await buildViewer(bob), "alice");
-    expect(view.allocation![0].slices.length).toBeGreaterThan(0);
-    const json = JSON.stringify(view);
-    // Only labels and percent strings: no market values, quantities or cost.
-    for (const banned of ["marketValue", "costBasis", "quantity", "6002", "accountIds"]) expect(json).not.toContain(banned);
+    const json = JSON.stringify(await getProfileView(await buildViewer(bob), "alice"));
+    for (const banned of ["marketValue", "costBasis", "quantity", "6002", "accountIds", "slices", "percent"]) expect(json).not.toContain(banned);
   });
 
   it("previews through the same code path other members use", async () => {
     const asMember = await previewProfileAs(alice, "member");
     expect(asMember.visible).toBe(false);
     const asFriend = await previewProfileAs(alice, "friend");
-    expect(asFriend.visible && asFriend.view.allocation).toBeTruthy();
+    expect(asFriend.visible && asFriend.view.canComment).toBe(true);
   });
 
   it("exports the user's data without secrets", async () => {

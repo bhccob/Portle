@@ -23,7 +23,6 @@ import {
   Star,
   TrendingUp,
   Upload,
-  Users,
   Wallet,
 } from "lucide-react";
 import { toast } from "sonner";
@@ -35,7 +34,7 @@ import { Dialog, Menu, MenuItem, MenuSeparator } from "@/components/ui/overlay";
 import { SUPPORTED_CURRENCIES } from "@/domain/money";
 import { cn } from "@/lib/cn";
 import { today } from "@/lib/format";
-import { addOwnItemAction, holdingVisibilityAction, setBaseCurrencyAction, setOwnPriceAction, shareMixAction } from "./actions";
+import { addOwnItemAction, setBaseCurrencyAction, setOwnPriceAction, shareMixAction } from "./actions";
 import { ConnectBrokerSheet } from "./broker-client";
 import { AddTransactionDialog } from "./portfolio-forms";
 
@@ -207,9 +206,8 @@ export function CurrencyPicker({ value }: { value: string }) {
   );
 }
 
-type Sheet = "invest" | "cash" | "visibility" | "edit" | null;
+type Sheet = "invest" | "cash" | "edit" | null;
 type OwnItem = { id: string; name: string; currency: string; price: string };
-type Visibility = { holdings: string; allocation: string };
 
 export type ManageProps = {
   accounts: Account[];
@@ -217,18 +215,16 @@ export type ManageProps = {
   broker: Broker;
   baseCurrency: string;
   ownItems: OwnItem[];
-  visibility: Visibility;
 };
 
 const ACTIONS = [
   ["invest", TrendingUp, "Add investments", "Broker, by hand or CSV"],
   ["cash", Coins, "Add cash or commodities", "Cash, gold and more"],
-  ["visibility", Users, "Holding visibility", "Who sees what you own"],
   ["edit", Pencil, "Edit portfolio", "Trades, accounts, currency"],
 ] as const;
 
 /**
- * The bank button: the four ways to change the portfolio. A round icon next to the currency on phones,
+ * The bank button: the three ways to change the portfolio. A round icon next to the currency on phones,
  * "Manage" in the toolbar on computers. Each choice opens its own sheet.
  */
 export function ManageMenu({ labelled, ...props }: ManageProps & { labelled?: boolean }) {
@@ -314,7 +310,7 @@ const tints = {
   red: "bg-negative-soft text-negative",
 };
 
-function ManageSheets({ sheet, onClose, accounts, access, broker, baseCurrency, ownItems, visibility }: ManageProps & { sheet: Sheet; onClose: () => void }) {
+function ManageSheets({ sheet, onClose, accounts, access, broker, baseCurrency, ownItems }: ManageProps & { sheet: Sheet; onClose: () => void }) {
   const close = (open: boolean) => !open && onClose();
   const secondBroker = broker.configured && !access.full && broker.linked > 0;
   return (
@@ -393,10 +389,6 @@ function ManageSheets({ sheet, onClose, accounts, access, broker, baseCurrency, 
             ))}
           </div>
         ) : null}
-      </Dialog>
-
-      <Dialog open={sheet === "visibility"} onOpenChange={close} title="Holding visibility" description="Who can see what you own on your profile.">
-        <VisibilityForm visibility={visibility} onDone={onClose} />
       </Dialog>
 
       <Dialog open={sheet === "edit"} onOpenChange={close} title="Edit portfolio" description="Fix what Portle has recorded.">
@@ -520,54 +512,6 @@ function OwnPriceRow({ item }: { item: OwnItem }) {
       />
       <span className="text-xs text-fg-subtle">{item.currency}</span>
       <Button type="submit" size="sm" variant="secondary" loading={pending}>
-        Save
-      </Button>
-    </form>
-  );
-}
-
-const AUDIENCES = [
-  ["private", "Only me"],
-  ["friends", "Friends"],
-  ["public", "Everyone"],
-] as const;
-
-function VisibilityForm({ visibility, onDone }: { visibility: Visibility; onDone: () => void }) {
-  const [state, action, pending] = useActionState(holdingVisibilityAction, null);
-  useResultToast(state, { onSuccess: onDone });
-  const line = "flex items-center justify-between gap-4 border-t border-line py-3.5 first:border-t-0";
-  return (
-    <form action={action}>
-      <label className={line}>
-        <span>
-          <span className="block font-display text-[0.9375rem] font-semibold text-fg">Holdings by weight</span>
-          <span className="block text-[0.8125rem] text-fg-muted">Symbols and percentages</span>
-        </span>
-        <Select name="holdingsVisibility" defaultValue={visibility.holdings} className="h-9 w-32">
-          {AUDIENCES.map(([v, l]) => (
-            <option key={v} value={v}>
-              {l}
-            </option>
-          ))}
-        </Select>
-      </label>
-      <label className={line}>
-        <span>
-          <span className="block font-display text-[0.9375rem] font-semibold text-fg">Your mix</span>
-          <span className="block text-[0.8125rem] text-fg-muted">By type, region and sector</span>
-        </span>
-        <Select name="allocationVisibility" defaultValue={visibility.allocation} className="h-9 w-32">
-          {AUDIENCES.map(([v, l]) => (
-            <option key={v} value={v}>
-              {l}
-            </option>
-          ))}
-        </Select>
-      </label>
-      <p className="mt-2 flex gap-2 text-[0.8125rem] text-fg-subtle">
-        <Lock className="mt-0.5 size-3.5 shrink-0" aria-hidden /> Amounts and share counts are never shown to anyone, whatever you pick here.
-      </p>
-      <Button type="submit" size="lg" loading={pending} className="mt-4 w-full">
         Save
       </Button>
     </form>

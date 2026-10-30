@@ -22,7 +22,6 @@ import { brokerSpotsFull, brokerStatus, listBrokerConnections, syncStaleBrokerCo
 import { logosFor, type LogoInfo } from "@/server/services/logos";
 import { ensureDefaultWatchlist, getPrices, isOwnListing, listWatchlists, type Range } from "@/server/services/market";
 import { getPerformance, getValuation, listOwnItems } from "@/server/services/portfolio";
-import { getPrivacy } from "@/server/services/profile";
 import { requireMember } from "@/server/session";
 import { AddWays } from "./broker-client";
 import {
@@ -126,7 +125,7 @@ export default async function PortfolioPage({ searchParams }: { searchParams: Pr
         : data.market.label;
 
   await ensureDefaultWatchlist(user.id);
-  const [lists, ownItems, privacy] = await Promise.all([listWatchlists(user.id), listOwnItems(user.id), getPrivacy(user.id)]);
+  const [lists, ownItems] = await Promise.all([listWatchlists(user.id), listOwnItems(user.id)]);
   const watch = lists[0]?.items ?? [];
   const [logos, watchPrices] = await Promise.all([
     logosFor([
@@ -279,7 +278,6 @@ export default async function PortfolioPage({ searchParams }: { searchParams: Pr
     broker: { configured: brokers.configured, full: brokersFull, linked: connections.length },
     baseCurrency: base,
     ownItems: ownItems.map((o) => ({ id: o.id, name: o.name, currency: o.currency, price: o.price })),
-    visibility: { holdings: privacy.holdingsVisibility, allocation: privacy.allocationVisibility },
   };
 
   const watchRows = watch.length ? (

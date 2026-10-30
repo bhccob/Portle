@@ -1,20 +1,31 @@
 /**
- * The parts of a profile a member arranges, like a LinkedIn page: which sections show
- * and in what order, the banner, and the "How I invest" answers. Privacy still decides
- * who sees each part; these choices only ever hide more, never less.
+ * The parts of a profile a member arranges: which sections show and in what order, the
+ * banner, and the "How I invest" answers that sit with their other details. Privacy still
+ * decides who sees each part; these choices only ever hide more, never less.
  */
-export const SECTIONS = ["about", "invest", "featured", "experience", "theses", "allocation", "guilds"] as const;
+export const SECTIONS = ["about", "featured", "theses", "experience", "guilds", "comments"] as const;
 export type SectionKey = (typeof SECTIONS)[number];
 
 export const SECTION_LABEL: Record<SectionKey, string> = {
-  about: "About",
-  invest: "How I invest",
-  featured: "Featured",
-  experience: "Experience",
+  about: "About me",
+  featured: "Pinned",
   theses: "Theses",
-  allocation: "Allocation",
+  experience: "Experience",
   guilds: "Guilds",
+  comments: "Comments",
 };
+
+/** Who may comment on a profile, as the dropdown in Settings offers it. */
+export const COMMENT_AUDIENCES = [
+  ["friends", "Friends"],
+  ["public", "Anyone who can see your profile"],
+  ["private", "Nobody (comments off)"],
+] as const;
+export type CommentAudience = (typeof COMMENT_AUDIENCES)[number][0];
+
+/** About me is written in Markdown, so it can have headings, lists and quotes. */
+export const ABOUT_MAX = 3000;
+export const COMMENT_MAX = 1000;
 
 export type SectionSetting = { key: SectionKey; visible: boolean };
 

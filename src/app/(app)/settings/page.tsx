@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { Eye } from "lucide-react";
 import { Panel } from "@/components/ui/panel";
-import { BANNER_STYLES, profileSections, type BannerStyle, type SectionSetting } from "@/domain/profile-layout";
+import { BANNER_STYLES, profileSections, type BannerStyle, type CommentAudience, type SectionSetting } from "@/domain/profile-layout";
 import { INTERESTS, listExperience } from "@/server/services/profile";
 import { listOwnTheses } from "@/server/services/theses";
 import { requireMember } from "@/server/session";
@@ -42,6 +42,7 @@ export default async function ProfileSettingsPage() {
             horizon: profile.horizon,
             sections: profileSections(profile.sections as SectionSetting[] | null),
             featuredThesisIds: profile.featuredThesisIds,
+            commentAudience: profile.commentAudience as CommentAudience,
           }}
         />
       </Panel>

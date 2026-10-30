@@ -1,8 +1,19 @@
 import { and, desc, eq, inArray, ne, sql } from "drizzle-orm";
 import { z } from "zod";
 import { isCurrency } from "@/domain/money";
-import { canView, profileAccess, type Audience, type Viewer } from "@/domain/permissions";
-import { APPROACHES, BANNER_STYLES, HORIZONS, profileSections, SECTIONS, type BannerStyle, type SectionSetting } from "@/domain/profile-layout";
+import { canCommentOnProfile, canView, profileAccess, type Audience, type Viewer } from "@/domain/permissions";
+import {
+  ABOUT_MAX,
+  APPROACHES,
+  BANNER_STYLES,
+  COMMENT_AUDIENCES,
+  HORIZONS,
+  profileSections,
+  SECTIONS,
+  type BannerStyle,
+  type CommentAudience,
+  type SectionSetting,
+} from "@/domain/profile-layout";
 import { EXPERIENCE, INTERESTS } from "@/domain/topics";
 import { audit } from "../audit";
 import { getDb } from "../db";
@@ -11,7 +22,8 @@ import { notFound, UserFacingError } from "../errors";
 import { shownBadges } from "./badges";
 import { ensureDefaultWatchlist } from "./market";
 import { ensurePaperAccount } from "./paper";
-import { ensurePortfolio, getValuation } from "./portfolio";
+import { ensurePortfolio } from "./portfolio";
+import { listProfileComments } from "./profile-comments";
 
 export const TERMS_VERSION = "2026-10";
 const RESERVED = new Set(["admin", "portle", "porfael", "support", "help", "settings", "api", "root", "system", "me", "guild", "guilds", "relics", "badges", "founder"]);
@@ -112,8 +124,8 @@ const thisYear = () => new Date().getUTCFullYear();
 
 export const profileInput = z.object({
   displayName: z.string().trim().min(1, "Enter a display name.").max(40),
-  /** The About section. */
-  bio: z.string().trim().max(600, "Keep About under 600 characters.").default(""),
+  /** About me, in Markdown. */
+  bio: z.string().trim().max(ABOUT_MAX, `Keep About me under ${ABOUT_MAX.toLocaleString("en")} characters.`).default(""),
   interests: z.array(z.enum(INTERESTS)).max(INTERESTS.length).default([]),
   avatarHue: z.coerce.number().int().min(0).max(359).transform(String),
   headline: z.string().trim().max(120, "Keep the headline under 120 characters.").default(""),
@@ -133,6 +145,7 @@ export const profileInput = z.object({
     .max(SECTIONS.length)
     .default([]),
   featuredThesisIds: z.array(z.uuid()).max(3, "Pin up to three theses.").default([]),
+  commentAudience: z.enum(COMMENT_AUDIENCES.map(([v]) => v) as [CommentAudience, ...CommentAudience[]]).default("friends"),
 });
 
 export async function updateProfile(userId: string, raw: z.input<typeof profileInput>) {
@@ -198,8 +211,6 @@ export async function deleteExperience(userId: string, id: string) {
 const audience = z.enum(["private", "friends", "public"]);
 export const privacyInput = z.object({
   profileVisibility: audience,
-  allocationVisibility: audience,
-  holdingsVisibility: audience,
   activityVisibility: audience,
   thesesDefaultVisibility: audience,
   journalDefaultVisibility: z.enum(["private", "friends"]),
@@ -216,17 +227,6 @@ export async function getPrivacy(userId: string) {
   return created;
 }
 
-/** Who sees your holdings and your mix: the two privacy settings Portfolio's "Holding visibility" changes. */
-export async function updateHoldingVisibility(userId: string, raw: { holdingsVisibility: string; allocationVisibility: string }) {
-  const input = z.object({ holdingsVisibility: audience, allocationVisibility: audience }).parse(raw);
-  await getPrivacy(userId);
-  await getDb()
-    .update(privacySettings)
-    .set({ ...input, updatedAt: new Date() })
-    .where(eq(privacySettings.userId, userId));
-  await audit(getDb(), { userId, action: "privacy.updated" });
-}
-
 export async function updatePrivacy(userId: string, raw: z.input<typeof privacyInput>) {
   const input = privacyInput.parse(raw);
   await getPrivacy(userId);
@@ -237,14 +237,11 @@ export async function updatePrivacy(userId: string, raw: z.input<typeof privacyI
   await audit(getDb(), { userId, action: "privacy.updated" });
 }
 
-const pct = (v: { toDecimalPlaces: (n: number) => { toFixed: () => string } }) => v.toDecimalPlaces(3).toFixed();
-
 /**
- * Everything another member may see on a profile. This is the only function that
- * reads portfolio data on behalf of someone other than its owner, and it returns
- * percentages only: no values, quantities, cost bases, accounts or transactions.
+ * Everything another member may see on a profile. It never reads portfolio data:
+ * no allocation, holdings, values, accounts or transactions.
  */
-export async function getProfileView(viewer: Viewer, handle: string) {
+export async function getProfileView(viewer: Viewer, handle: string, opts: { allComments?: boolean } = {}) {
   const db = getDb();
   const [p] = await db.select().from(profiles).where(sql`lower(${profiles.handle}) = ${handle.toLowerCase()}`);
   if (!p || !p.onboardedAt) throw notFound("Member");
@@ -252,23 +249,6 @@ export async function getProfileView(viewer: Viewer, handle: string) {
   const access = profileAccess(viewer, p.userId, settings);
   if (!access.profile) throw notFound("Member");
   const isOwner = viewer.userId === p.userId;
-
-  let allocation: { dimension: string; slices: { label: string; percent: string }[] }[] | null = null;
-  let holdings: { symbol: string; name: string; percent: string }[] | null = null;
-  if (access.allocation || access.holdings) {
-    const { valuation } = await getValuation(p.userId);
-    if (access.allocation) {
-      allocation = (["assetClass", "region", "sector"] as const).map((dim) => ({
-        dimension: dim,
-        slices: valuation.allocation[dim].map((s) => ({ label: s.label, percent: pct(s.percent) })),
-      }));
-    }
-    if (access.holdings) {
-      holdings = valuation.holdings
-        .filter((h) => h.weight)
-        .map((h) => ({ symbol: h.instrument.symbol, name: h.instrument.name, percent: pct(h.weight!) }));
-    }
-  }
 
   const relics = access.relics ? await shownBadges(p.userId) : [];
 
@@ -285,7 +265,7 @@ export async function getProfileView(viewer: Viewer, handle: string) {
     .from(theses)
     .where(eq(theses.userId, p.userId))
     .orderBy(desc(theses.updatedAt))
-    .limit(30);
+    .limit(200);
   const visibleTheses = thesisRows.filter((t) => canView(viewer, { ownerId: p.userId, audience: t.visibility as Audience, guildId: t.guildId }));
 
   let relationship: "self" | "friends" | "pending_out" | "pending_in" | "none" | "blocked" = "none";
@@ -298,12 +278,23 @@ export async function getProfileView(viewer: Viewer, handle: string) {
     else if (f) relationship = f.requestedBy === viewer.userId ? "pending_out" : "pending_in";
   }
 
-  const [experience, [friendCount]] = await Promise.all([
+  // Who someone's friends are is only shown to them and to their own friends; everyone else sees a count.
+  const showFriends = relationship === "self" || relationship === "friends";
+  const commentAudience = p.commentAudience as CommentAudience;
+  const accepted = and(eq(friendships.status, "accepted"), sql`${p.userId} in (${friendships.userLow}, ${friendships.userHigh})`);
+  const [experience, [friendCount], friends, comments] = await Promise.all([
     listExperience(p.userId),
-    db
-      .select({ n: sql<number>`count(*)::int` })
-      .from(friendships)
-      .where(and(eq(friendships.status, "accepted"), sql`${p.userId} in (${friendships.userLow}, ${friendships.userHigh})`)),
+    db.select({ n: sql<number>`count(*)::int` }).from(friendships).where(accepted),
+    showFriends
+      ? db
+          .select({ userId: profiles.userId, handle: profiles.handle, displayName: profiles.displayName, avatarHue: profiles.avatarHue })
+          .from(friendships)
+          .innerJoin(profiles, sql`${profiles.userId} = case when ${friendships.userLow} = ${p.userId} then ${friendships.userHigh} else ${friendships.userLow} end`)
+          .where(accepted)
+          .orderBy(desc(friendships.acceptedAt))
+          .limit(12)
+      : Promise.resolve([]),
+    commentAudience === "private" ? Promise.resolve(null) : listProfileComments(viewer, p.userId, opts.allComments ? 200 : 10),
   ]);
   // Pinned theses keep the order they were pinned in, and only ones this viewer may read appear.
   const featured = p.featuredThesisIds.map((id) => visibleTheses.find((t) => t.id === id)).filter((t) => !!t);
@@ -329,13 +320,15 @@ export async function getProfileView(viewer: Viewer, handle: string) {
     featured,
     experience,
     friendCount: friendCount?.n ?? 0,
+    friends: friends.filter((f) => !viewer.blockedIds.has(f.userId)),
     access,
-    allocation,
-    holdings,
     relics,
     guilds: guildRows.filter((g) => g.visibility === "discoverable" || viewer.guildIds.has(g.id) || isOwner),
     theses: visibleTheses,
     relationship,
+    commentAudience,
+    canComment: canCommentOnProfile(viewer, p.userId, commentAudience),
+    comments,
   };
 }
 
