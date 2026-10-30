@@ -165,6 +165,18 @@ describe("connecting a broker", () => {
     expect(await startBrokerConnection(first.id, "http://x/back", conn.id)).toContain("fix=auth-1");
   });
 
+  it("never signs anyone up at the provider when Portle can't store their secret", async () => {
+    const u = await createTestUser(db, "BadKey");
+    const key = process.env.PORTLE_ENCRYPTION_KEY;
+    process.env.PORTLE_ENCRYPTION_KEY = "too-short";
+    try {
+      await expect(startBrokerConnection(u.id, "http://x/back")).rejects.toThrow(/isn't set up correctly/);
+      expect(broker.registered).toEqual([]);
+    } finally {
+      process.env.PORTLE_ENCRYPTION_KEY = key;
+    }
+  });
+
   it("explains a refused new link instead of asking the member to sign in again", async () => {
     const u = await createTestUser(db, "Refused");
     broker.connectError = 403;

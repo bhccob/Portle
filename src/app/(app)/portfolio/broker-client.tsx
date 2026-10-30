@@ -34,8 +34,6 @@ const PROMISES = [
   { icon: Unlink, title: "Disconnect any time", text: "In Settings → Connections. What was synced can stay or go." },
 ];
 
-const BROKERS = ["DEGIRO", "Interactive Brokers", "Trading 212 · holdings only"];
-
 /** Opens the broker's sign-in page through SnapTrade. With `reconnectId`, repairs a connection the broker signed out. */
 export function useConnect(reconnectId?: string) {
   const [pending, start] = useTransition();
@@ -50,7 +48,7 @@ export function useConnect(reconnectId?: string) {
   return { connect, pending, error };
 }
 
-/** "Connect your broker": three promises, which brokers work, then SnapTrade's page. Without full access, the ask instead. */
+/** "Connect your broker": three promises, then SnapTrade's page. Without full access, the ask instead. */
 export function ConnectBrokerSheet({
   configured,
   full = false,
@@ -94,16 +92,6 @@ export function ConnectBrokerSheet({
             </span>
           </li>
         ))}
-      </ul>
-      <p className="mt-3 mb-2 text-[0.8125rem] text-fg-subtle">Works with</p>
-      <ul className="flex flex-wrap gap-2">
-        {BROKERS.map((b) => (
-          <li key={b} className="inline-flex h-8 items-center gap-2 rounded-full bg-field pr-3 pl-1 text-[0.8125rem] text-fg">
-            <BrokerTile name={b} className="size-6 rounded-[8px] text-[0.6875rem]" />
-            {b}
-          </li>
-        ))}
-        <li className="inline-flex h-8 items-center rounded-full bg-field px-3 text-[0.8125rem] text-fg-muted">and more</li>
       </ul>
       {configured && !full ? (
         <div className="mt-5">

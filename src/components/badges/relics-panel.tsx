@@ -275,7 +275,7 @@ export function RelicRow({
     <>
       {/* One see-through pill around the row, so the Relics read as a set. */}
       <ul
-        className="mt-3 flex w-fit max-w-full flex-wrap items-center gap-1 rounded-[12px] bg-[color-mix(in_srgb,var(--fg)_5%,transparent)] p-1 shadow-[inset_0_0_0_1px_var(--line)] backdrop-blur-sm"
+        className="mt-3 flex w-fit max-w-full flex-wrap items-center gap-[3px] rounded-[10px] bg-[color-mix(in_srgb,var(--fg)_5%,transparent)] p-[3px] shadow-[inset_0_0_0_1px_var(--line)] backdrop-blur-sm"
         aria-label="Relics"
       >
         {relics.slice(0, limit).map((r) => (
@@ -299,18 +299,22 @@ export function RelicRow({
                 onClick={() => show(r.key)}
                 aria-label={`${r.name}, ${r.levelName}. ${nextStep(r)}`}
                 className={cn(
-                  "rounded-[7px] transition-transform duration-[var(--dur-fast)] hover:-translate-y-px focus-visible:outline-2 focus-visible:outline-[var(--focus)]",
+                  "block rounded-[7px] transition-transform duration-[var(--dur-fast)] hover:-translate-y-px focus-visible:outline-2 focus-visible:outline-[var(--focus)]",
                   mine && !r.displayed && "opacity-40",
                 )}
               >
-                <BadgeIcon badgeKey={r.key} level={r.level} size="sm" label="" />
+                <BadgeIcon badgeKey={r.key} level={r.level} size="sm" label="" className="block" />
               </button>
             </Tip>
           </li>
         ))}
         {relics.length > limit ? (
           <li>
-            <button type="button" onClick={() => show(relics[limit].key)} className="pl-1 font-display text-xs font-semibold text-fg-subtle hover:text-fg">
+            <button
+              type="button"
+              onClick={() => show(relics[limit].key)}
+              className="block px-1.5 font-display text-xs font-semibold text-fg-subtle hover:text-fg"
+            >
               +{relics.length - limit}
             </button>
           </li>

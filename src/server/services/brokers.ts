@@ -5,7 +5,7 @@ import { reconcileHoldings } from "@/domain/broker-sync";
 import { isCurrency } from "@/domain/money";
 import { getBrokerProvider, NotConfiguredError, type BrokerAccount, type BrokerSecurity, type BrokerUser } from "@/integrations/brokers";
 import { audit } from "../audit";
-import { decryptSecret, encryptSecret } from "../crypto";
+import { decryptSecret, encryptionReady, encryptSecret } from "../crypto";
 import { getDb } from "../db";
 import { accounts, brokerConnections, brokerUsers, instruments, transactions } from "../db/schema";
 import { notFound, UserFacingError } from "../errors";
@@ -28,6 +28,7 @@ const FULL =
 const MAYBE_FULL =
   "SnapTrade couldn't open a new connection. During early access Portle can link only a few brokers, so the spots may be taken. A CSV export from your broker works just as well.";
 const START_FAILED = "SnapTrade didn't answer just now. Try again in a minute, or import a CSV instead.";
+const SETUP = "Broker linking isn't set up correctly on this Portle yet, so nothing was sent to SnapTrade. A CSV export from your broker works in the meantime.";
 const FIRST_HISTORY_YEARS = 5;
 const OVERLAP_DAYS = 30;
 
@@ -87,6 +88,11 @@ async function brokerUser(userId: string, create: boolean) {
     .where(and(eq(brokerUsers.userId, userId), eq(brokerUsers.provider, provider.id)));
   if (row) return { userId: row.externalUserId, userSecret: decryptSecret(row.encryptedSecret) };
   if (!create) return null;
+  // Check the secret can be stored before signing anyone up at the provider, so a bad key leaves nothing behind.
+  if (!encryptionReady()) {
+    console.error("[brokers] PORTLE_ENCRYPTION_KEY is missing or doesn't decode to 32 bytes; broker linking is off until it's fixed.");
+    throw new UserFacingError(SETUP);
+  }
   // A random reference, so the provider never learns who the member is.
   const created = await provider.registerUser(`portle-${randomUUID()}`);
   await db.insert(brokerUsers).values({ userId, provider: provider.id, externalUserId: created.userId, encryptedSecret: encryptSecret(created.userSecret) });

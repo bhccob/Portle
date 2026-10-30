@@ -13,6 +13,16 @@ function key(): Buffer {
   return buf;
 }
 
+/** True when PORTLE_ENCRYPTION_KEY is set and the right length, so secrets can be stored. */
+export function encryptionReady() {
+  try {
+    key();
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 export function encryptSecret(plaintext: string): string {
   const iv = randomBytes(12);
   const cipher = createCipheriv("aes-256-gcm", key(), iv);
