@@ -1,4 +1,4 @@
-import { Bell, ChartLine, ChartPie, FlaskConical, Gem, House, Library, MessagesSquare, NotebookPen, ScrollText, Settings, Users, Wallet } from "lucide-react";
+import { Bell, ChartLine, ChartPie, FlaskConical, Gem, House, Library, MessagesSquare, NotebookPen, Receipt, ScrollText, Settings, Users, Wallet } from "lucide-react";
 
 export type NavItem = { href: string; label: string; icon: typeof Wallet; practice?: boolean };
 
@@ -15,6 +15,7 @@ export const PRIMARY_NAV: NavItem[] = [
 export const MORE_NAV: NavItem[] = [
   { href: "/markets", label: "Markets", icon: ChartLine },
   { href: "/journal", label: "Journal", icon: NotebookPen },
+  { href: "/spending", label: "Spending", icon: Receipt },
   { href: "/archives", label: "Archives", icon: Library },
   { href: "/guilds", label: "Guilds", icon: Users },
   { href: "/relics", label: "Relics", icon: Gem },

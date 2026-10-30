@@ -4,7 +4,8 @@ import { Badge } from "@/components/ui/badge";
 import { Button, ButtonLink } from "@/components/ui/button";
 import { Panel } from "@/components/ui/panel";
 import { formatDate, relativeTime } from "@/lib/format";
-import { brokerStatus, listBrokerConnections } from "@/server/services/brokers";
+import { accessInfo } from "@/server/services/access";
+import { brokerSpotsFull, brokerStatus, listBrokerConnections } from "@/server/services/brokers";
 import { requireMember } from "@/server/session";
 import { BrokerTile, ConnectBrokerSheet, ConnectionActions } from "../../portfolio/broker-client";
 
@@ -13,6 +14,8 @@ export const metadata = { title: "Connections" };
 export default async function ConnectionsPage() {
   const { user } = await requireMember();
   const status = brokerStatus();
+  const full = status.configured && (await brokerSpotsFull());
+  const access = await accessInfo(user.id);
   const connections = await listBrokerConnections(user.id);
   return (
     <div className="space-y-8">
@@ -53,6 +56,8 @@ export default async function ConnectionsPage() {
         {status.configured ? (
           <ConnectBrokerSheet
             configured
+            full={full}
+            access={access}
             trigger={
               <Button variant="secondary" className="mt-5">
                 <Plus className="size-4" aria-hidden /> {connections.length ? "Connect another broker" : "Connect a broker"}

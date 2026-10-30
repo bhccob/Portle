@@ -1,5 +1,6 @@
 import Link from "next/link";
-import { CalendarClock, Search, Star } from "lucide-react";
+import { CalendarClock, Lock, Search, Star } from "lucide-react";
+import { AccessBand } from "@/components/access/access-client";
 import { Sparkline } from "@/components/charts/line-chart";
 import { SourceBadge } from "@/components/ui/badge";
 import { Change } from "@/components/ui/finance";
@@ -7,6 +8,7 @@ import { PageHeader, Panel } from "@/components/ui/panel";
 import { EmptyState } from "@/components/ui/states";
 import { d } from "@/domain/money";
 import { formatMoney, formatNumber } from "@/lib/format";
+import { accessInfo } from "@/server/services/access";
 import { ensureDefaultWatchlist, getIndices, getPrices, listWatchlists, marketStatus, searchInstruments } from "@/server/services/market";
 import { requireMember } from "@/server/session";
 import { NewWatchlistForm, RemoveWatchItem } from "./market-controls";
@@ -17,9 +19,10 @@ export default async function MarketsPage({ searchParams }: { searchParams: Prom
   const { q = "" } = await searchParams;
   const { user } = await requireMember();
   await ensureDefaultWatchlist(user.id);
-  const [indices, lists, universe] = await Promise.all([getIndices(92), listWatchlists(user.id), searchInstruments(q, q ? 30 : 60)]);
+  const [indices, lists, universe] = await Promise.all([getIndices({ userId: user.id }, 92), listWatchlists(user.id), searchInstruments(q, q ? 30 : 60)]);
   const status = marketStatus();
-  const prices = await getPrices([...universe, ...lists.flatMap((l) => l.items.map((i) => i.instrument))]);
+  const access = await accessInfo(user.id);
+  const prices = await getPrices([...universe, ...lists.flatMap((l) => l.items.map((i) => i.instrument))], { userId: user.id });
   const pct = (id: string) => {
     const p = prices.get(id);
     return p?.previousClose && Number(p.previousClose) ? d(p.price).minus(p.previousClose).div(p.previousClose) : null;
@@ -37,12 +40,17 @@ export default async function MarketsPage({ searchParams }: { searchParams: Prom
 
   return (
     <>
-      <PageHeader title="Markets" description="Indices, sectors and the securities you're studying." actions={<SourceBadge kind={status.isDemo ? "demo" : "delayed"} detail={status.isDemo ? "Demo market data · synthetic" : status.label} />} />
-      {status.isDemo ? (
+      <PageHeader
+        title="Markets"
+        description="Indices, sectors and the securities you're studying."
+        actions={access.full ? <SourceBadge kind={status.isDemo ? "demo" : "delayed"} detail={status.isDemo ? "Demo market data · synthetic" : status.label} /> : null}
+      />
+      {!access.full ? <AccessBand access={access} className="mb-6" /> : null}
+      {access.full && status.isDemo ? (
         <p className="-mt-3 mb-6 max-w-[72ch] text-xs text-fg-subtle">{status.note} Configure a licensed provider (see .env.example) for real quotes.</p>
       ) : null}
 
-      <section aria-labelledby="indices-title" className="mb-6">
+      <section aria-labelledby="indices-title" className={indices.length ? "mb-6" : "hidden"}>
         <h2 id="indices-title" className="sr-only">
           Major indices
         </h2>
@@ -96,7 +104,16 @@ export default async function MarketsPage({ searchParams }: { searchParams: Prom
                         <span className="block truncate text-xs text-fg-muted">{i.name}</span>
                       </span>
                       <span className="shrink-0 text-right">
-                        <span className="num block text-sm text-fg">{p ? formatMoney(p.price, p.currency) : <span className="text-fg-subtle">No price</span>}</span>
+                        <span className="num block text-sm text-fg">
+                          {p ? (
+                            formatMoney(p.price, p.currency)
+                          ) : (
+                            <span className="inline-flex items-center gap-1 text-fg-subtle">
+                              {access.full ? null : <Lock className="size-3.5" aria-hidden />}
+                              No price
+                            </span>
+                          )}
+                        </span>
                         <Change percent={pct(i.id)} />
                       </span>
                     </Link>
@@ -142,7 +159,7 @@ export default async function MarketsPage({ searchParams }: { searchParams: Prom
 
           <Panel title="Sectors today" description="Average move of listed stocks in each sector">
             {sectors.size === 0 ? (
-              <p className="text-sm text-fg-muted">No sector data.</p>
+              <p className="text-sm text-fg-muted">{access.full ? "No sector data." : "Sector moves need real prices, which come with full access."}</p>
             ) : (
               <ul className="space-y-2">
                 {[...sectors.entries()]

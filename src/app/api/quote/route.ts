@@ -9,6 +9,7 @@ export async function GET(req: Request) {
   if (!/^[0-9a-f-]{36}$/i.test(id)) return NextResponse.json({ error: "invalid id" }, { status: 400 });
   const inst = await getInstrument(id);
   if (!inst) return NextResponse.json({ error: "not found" }, { status: 404 });
-  const p = (await getPrices([inst])).get(inst.id) ?? null;
+  // Order tickets are Practice only, so they get pretend prices.
+  const p = (await getPrices([inst], "practice")).get(inst.id) ?? null;
   return NextResponse.json({ quote: p }, { headers: { "Cache-Control": "private, no-store" } });
 }

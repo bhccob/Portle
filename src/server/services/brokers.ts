@@ -10,6 +10,7 @@ import { getDb } from "../db";
 import { accounts, brokerConnections, brokerUsers, instruments, transactions } from "../db/schema";
 import { notFound, UserFacingError } from "../errors";
 import { assertRateLimit } from "../rate-limit";
+import { assertFullAccess, hasFullAccess } from "./access";
 import { ensurePortfolio, ledgerRows } from "./portfolio";
 
 /**
@@ -22,6 +23,11 @@ import { ensurePortfolio, ledgerRows } from "./portfolio";
 
 const RECONNECT = "Your broker signed Portle out. Reconnect to keep it up to date.";
 const UNREACHABLE = "Your broker didn't answer just now. Portle will try again later.";
+const FULL =
+  "During early access Portle can link only a few brokers, and those spots are taken right now. Until one frees up, a CSV export from your broker works just as well.";
+const MAYBE_FULL =
+  "SnapTrade couldn't open a new connection. During early access Portle can link only a few brokers, so the spots may be taken. A CSV export from your broker works just as well.";
+const START_FAILED = "SnapTrade didn't answer just now. Try again in a minute, or import a CSV instead.";
 const FIRST_HISTORY_YEARS = 5;
 const OVERLAP_DAYS = 30;
 
@@ -32,20 +38,41 @@ export function brokerStatus() {
   return getBrokerProvider().status();
 }
 
-/** Plain words for whatever went wrong talking to the provider. Details are logged by name only. */
-function describe(e: unknown) {
-  if (e instanceof NotConfiguredError || e instanceof UserFacingError) return e.message;
-  const status = (e as { status?: number })?.status;
-  if (status === 401 || status === 402 || status === 403) return RECONNECT;
+function logProviderError(e: unknown) {
   // The SDK redacts ids and secrets from the URL; the body is the provider's own error message.
-  const { method, url, responseBody } = (e ?? {}) as { method?: string; url?: string; responseBody?: unknown };
+  const { status, method, url, responseBody } = (e ?? {}) as { status?: number; method?: string; url?: string; responseBody?: unknown };
   console.error(
     "[brokers] provider call failed:",
     e instanceof Error
       ? `${e.name} ${status ?? ""} ${method ?? ""} ${url?.split("?")[0] ?? ""} ${JSON.stringify(responseBody ?? e.message).slice(0, 300)}`
       : "unknown",
   );
+}
+
+/** Plain words for whatever went wrong talking to the provider. */
+function describe(e: unknown) {
+  if (e instanceof NotConfiguredError || e instanceof UserFacingError) return e.message;
+  const status = (e as { status?: number })?.status;
+  if (status === 401 || status === 402 || status === 403) return RECONNECT;
+  logProviderError(e);
   return UNREACHABLE;
+}
+
+/** Free broker links left on the provider's plan, across every member; null when the plan has no cap. */
+export async function brokerSpotsLeft() {
+  const provider = getBrokerProvider();
+  const limit = provider.status().connectionLimit;
+  if (!limit) return null;
+  const [row] = await getDb()
+    .select({ n: sql<number>`count(*)::int` })
+    .from(brokerConnections)
+    .where(and(eq(brokerConnections.provider, provider.id), ne(brokerConnections.status, "disconnected")));
+  return Math.max(0, limit - (row?.n ?? 0));
+}
+
+/** True when this Portle already holds as many broker links as the provider's plan allows. */
+export async function brokerSpotsFull() {
+  return (await brokerSpotsLeft()) === 0;
 }
 
 /** The member's identity at the provider, created the first time they connect. */
@@ -78,12 +105,19 @@ async function ownedConnection(userId: string, connectionId: string) {
 
 /** The provider's sign-in page, to link a new broker or repair one that was signed out. */
 export async function startBrokerConnection(userId: string, returnUrl: string, reconnectConnectionId?: string) {
+  await assertFullAccess(userId, "Linking a broker");
   assertRateLimit(`broker-connect:${userId}`, 10, 3600_000);
   const reconnect = reconnectConnectionId ? ((await ownedConnection(userId, reconnectConnectionId)).externalId ?? undefined) : undefined;
+  // Repairing a link doesn't take a new spot.
+  if (!reconnect && (await brokerSpotsFull())) throw new UserFacingError(FULL);
   try {
     return await getBrokerProvider().connectUrl(await brokerUser(userId, true), returnUrl, reconnect);
   } catch (e) {
-    throw new UserFacingError(describe(e));
+    if (reconnect || e instanceof NotConfiguredError || e instanceof UserFacingError) throw new UserFacingError(describe(e));
+    // A new link has no broker session to lose, so a refusal here most likely means the plan's spots are taken.
+    logProviderError(e);
+    const status = (e as { status?: number })?.status ?? 0;
+    throw new UserFacingError([400, 402, 403].includes(status) ? MAYBE_FULL : START_FAILED);
   }
 }
 
@@ -292,6 +326,7 @@ export async function syncBrokerConnection(userId: string, connectionId: string)
   const conn = await ownedConnection(userId, connectionId);
   const user = await brokerUser(userId, false);
   if (!user || conn.status === "disconnected") return { ok: false, error: "This broker is no longer connected." };
+  if (!(await hasFullAccess(userId))) return { ok: false, error: "Syncing a broker is part of full access." };
   const db = getDb();
   const linked = await db
     .select({ id: accounts.id, externalId: accounts.externalId, institution: accounts.institution })
@@ -313,6 +348,7 @@ export async function syncBrokerConnection(userId: string, connectionId: string)
 
 /** Syncs every linked broker last synced more than `hours` ago. Used quietly when the member opens Portfolio. */
 export async function syncStaleBrokerConnections(userId: string, hours = 6) {
+  if (!(await hasFullAccess(userId))) return 0;
   const cutoff = new Date(Date.now() - hours * 3600_000);
   const due = (await listBrokerConnections(userId)).filter((c) => c.status === "active" && c.accounts > 0 && (!c.lastSyncAt || c.lastSyncAt < cutoff));
   for (const c of due) await syncBrokerConnection(userId, c.id);

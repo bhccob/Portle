@@ -136,3 +136,27 @@ export const userBlocks = pgTable(
   },
   (t) => [primaryKey({ columns: [t.blockerId, t.blockedId] }), index().on(t.blockedId)],
 );
+
+export const accessStatus = pgEnum("access_status", ["requested", "granted", "declined"]);
+
+/**
+ * Full access: real prices and broker linking, the two things that cost Portle money per person.
+ * The owner (OWNER_EMAILS) lets members in; a subscription can later set the same row.
+ */
+export const fullAccess = pgTable("full_access", {
+  userId: text()
+    .primaryKey()
+    .references(() => user.id, { onDelete: "cascade" }),
+  status: accessStatus().notNull(),
+  /** What the member wrote to the owner when asking. */
+  note: text().notNull().default(""),
+  requestedAt: ts(),
+  decidedAt: ts(),
+  createdAt: ts().notNull().defaultNow(),
+});
+
+/** Emails the owner let in before they had an account. Turned into full access on first use, then removed. */
+export const accessInvites = pgTable("access_invites", {
+  email: text().primaryKey(),
+  createdAt: ts().notNull().defaultNow(),
+});

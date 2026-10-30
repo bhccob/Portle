@@ -13,6 +13,7 @@ export type NotificationKind =
   | "relic"
   | "paper_fill"
   | "thesis_review"
+  | "access"
   | "system";
 
 export async function notify(

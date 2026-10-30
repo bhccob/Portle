@@ -60,7 +60,7 @@ export default async function HomePage() {
   const base = val.portfolio.baseCurrency;
   const v = val.valuation;
   const watchItems = lists.flatMap((l) => l.items.map((i) => i.instrument));
-  const prices = await getPrices(watchItems);
+  const prices = await getPrices(watchItems, { userId: user.id });
   const movers = watchItems
     .map((i) => {
       const p = prices.get(i.id);
@@ -107,21 +107,44 @@ export default async function HomePage() {
           {/* Real money comes first, with its ring. */}
           <section aria-labelledby="real-title">
             {v.holdings.length ? (
-              <Link href="/portfolio" className="group flex items-center gap-5">
-                <Ring slices={holdingSlices(v.holdings)} label="Your mix" size={120} thickness={16} />
-                <span className="min-w-0">
-                  <span id="real-title" className="flex items-center gap-1.5 font-display text-[0.8125rem] font-semibold text-fg-subtle">
-                    <Lock className="size-3.5" aria-hidden /> My real portfolio
+              val.access.full ? (
+                <Link href="/portfolio" className="group flex items-center gap-5">
+                  <Ring slices={holdingSlices(v.holdings)} label="Your mix" size={120} thickness={16} />
+                  <span className="min-w-0">
+                    <span id="real-title" className="flex items-center gap-1.5 font-display text-[0.8125rem] font-semibold text-fg-subtle">
+                      <Lock className="size-3.5" aria-hidden /> My real portfolio
+                    </span>
+                    <span className="num mt-1 block font-display text-[2.125rem] leading-none font-bold tracking-[-0.02em] text-fg group-hover:underline">
+                      {formatMoney(v.totals.marketValue, base)}
+                    </span>
+                    <span className="mt-2 block text-sm">
+                      <Change value={v.totals.dayChange} percent={v.totals.dayChangePct} currency={base} /> <span className="text-fg-subtle">today</span>
+                    </span>
+                    {v.usesDemoPrices ? <SourceBadge kind="demo" className="mt-2.5" detail="Demo prices" /> : null}
                   </span>
-                  <span className="num mt-1 block font-display text-[2.125rem] leading-none font-bold tracking-[-0.02em] text-fg group-hover:underline">
-                    {formatMoney(v.totals.marketValue, base)}
+                </Link>
+              ) : (
+                // Without real prices: what was paid, never a made-up value.
+                <Link href="/portfolio" className="group flex items-center gap-5">
+                  <Ring
+                    slices={val.paid.rows.map((r) => ({ label: r.holding.instrument.symbol, percent: Number(r.share ?? 0) }))}
+                    label="Your mix by what you paid"
+                    size={120}
+                    thickness={16}
+                  />
+                  <span className="min-w-0">
+                    <span id="real-title" className="flex items-center gap-1.5 font-display text-[0.8125rem] font-semibold text-fg-subtle">
+                      <Lock className="size-3.5" aria-hidden /> What you put in
+                    </span>
+                    <span className="num mt-1 block font-display text-[2.125rem] leading-none font-bold tracking-[-0.02em] text-fg group-hover:underline">
+                      {formatMoney(val.paid.total, base)}
+                    </span>
+                    <span className="mt-2 block text-sm text-fg-subtle">
+                      {val.access.status === "requested" ? "Real prices: access requested" : "Real prices come with full access"}
+                    </span>
                   </span>
-                  <span className="mt-2 block text-sm">
-                    <Change value={v.totals.dayChange} percent={v.totals.dayChangePct} currency={base} /> <span className="text-fg-subtle">today</span>
-                  </span>
-                  {v.usesDemoPrices ? <SourceBadge kind="demo" className="mt-2.5" detail="Demo prices" /> : null}
-                </span>
-              </Link>
+                </Link>
+              )
             ) : (
               <div>
                 <h2 id="real-title" className="flex items-center gap-1.5 font-display text-[1.1875rem] font-bold text-fg">

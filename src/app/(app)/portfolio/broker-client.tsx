@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useActionState, useState, useTransition } from "react";
 import { ChevronRight, ExternalLink, Eye, FileUp, Info, Lock, PenLine, PlugZap, RefreshCw, Unlink } from "lucide-react";
 import { toast } from "sonner";
+import { AccessRequest, type AccessInfo } from "@/components/access/access-client";
 import { Button, ButtonLink } from "@/components/ui/button";
 import { Dialog } from "@/components/ui/overlay";
 import { Callout } from "@/components/ui/states";
@@ -49,9 +50,32 @@ export function useConnect(reconnectId?: string) {
   return { connect, pending, error };
 }
 
-/** "Connect your broker": three promises, which brokers work, then SnapTrade's page. */
-export function ConnectBrokerSheet({ configured, trigger }: { configured: boolean; trigger: React.ReactNode }) {
+/** "Connect your broker": three promises, which brokers work, then SnapTrade's page. Without full access, the ask instead. */
+export function ConnectBrokerSheet({
+  configured,
+  full = false,
+  access,
+  trigger,
+}: {
+  configured: boolean;
+  full?: boolean;
+  access: AccessInfo;
+  trigger: React.ReactNode;
+}) {
   const { connect, pending, error } = useConnect();
+  if (configured && !access.full)
+    return (
+      <Dialog
+        title="Connect your broker"
+        description={`Broker linking is part of full access, which ${access.ownerName === "the owner" ? "the owner turns" : `${access.ownerName} turns`} on for each person.`}
+        trigger={trigger}
+      >
+        <AccessRequest access={access} />
+        <ButtonLink href="/portfolio/import" variant="secondary" className="mt-3 w-full">
+          <FileUp className="size-4" aria-hidden /> Import a CSV instead
+        </ButtonLink>
+      </Dialog>
+    );
   return (
     <Dialog
       title="Connect your broker"
@@ -81,7 +105,7 @@ export function ConnectBrokerSheet({ configured, trigger }: { configured: boolea
         ))}
         <li className="inline-flex h-8 items-center rounded-full bg-field px-3 text-[0.8125rem] text-fg-muted">and more</li>
       </ul>
-      {configured ? (
+      {configured && !full ? (
         <div className="mt-5">
           {error ? (
             <Callout tone="negative" className="mb-3">
@@ -96,7 +120,9 @@ export function ConnectBrokerSheet({ configured, trigger }: { configured: boolea
       ) : (
         <div className="mt-5">
           <Callout tone="neutral" icon={Info}>
-            Connecting a broker isn&apos;t switched on yet. Until it is, a CSV export from your broker works just as well.
+            {configured
+              ? "During early access Portle can link only a few brokers, and those spots are taken right now. Until one frees up, a CSV export from your broker works just as well."
+              : "Connecting a broker isn't switched on yet. Until it is, a CSV export from your broker works just as well."}
           </Callout>
           <ButtonLink href="/portfolio/import" variant="secondary" className="mt-3 w-full">
             <FileUp className="size-4" aria-hidden /> Import a CSV instead
@@ -111,7 +137,7 @@ const row = "group flex w-full items-start gap-3.5 border-t border-line py-4 tex
 const rowIcon = "grid size-11 shrink-0 place-items-center rounded-[14px] bg-field text-fg [&_svg]:size-[22px]";
 
 /** The three ways to add what you own, when Portfolio is empty. */
-export function AddWays({ configured }: { configured: boolean }) {
+export function AddWays({ configured, full = false, access }: { configured: boolean; full?: boolean; access: AccessInfo }) {
   const [typing, setTyping] = useState(false);
   return (
     <div className="mx-auto max-w-[560px]">
@@ -119,6 +145,8 @@ export function AddWays({ configured }: { configured: boolean }) {
         <li className={row}>
           <ConnectBrokerSheet
             configured={configured}
+            full={full}
+            access={access}
             trigger={
               <button type="button" className="flex w-full items-start gap-3.5 text-left">
                 <span className={cn(rowIcon, "bg-selected text-accent")}>

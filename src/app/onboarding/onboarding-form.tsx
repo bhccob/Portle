@@ -2,58 +2,13 @@
 
 import Link from "next/link";
 import { useActionState, useEffect, useRef, useState } from "react";
-import {
-  Activity,
-  Banknote,
-  Bitcoin,
-  BookOpen,
-  ChartPie,
-  Check,
-  ChevronLeft,
-  Coins,
-  Cpu,
-  Eye,
-  Globe,
-  HeartPulse,
-  House,
-  Layers,
-  Lock,
-  Newspaper,
-  PenLine,
-  Scale,
-  Shield,
-  ShoppingBag,
-  Sprout,
-  TrendingUp,
-  Zap,
-} from "lucide-react";
+import { Check, ChevronLeft, Eye, Lock, PenLine } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { controlClass, Select } from "@/components/ui/field";
+import { controlClass, MultiSelect, Select } from "@/components/ui/field";
 import { Callout } from "@/components/ui/states";
 import { EXPERIENCE, EXPERIENCE_LABEL, TOPIC_GROUPS, topicLabel, type Interest } from "@/domain/topics";
 import { cn } from "@/lib/cn";
 import { checkHandleAction, onboardAction, type HandleCheck } from "./actions";
-
-const ICON: Record<Interest, typeof Lock> = {
-  "Learning the basics": BookOpen,
-  "Long-term investing": Sprout,
-  "Index funds": ChartPie,
-  ETFs: Layers,
-  Dividends: Coins,
-  "Growth stocks": TrendingUp,
-  "Value investing": Scale,
-  Bonds: Shield,
-  Technology: Cpu,
-  Healthcare: HeartPulse,
-  Energy: Zap,
-  Financials: Banknote,
-  Consumer: ShoppingBag,
-  "Real estate": House,
-  "Market news": Newspaper,
-  Macro: Activity,
-  "Emerging markets": Globe,
-  Crypto: Bitcoin,
-};
 
 const PROMISES = [
   { icon: Lock, title: "Your amounts stay yours", text: "Values, quantities and trades are only ever shown to you." },
@@ -153,12 +108,6 @@ export function OnboardingForm({ name: initialName, currencies }: { name: string
     if (step < STEPS - 1) go(step + 1);
   };
 
-  const toggle = (topic: Interest) =>
-    setPicked((prev) => {
-      const s = new Set(prev);
-      if (!s.delete(topic)) s.add(topic);
-      return s;
-    });
 
   return (
     <form
@@ -296,34 +245,18 @@ export function OnboardingForm({ name: initialName, currencies }: { name: string
           What are you into?
         </h1>
         <p className={subClass}>Pick a few. Portle suggests Guilds around them.</p>
-        {TOPIC_GROUPS.map((g) => (
-          <fieldset key={g.title} className="mt-6">
-            <legend className="mb-2.5 font-display text-[0.9375rem] font-bold text-fg">{g.title}</legend>
-            <div className="grid grid-cols-2 gap-2">
-              {g.topics.map((topic) => {
-                const Icon = ICON[topic];
-                return (
-                  <label
-                    key={topic}
-                    className={cn(
-                      "group relative flex min-h-11 cursor-pointer items-center gap-2.5 rounded-[14px] bg-field px-3 py-2 text-sm leading-tight font-medium text-fg select-none",
-                      "transition-[background-color,box-shadow] duration-[var(--dur-fast)] hover:bg-field-hover",
-                      "has-[:checked]:bg-selected has-[:checked]:font-semibold has-[:checked]:text-accent has-[:checked]:shadow-[inset_0_0_0_1.5px_var(--primary)]",
-                      "has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-[var(--focus)]",
-                    )}
-                  >
-                    <input type="checkbox" name="interests" value={topic} checked={picked.has(topic)} onChange={() => toggle(topic)} className="sr-only" />
-                    <Icon className="size-[18px] shrink-0 text-fg-subtle group-has-[:checked]:text-primary" aria-hidden />
-                    <span className="min-w-0 flex-1">{topicLabel(topic)}</span>
-                    <span className="hidden size-[18px] shrink-0 place-items-center rounded-full bg-primary text-primary-fg group-has-[:checked]:grid">
-                      <Check className="size-3" strokeWidth={3} aria-hidden />
-                    </span>
-                  </label>
-                );
-              })}
-            </div>
-          </fieldset>
-        ))}
+        <label htmlFor="ob-interests" className="sr-only">
+          Topics
+        </label>
+        <MultiSelect
+          id="ob-interests"
+          name="interests"
+          value={[...picked]}
+          onChange={(values) => setPicked(new Set(values as Interest[]))}
+          options={TOPIC_GROUPS.flatMap((g) => g.topics.map((topic) => ({ value: topic, label: topicLabel(topic), group: g.title })))}
+          placeholder="Pick topics"
+          className="mt-6 h-12 text-base"
+        />
       </section>
 
       <section className={cn("flex-col", step === 2 ? "flex" : "hidden")} aria-labelledby="ob-step-2">

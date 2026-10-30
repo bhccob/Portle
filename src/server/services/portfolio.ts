@@ -6,13 +6,25 @@ import { dedupeKey, normalizeRows, parseCsv, type ColumnMapping, type DateFormat
 import { buildValueSeries } from "@/domain/history";
 import { d, isCurrency } from "@/domain/money";
 import { timeWeightedReturn } from "@/domain/returns";
-import { valuePortfolio, type InstrumentInfo } from "@/domain/valuation";
+import { valuePortfolio, type InstrumentInfo, type PortfolioValuation } from "@/domain/valuation";
 import { getMarketDataProvider } from "@/integrations/market-data";
 import { audit } from "../audit";
 import { getDb } from "../db";
 import { accounts, importBatches, instruments, portfolios, transactions } from "../db/schema";
 import { notFound, UserFacingError } from "../errors";
-import { getFx, getPrices, rangeStart, type Range } from "./market";
+import { getAccess, hasFullAccess } from "./access";
+import { getBars, getFx, getPrices, rangeStart, type Range } from "./market";
+
+/** Holdings at what was paid for them, for members without real prices. Nothing here depends on a price. */
+function paidView(v: PortfolioValuation) {
+  const rows = v.holdings.filter((h) => h.costBasisBase?.gt(0)).map((h) => ({ holding: h, paid: h.costBasisBase! }));
+  const total = rows.reduce((s, r) => s.plus(r.paid), v.totals.cash.gt(0) ? v.totals.cash : d(0));
+  return {
+    total,
+    cash: v.totals.cash,
+    rows: rows.map((r) => ({ ...r, share: total.gt(0) ? r.paid.div(total) : null })).sort((a, b) => b.paid.cmp(a.paid)),
+  };
+}
 
 export async function ensurePortfolio(userId: string, baseCurrency = "EUR") {
   const db = getDb();
@@ -200,7 +212,7 @@ export async function getValuation(userId: string, opts: { accountId?: string } 
   const instIds = [...new Set(ledger.positions.map((p) => p.instrumentId))];
   const insts = await instrumentMap(instIds);
   const open = ledger.positions.filter((p) => p.quantity.gt(0)).map((p) => insts.get(p.instrumentId)!).filter(Boolean);
-  const [prices, fxCtx] = await Promise.all([getPrices(open), getFx()]);
+  const [prices, fxCtx] = await Promise.all([getPrices(open, { userId }), getFx()]);
   const valuation = valuePortfolio({
     positions: ledger.positions,
     cash: ledger.cash,
@@ -213,6 +225,8 @@ export async function getValuation(userId: string, opts: { accountId?: string } 
     portfolio,
     accounts: accountList,
     valuation,
+    access: await getAccess(userId),
+    paid: paidView(valuation),
     issues: ledger.issues,
     fx: { label: fxCtx.label, asOf: fxCtx.asOf, isDemo: fxCtx.isDemo },
     market: getMarketDataProvider().status(),
@@ -222,6 +236,7 @@ export async function getValuation(userId: string, opts: { accountId?: string } 
 
 /** Holdings-sleeve value series and time-weighted return over a range. */
 export async function getPerformance(userId: string, range: Range, opts: { accountId?: string } = {}) {
+  if (!(await hasFullAccess(userId))) return { available: false as const, reason: "Value over time needs real prices, which come with full access." };
   const portfolio = await ensurePortfolio(userId);
   const txns = await ledgerRows(userId, opts.accountId ? [opts.accountId] : undefined);
   const instIds = [...new Set(txns.map((t) => t.instrumentId).filter((x): x is string => !!x))];
@@ -233,10 +248,9 @@ export async function getPerformance(userId: string, range: Range, opts: { accou
   const histories = new Map<string, { date: string; close: string }[]>();
   await Promise.all(
     [...insts.values()].map(async (i) => {
-      if (!i.exchange) return;
       // Fetch a little earlier so the first day in range has a prior close to carry forward.
       const start = new Date(Date.parse(from) - 10 * 86400_000).toISOString().slice(0, 10);
-      histories.set(i.id, await provider.getHistory(i, start, to));
+      histories.set(i.id, await getBars(i, start, to));
     }),
   );
   const dates = [...new Set([...histories.values()].flatMap((h) => h.map((b) => b.date)))].filter((x) => x >= from).sort();

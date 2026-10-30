@@ -1,9 +1,9 @@
 "use client";
 
 import { useActionState, useState } from "react";
-import { CalendarClock, ChevronDown, Globe, Lock, Plus, ShieldAlert, Users, UsersRound, X } from "lucide-react";
+import { CalendarClock, ChevronDown, Lock, Plus, ShieldAlert, X } from "lucide-react";
 import { addMonths } from "@/domain/review";
-import { ChoiceChips, chipClass, HeadlineInput, Question, WriteArea } from "@/components/forms/compose";
+import { chipClass, HeadlineInput, Question, WriteArea } from "@/components/forms/compose";
 import { InstrumentPicker, type PickedInstrument } from "@/components/forms/instrument-picker";
 import { fieldError } from "@/components/forms/use-result";
 import { Button } from "@/components/ui/button";
@@ -180,33 +180,24 @@ export function ThesisForm({ draft, guilds, today }: { draft: ThesisDraft; guild
                 : "Portle reminds you on the day. Only you see the date."
             }
           >
-            <div role="group" aria-label="Look again in" className="flex flex-wrap gap-2">
+            <Select
+              aria-label="Look again in"
+              value={customDate ? "custom" : quickDays.includes(reviewOn) ? String(quickDays.indexOf(reviewOn)) : ""}
+              onChange={(ev) => {
+                const v = ev.target.value;
+                setCustomDate(v === "custom");
+                if (v !== "custom") setReviewOn(v === "" ? "" : quickDays[Number(v)]);
+              }}
+              className="h-11 max-w-72"
+            >
+              <option value="">No reminder</option>
               {QUICK_PICKS.map(([months, label], i) => (
-                <button
-                  key={months}
-                  type="button"
-                  aria-pressed={!customDate && reviewOn === quickDays[i]}
-                  onClick={() => {
-                    setCustomDate(false);
-                    setReviewOn(reviewOn === quickDays[i] && !customDate ? "" : quickDays[i]);
-                  }}
-                  className={chipClass}
-                >
-                  {label}
-                </button>
+                <option key={months} value={i}>
+                  In {label.toLowerCase()}
+                </option>
               ))}
-              <button
-                type="button"
-                aria-pressed={customDate}
-                onClick={() => {
-                  setCustomDate(!customDate);
-                  if (customDate) setReviewOn("");
-                }}
-                className={chipClass}
-              >
-                Pick a date
-              </button>
-            </div>
+              <option value="custom">Pick a date…</option>
+            </Select>
             {customDate ? (
               <Input
                 type="date"
@@ -355,48 +346,15 @@ export function ThesisForm({ draft, guilds, today }: { draft: ThesisDraft; guild
             </ul>
           ) : null}
 
-          <Question label="Who can read it" error={e("visibility")} hint="Your private notes on a thesis are never shared.">
-            <ChoiceChips
-              name="visibility"
-              label="Who can read it"
-              value={visibility}
-              onChange={setVisibility}
-              options={[
-                {
-                  value: "private",
-                  label: (
-                    <>
-                      <Lock aria-hidden /> Only me
-                    </>
-                  ),
-                },
-                {
-                  value: "friends",
-                  label: (
-                    <>
-                      <UsersRound aria-hidden /> Friends
-                    </>
-                  ),
-                },
-                {
-                  value: "guild",
-                  label: (
-                    <>
-                      <Users aria-hidden /> A Guild
-                    </>
-                  ),
-                  disabled: !guilds.length,
-                },
-                {
-                  value: "public",
-                  label: (
-                    <>
-                      <Globe aria-hidden /> Everyone
-                    </>
-                  ),
-                },
-              ]}
-            />
+          <Question label="Who can read it" htmlFor="thesis-visibility" error={e("visibility")} hint="Your private notes on a thesis are never shared.">
+            <Select id="thesis-visibility" name="visibility" value={visibility} onChange={(ev) => setVisibility(ev.target.value as Audience)} className="h-11 max-w-72">
+              <option value="private">Only me</option>
+              <option value="friends">Friends</option>
+              <option value="guild" disabled={!guilds.length}>
+                A Guild{guilds.length ? "" : " (join one first)"}
+              </option>
+              <option value="public">Everyone</option>
+            </Select>
             {visibility === "guild" ? (
               <Select name="guildId" aria-label="Which Guild" defaultValue={draft.guildId ?? guilds[0]?.id} className="mt-3 h-11 max-w-72">
                 {guilds.map((g) => (

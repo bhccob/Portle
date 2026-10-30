@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLeft, FlaskConical, ScrollText } from "lucide-react";
+import { AccessBand } from "@/components/access/access-client";
 import { LineChart } from "@/components/charts/line-chart";
 import { Badge, SourceBadge } from "@/components/ui/badge";
 import { ButtonLink } from "@/components/ui/button";
@@ -10,6 +11,7 @@ import { Callout, PrivateNote } from "@/components/ui/states";
 import { LinkTabs } from "@/components/ui/tabs";
 import { d } from "@/domain/money";
 import { formatDate, formatMoney, formatPercent, formatQuantity } from "@/lib/format";
+import { accessInfo } from "@/server/services/access";
 import { getHistory, getInstrument, getPrices, listWatchlists, type Range } from "@/server/services/market";
 import { getValuation } from "@/server/services/portfolio";
 import { listOwnTheses, listSharedTheses } from "@/server/services/theses";
@@ -33,9 +35,10 @@ export default async function InstrumentPage({ params, searchParams }: { params:
   if (!inst) notFound();
   const range = (RANGES.includes(sp.range as Range) ? sp.range : "1Y") as Range;
 
-  const [prices, history, lists, valuation, mine, shared] = await Promise.all([
-    getPrices([inst]),
-    inst.exchange ? getHistory(inst, range) : Promise.resolve([]),
+  const [access, prices, history, lists, valuation, mine, shared] = await Promise.all([
+    accessInfo(user.id),
+    getPrices([inst], { userId: user.id }),
+    getHistory(inst, range, { userId: user.id }),
     listWatchlists(user.id),
     getValuation(user.id),
     listOwnTheses(user.id),
@@ -75,7 +78,7 @@ export default async function InstrumentPage({ params, searchParams }: { params:
         }
       />
 
-      {!inst.exchange ? (
+      {access.full && !inst.exchange && !price ? (
         <Callout tone="warning" title="No price source for this security" className="mb-5">
           It came from an import and doesn&apos;t match a listing we can price. It stays in your ledger but is excluded from totals.
         </Callout>
@@ -84,9 +87,10 @@ export default async function InstrumentPage({ params, searchParams }: { params:
       <div className="grid gap-5 xl:grid-cols-[1.6fr_1fr]">
         <Panel
           title="Price"
-          actions={price ? <SourceBadge kind={price.isDemo ? "demo" : price.delayMinutes ? "delayed" : "live"} asOf={price.asOf} detail={price.isDemo ? "Demo · synthetic" : `${price.source}${price.delayMinutes ? ` · ${price.delayMinutes} min delay` : ""}`} /> : null}
+          actions={price ? <SourceBadge kind={price.isDemo ? "demo" : price.delayMinutes ? "delayed" : "live"} asOf={price.asOf} detail={price.isDemo ? "Demo · synthetic" : `${price.source}${price.delayMinutes >= 1440 ? " · closing price" : price.delayMinutes ? ` · ${price.delayMinutes} min delay` : ""}`} /> : null}
         >
-          <div className="flex flex-wrap items-end justify-between gap-4">
+          {!access.full ? <AccessBand access={access} /> : null}
+          <div className={access.full ? "flex flex-wrap items-end justify-between gap-4" : "hidden"}>
             <div>
               <p className="num text-[2rem] leading-none font-semibold tracking-[-0.03em] text-fg">{price ? formatMoney(price.price, price.currency) : "No price"}</p>
               <p className="mt-2 text-sm">
@@ -95,7 +99,7 @@ export default async function InstrumentPage({ params, searchParams }: { params:
             </div>
             <LinkTabs label="Chart range" current={range} items={RANGES.map((r) => ({ value: r, label: r, href: `/markets/${inst.id}?range=${r}` }))} />
           </div>
-          <div className="mt-5">
+          <div className={access.full ? "mt-5" : "hidden"}>
             <LineChart points={history.map((h) => ({ date: h.date, value: Number(h.close) }))} mode="index" label={`${inst.symbol} closing price`} height={240} />
           </div>
           {history.length > 1 ? (

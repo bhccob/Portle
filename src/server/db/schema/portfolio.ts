@@ -169,6 +169,31 @@ export const quotes = pgTable("quotes", {
   fetchedAt: ts().notNull().defaultNow(),
 });
 
+/** Daily closes from a licensed provider, kept so charts don't spend the plan's requests twice. */
+export const priceBars = pgTable(
+  "price_bars",
+  {
+    instrumentId: uuid()
+      .notNull()
+      .references(() => instruments.id, { onDelete: "cascade" }),
+    date: date({ mode: "string" }).notNull(),
+    close: dec().notNull(),
+    source: text().notNull(),
+  },
+  (t) => [primaryKey({ columns: [t.instrumentId, t.date] })],
+);
+
+/** When Portle last asked the provider about a security, including asks that found nothing. */
+export const priceChecks = pgTable("price_checks", {
+  instrumentId: uuid()
+    .primaryKey()
+    .references(() => instruments.id, { onDelete: "cascade" }),
+  quoteCheckedAt: ts(),
+  /** The earliest day the cached closes in price_bars cover. */
+  historyFrom: date({ mode: "string" }),
+  historyCheckedAt: ts(),
+});
+
 export const fxRates = pgTable(
   "fx_rates",
   {

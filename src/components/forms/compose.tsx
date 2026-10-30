@@ -4,11 +4,11 @@ import { cn } from "@/lib/cn";
 
 /**
  * Pieces for writing screens (thesis, journal entry, Guild): the text sits on
- * the page with no box around it, questions are short labels, and choices are
- * soft pills instead of dropdowns.
+ * the page with no box around it and questions are short labels. Picking from
+ * options is always a dropdown (Select or MultiSelect), never a row of pills.
  */
 
-/** A soft pill. Picked: indigo edge and tint, from aria-pressed on a button or a checked input inside a label. */
+/** A soft pill for small actions beside a form (add a description, give me a prompt). */
 export const chipClass = cn(
   "relative inline-flex h-9 cursor-pointer items-center gap-1.5 rounded-full bg-field px-3.5 text-sm font-medium whitespace-nowrap text-fg select-none",
   "transition-[background-color,box-shadow,color] duration-[var(--dur-fast)] hover:bg-field-hover",
@@ -18,42 +18,6 @@ export const chipClass = cn(
   "has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-[var(--focus)]",
   "[&_svg]:size-4 [&_svg]:shrink-0",
 );
-
-/** Pick one of a few options, as pills. Native radios underneath, so arrow keys and forms work as usual. */
-export function ChoiceChips<T extends string>({
-  name,
-  label,
-  options,
-  value,
-  onChange,
-  className,
-}: {
-  name: string;
-  label: string;
-  options: readonly { value: T; label: React.ReactNode; disabled?: boolean }[];
-  value: T;
-  onChange: (v: T) => void;
-  className?: string;
-}) {
-  return (
-    <div role="radiogroup" aria-label={label} className={cn("flex flex-wrap gap-2", className)}>
-      {options.map((o) => (
-        <label key={o.value} className={cn(chipClass, o.disabled && "pointer-events-none opacity-45")}>
-          <input
-            type="radio"
-            name={name}
-            value={o.value}
-            checked={value === o.value}
-            disabled={o.disabled}
-            onChange={() => onChange(o.value)}
-            className="sr-only"
-          />
-          {o.label}
-        </label>
-      ))}
-    </div>
-  );
-}
 
 /** A question above its answer, with a hairline between questions. */
 export function Question({

@@ -41,8 +41,11 @@ test.describe.serial("a new member's core journey", () => {
     await expect(page.getByText("Available")).toBeVisible();
     await page.getByRole("button", { name: "Continue" }).click();
     await expect(page.getByRole("heading", { name: "What are you into?" })).toBeVisible();
-    await page.getByText("ETFs", { exact: true }).click();
-    await page.getByText("Market news", { exact: true }).click();
+    // Topics are picked from a dropdown with checkboxes.
+    await page.getByRole("button", { name: "Topics" }).click();
+    await page.getByRole("menuitemcheckbox", { name: "ETFs" }).click();
+    await page.getByRole("menuitemcheckbox", { name: "Market news" }).click();
+    await page.keyboard.press("Escape");
     await expect(page.getByText("2 picked")).toBeVisible();
     await page.getByRole("button", { name: "Continue" }).click();
     await page.getByLabel("How long have you been investing?").selectOption({ label: "Just starting" });
@@ -57,9 +60,15 @@ test.describe.serial("a new member's core journey", () => {
 
   test("creates an account and records a holding", async () => {
     await page.goto("/portfolio");
-    // Three ways in. With SnapTrade keys connecting goes on to SnapTrade; without them it says it isn't switched on yet.
+    // Three ways in. Without SnapTrade keys it says it isn't switched on yet; with them, a member without full access asks for it.
     await page.getByRole("button", { name: /Connect your broker/ }).click();
-    await expect(page.getByRole("dialog").getByText(/isn.t switched on yet/).or(page.getByRole("button", { name: "Continue to SnapTrade" }))).toBeVisible();
+    await expect(
+      page
+        .getByRole("dialog")
+        .getByText(/isn.t switched on yet/)
+        .or(page.getByRole("button", { name: "Send request" }))
+        .or(page.getByRole("button", { name: "Continue to SnapTrade" })),
+    ).toBeVisible();
     await page.keyboard.press("Escape");
     await page.getByRole("button", { name: /Type it in/ }).click();
     await page.getByLabel("Account name").fill("Test broker");
@@ -75,7 +84,8 @@ test.describe.serial("a new member's core journey", () => {
     await dialog.getByLabel("Price per unit").fill("650");
     await dialog.getByRole("button", { name: "Save transaction" }).click();
     await expect(page.getByRole("rowheader", { name: /ASML/ })).toBeVisible();
-    await expect(page.getByText("Demo prices · synthetic")).toBeVisible();
+    // Prices come with full access; without it Portfolio shows what was paid.
+    await expect(page.getByText("Demo prices · synthetic").or(page.getByText("What you put in").first())).toBeVisible();
   });
 
   test("writes a private thesis and tests it in the Paper Lab", async () => {
@@ -83,11 +93,11 @@ test.describe.serial("a new member's core journey", () => {
     // Three questions up front; the rest waits behind "Add more detail".
     await page.getByLabel("What do you believe?").fill("Index core stays the default");
     await page.getByLabel(/What would prove you wrong/).fill("Fees on global trackers rise above 0.4% a year.");
-    await page.getByRole("button", { name: "6 months" }).click();
+    await page.getByLabel("Look again in").selectOption({ label: "In 6 months" });
     await page.getByRole("button", { name: /Add more detail/ }).click();
     await page.getByRole("button", { name: "Add bear case" }).click();
     await page.getByLabel("Bear case", { exact: true }).fill("Active funds win after fees for a decade.");
-    await expect(page.getByRole("radio", { name: "Only me" })).toBeChecked();
+    await expect(page.getByLabel("Who can read it")).toHaveValue("private");
     await page.getByRole("button", { name: "Save thesis" }).click();
     await expect(page).toHaveURL(/\/theses\/[0-9a-f-]{36}/);
     thesisUrl = new URL(page.url()).pathname;
@@ -122,9 +132,9 @@ test.describe.serial("a new member's core journey", () => {
       .getByRole("dialog")
       .getByLabel("Name")
       .fill(`Erin's circle ${Date.now().toString(36)}`);
-    await page.getByRole("dialog").getByRole("button", { name: "Dividends" }).click();
-    await page.getByRole("dialog").getByText("Anyone", { exact: true }).click();
-    await expect(page.getByRole("dialog").getByRole("radio", { name: "Anyone" })).toBeChecked();
+    await page.getByRole("dialog").getByLabel("Topic").selectOption({ label: "Dividends" });
+    await page.getByRole("dialog").getByLabel("Who can join").selectOption({ label: "Anyone" });
+    await expect(page.getByRole("dialog").getByLabel("Who can join")).toHaveValue("open");
     await page.getByRole("dialog").getByRole("button", { name: "Start Guild" }).click();
     await expect(page.getByText("owner", { exact: true })).toBeVisible();
 

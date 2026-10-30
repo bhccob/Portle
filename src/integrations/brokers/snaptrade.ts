@@ -82,6 +82,8 @@ export class SnapTradeProvider implements BrokerProvider {
         ? "Connect DEGIRO, Interactive Brokers, Trading 212 and more. You sign in on SnapTrade's page; Portle only reads."
         : "Not switched on for this Portle yet. Use CSV import for now.",
       docsUrl: "https://snaptrade.com",
+      // The free plan's test keys (PORTLE-TEST-…) link up to 5 brokers at once, shared by every member.
+      connectionLimit: Number(process.env.BROKER_CONNECTION_LIMIT) || (this.clientId?.includes("-TEST-") ? 5 : null),
     };
   }
 

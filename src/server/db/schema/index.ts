@@ -6,3 +6,4 @@ export * from "./paper";
 export * from "./social";
 export * from "./guilds";
 export * from "./relics";
+export * from "./spending";

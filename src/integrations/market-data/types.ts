@@ -32,6 +32,8 @@ export type ProviderStatus = {
   configured: boolean;
   /** Plain-language explanation shown wherever this provider's numbers appear. */
   note: string;
+  /** Closing prices that change once per trading day, so Portle keeps them until the next close instead of asking again. */
+  dailyCloses?: boolean;
 };
 
 /**

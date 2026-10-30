@@ -108,7 +108,7 @@ export async function placeOrder(userId: string, raw: z.input<typeof orderInput>
     if (!t || !canView(viewer, { ownerId: t.userId, audience: t.visibility as Audience, guildId: t.guildId })) throw notFound("Thesis");
   }
 
-  const prices = await getPrices([inst]);
+  const prices = await getPrices([inst], "practice");
   const price = prices.get(inst.id);
   if (price && price.currency !== acc0.currency) {
     throw new UserFacingError(`The Lab account trades in ${acc0.currency}; ${inst.symbol} is quoted in ${price.currency}. Multi-currency paper accounts are not supported yet.`);
@@ -171,7 +171,7 @@ export async function processOpenOrders(userId: string) {
     .innerJoin(instruments, eq(instruments.id, paperOrders.instrumentId))
     .where(and(eq(paperOrders.paperAccountId, acc0.id), eq(paperOrders.epoch, acc0.epoch), eq(paperOrders.status, "open")));
   if (!open.length) return 0;
-  const prices = await getPrices(open.map((o) => o.instrument));
+  const prices = await getPrices(open.map((o) => o.instrument), "practice");
   let filled = 0;
   for (const { order, instrument } of open) {
     const p = prices.get(instrument.id);
@@ -241,7 +241,7 @@ export async function getLab(userId: string) {
   const ids = [...new Set([...positions.map((p) => p.instrumentId)])];
   const insts = ids.length ? await db.select().from(instruments).where(inArray(instruments.id, ids)) : [];
   const instById = new Map(insts.map((i) => [i.id, i]));
-  const prices = await getPrices(insts);
+  const prices = await getPrices(insts, "practice");
 
   const rows = positions
     .filter((p) => p.quantity.gt(0) || !p.realized.isZero())

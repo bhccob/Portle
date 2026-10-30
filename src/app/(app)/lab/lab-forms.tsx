@@ -10,7 +10,6 @@ import { SourceBadge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Field, Input, Select } from "@/components/ui/field";
 import { Dialog } from "@/components/ui/overlay";
-import { cn } from "@/lib/cn";
 import { formatMoney } from "@/lib/format";
 import { assumptionsAction, cancelOrderAction, placeOrderAction, resetLabAction } from "./actions";
 
@@ -78,24 +77,14 @@ export function OrderTicket({
   return (
     <form action={action} className="space-y-4">
       <input type="hidden" name="idempotencyKey" value={key} />
-      <input type="hidden" name="side" value={side} />
-      <div className="grid grid-cols-2 gap-1 rounded-[var(--radius-md)] border border-transparent bg-field p-1" role="radiogroup" aria-label="Order side">
-        {(["buy", "sell"] as const).map((s) => (
-          <button
-            key={s}
-            type="button"
-            role="radio"
-            aria-checked={side === s}
-            onClick={() => setSide(s)}
-            className={cn(
-              "h-9 rounded-[var(--radius-sm)] text-sm font-medium capitalize transition-colors",
-              side === s ? (s === "buy" ? "bg-positive-soft text-positive" : "bg-negative-soft text-negative") : "text-fg-muted hover:text-fg",
-            )}
-          >
-            {s}
-          </button>
-        ))}
-      </div>
+      <Field label="Buy or sell">
+        {(p) => (
+          <Select {...p} name="side" value={side} onChange={(e) => setSide(e.target.value as "buy" | "sell")}>
+            <option value="buy">Buy</option>
+            <option value="sell">Sell</option>
+          </Select>
+        )}
+      </Field>
       <Field label="Security">{(p) => <InstrumentPicker name="instrumentId" id={p.id} defaultValue={initial} onChange={setInstrument} />}</Field>
       {shownQuote ? (
         <div className="flex flex-wrap items-center justify-between gap-2 text-sm">

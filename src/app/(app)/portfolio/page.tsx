@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { after } from "next/server";
 import { FileUp, Info, Lock, PlugZap, Wallet } from "lucide-react";
+import { AccessButton } from "@/components/access/access-client";
 import { LineChart } from "@/components/charts/line-chart";
 import { Ring, RingLegend, ringColor } from "@/components/charts/ring";
 import { holdingSlices } from "@/components/charts/ring-data";
@@ -11,7 +12,8 @@ import { PageHeader, Panel, Stat } from "@/components/ui/panel";
 import { Callout, EmptyState } from "@/components/ui/states";
 import { LinkTabs } from "@/components/ui/tabs";
 import { formatMoney, formatPercent, formatQuantity } from "@/lib/format";
-import { brokerStatus, listBrokerConnections, syncStaleBrokerConnections } from "@/server/services/brokers";
+import { accessInfo } from "@/server/services/access";
+import { brokerSpotsFull, brokerStatus, listBrokerConnections, syncStaleBrokerConnections } from "@/server/services/brokers";
 import type { Range } from "@/server/services/market";
 import { getPerformance, getValuation } from "@/server/services/portfolio";
 import { requireMember } from "@/server/session";
@@ -46,6 +48,8 @@ export default async function PortfolioPage({ searchParams }: { searchParams: Pr
   };
   const accountOptions = accounts.map((a) => ({ id: a.id, name: a.name, currency: a.currency }));
   const brokers = brokerStatus();
+  const brokersFull = brokers.configured && (await brokerSpotsFull());
+  const access = await accessInfo(user.id);
   const connections = await listBrokerConnections(user.id);
   // Linked brokers catch up quietly after the page is sent, at most every few hours.
   if (connections.length) after(() => syncStaleBrokerConnections(user.id).catch(() => undefined));
@@ -54,7 +58,7 @@ export default async function PortfolioPage({ searchParams }: { searchParams: Pr
     return (
       <>
         <PageHeader title="Add what you own" description="Only you ever see the amounts. Portle never moves money." />
-        <AddWays configured={brokers.configured} />
+        <AddWays configured={brokers.configured} full={brokersFull} access={access} />
         <p className="mt-8 text-center text-sm text-fg-muted">
           Just looking around? <LoadSampleButton />
         </p>
@@ -68,8 +72,16 @@ export default async function PortfolioPage({ searchParams }: { searchParams: Pr
   const hasHoldings = v.holdings.length > 0;
   const perf = hasHoldings ? await getPerformance(user.id, range, { accountId: sp.account }) : null;
   const priceKind = v.usesDemoPrices ? "demo" : "delayed";
-  const byHolding = holdingSlices(v.holdings);
-  const slices = dim === "holdings" ? byHolding : v.allocation[dim].map((s) => ({ label: s.label, percent: Number(s.percent) }));
+  // Without full access there are no prices, so the ring and table use what was paid instead.
+  const priced = access.full;
+  const paid = data.paid;
+  const paidSlices = [
+    ...paid.rows.map((r) => ({ label: r.holding.instrument.symbol, percent: Number(r.share ?? 0) })),
+    ...(paid.cash.gt(0) && paid.total.gt(0) ? [{ label: "Cash", percent: Number(paid.cash.div(paid.total)) }] : []),
+  ];
+  const paidOf = new Map(paid.rows.map((r) => [r.holding.instrument.id, r]));
+  const byHolding = priced ? holdingSlices(v.holdings) : paidSlices;
+  const slices = dim === "holdings" || !priced ? byHolding : v.allocation[dim].map((s) => ({ label: s.label, percent: Number(s.percent) }));
   // A holding keeps its ring colour in the table; ones folded into "Other" take Other's colour.
   const colourOf = new Map(byHolding.map((s, i) => [s.label, i < 5 || byHolding.length <= 6 ? ringColor(i, s.label) : "var(--chart-7)"]));
 
@@ -83,6 +95,8 @@ export default async function PortfolioPage({ searchParams }: { searchParams: Pr
             <BaseCurrencySelect value={base} />
             <ConnectBrokerSheet
               configured={brokers.configured}
+              full={brokersFull}
+              access={access}
               trigger={
                 <Button variant="secondary">
                   <PlugZap className="size-4" aria-hidden /> Connect broker
@@ -147,36 +161,51 @@ export default async function PortfolioPage({ searchParams }: { searchParams: Pr
           {/* The ring is the page: your mix, with the total and its return in the middle. */}
           <section aria-label="Your mix" className="grid items-center gap-x-12 gap-y-6 lg:grid-cols-[auto_1fr]">
             <div className="grid justify-items-center gap-4">
-              <LinkTabs className="w-full max-w-[420px] lg:hidden" label="Group the ring by" current={dim} items={DIMS.map(([k, l]) => ({ value: k, label: l, href: qs({ dim: k }) }))} />
-              <Ring slices={slices} label={`Your mix by ${DIMS.find(([k]) => k === dim)![1].toLowerCase()}`} size={256} thickness={28}>
-                <span className="text-[0.8125rem] text-fg-subtle">Total value</span>
-                <span className="num font-display text-[1.75rem] leading-tight font-bold tracking-[-0.02em] text-fg">{formatMoney(v.totals.marketValue, base)}</span>
-                {v.totals.unrealizedPct ? (
+              {priced ? (
+                <LinkTabs className="w-full max-w-[420px] lg:hidden" label="Group the ring by" current={dim} items={DIMS.map(([k, l]) => ({ value: k, label: l, href: qs({ dim: k }) }))} />
+              ) : null}
+              <Ring slices={slices} label={priced ? `Your mix by ${DIMS.find(([k]) => k === dim)![1].toLowerCase()}` : "Your mix by what you paid"} size={256} thickness={28}>
+                <span className="text-[0.8125rem] text-fg-subtle">{priced ? "Total value" : "What you put in"}</span>
+                <span className="num font-display text-[1.75rem] leading-tight font-bold tracking-[-0.02em] text-fg">
+                  {formatMoney(priced ? v.totals.marketValue : paid.total, base)}
+                </span>
+                {priced && v.totals.unrealizedPct ? (
                   <span className="mt-1.5 inline-flex items-center gap-1 rounded-full bg-field px-2.5 py-0.5 text-[0.8125rem]">
                     <Change percent={v.totals.unrealizedPct} /> <span className="text-fg-subtle">all time</span>
                   </span>
                 ) : null}
               </Ring>
-              <div className="flex flex-wrap justify-center gap-2">
-                <SourceBadge kind={priceKind} detail={v.usesDemoPrices ? "Demo prices · synthetic" : data.market.label} asOf={v.oldestPriceAsOf} />
-                <span className="inline-flex h-6 items-center gap-1 rounded-full bg-field px-2.5 text-xs text-fg-muted">
-                  Today <Change percent={v.totals.dayChangePct} />
-                </span>
-              </div>
+              {priced ? (
+                <div className="flex flex-wrap justify-center gap-2">
+                  <SourceBadge kind={priceKind} detail={v.usesDemoPrices ? "Demo prices · synthetic" : data.market.label} asOf={v.oldestPriceAsOf} />
+                  <span className="inline-flex h-6 items-center gap-1 rounded-full bg-field px-2.5 text-xs text-fg-muted">
+                    Today <Change percent={v.totals.dayChangePct} />
+                  </span>
+                </div>
+              ) : (
+                <AccessButton access={access} />
+              )}
             </div>
             <div className="min-w-0">
-              <LinkTabs className="mb-5 hidden w-fit lg:flex" label="Group the ring by" current={dim} items={DIMS.map(([k, l]) => ({ value: k, label: l, href: qs({ dim: k }) }))} />
+              {priced ? (
+                <LinkTabs className="mb-5 hidden w-fit lg:flex" label="Group the ring by" current={dim} items={DIMS.map(([k, l]) => ({ value: k, label: l, href: qs({ dim: k }) }))} />
+              ) : (
+                <p className="mb-5 max-w-[52ch] text-sm text-fg-muted">
+                  Without real prices, Portle shows your holdings at what you paid. Gains and today&apos;s change appear once you have full access.
+                </p>
+              )}
               <RingLegend slices={slices} className="max-w-md" />
               <p className="mt-4 flex items-center gap-1.5 text-xs text-fg-subtle">
-                <Lock className="size-3" aria-hidden /> Shares of priced holdings. Friends only ever see percentages, and only if you share them.
+                <Lock className="size-3" aria-hidden /> {priced ? "Shares of priced holdings." : "Shares of what you paid."} Friends only ever see percentages, and only if you share
+                them.
               </p>
             </div>
           </section>
 
-          {data.issues.length || v.excluded.length ? (
+          {data.issues.length || (priced && v.excluded.length) ? (
             <Callout tone="warning" title="Some figures need attention">
               <ul className="list-disc space-y-0.5 pl-4">
-                {v.excluded.map((e) => (
+                {(priced ? v.excluded : []).map((e) => (
                   <li key={e.symbol}>
                     <strong>{e.symbol}</strong>: {e.reason}. It is left out of totals rather than estimated.
                   </li>
@@ -205,14 +234,16 @@ export default async function PortfolioPage({ searchParams }: { searchParams: Pr
                   <th scope="col" className="hidden px-3 py-2 text-right font-medium lg:table-cell">
                     Avg cost
                   </th>
-                  <th scope="col" className="hidden px-3 py-2 text-right font-medium md:table-cell">
-                    Price
-                  </th>
+                  {priced ? (
+                    <th scope="col" className="hidden px-3 py-2 text-right font-medium md:table-cell">
+                      Price
+                    </th>
+                  ) : null}
                   <th scope="col" className="hidden px-3 py-2 text-right font-medium sm:table-cell">
-                    Value ({base})
+                    {priced ? "Value" : "Paid"} ({base})
                   </th>
                   <th scope="col" className="py-2 pl-3 text-right font-medium">
-                    Share · return
+                    {priced ? "Share · return" : "Share"}
                   </th>
                 </tr>
               </thead>
@@ -238,24 +269,30 @@ export default async function PortfolioPage({ searchParams }: { searchParams: Pr
                     <td className="num hidden px-3 py-3 text-right text-fg-muted lg:table-cell">
                       {h.averageCost ? formatMoney(h.averageCost, h.instrument.currency) : <span title="Cost basis unknown">Unknown</span>}
                     </td>
-                    <td className="num hidden px-3 py-3 text-right text-fg-muted md:table-cell">
-                      {h.price ? (
-                        <>
-                          {formatMoney(h.price.price, h.price.currency)}
-                          {h.dayChangePct ? (
-                            <span className="block">
-                              <Change percent={h.dayChangePct} />
-                            </span>
-                          ) : null}
-                        </>
-                      ) : (
-                        "No price"
-                      )}
+                    {priced ? (
+                      <td className="num hidden px-3 py-3 text-right text-fg-muted md:table-cell">
+                        {h.price ? (
+                          <>
+                            {formatMoney(h.price.price, h.price.currency)}
+                            {h.dayChangePct ? (
+                              <span className="block">
+                                <Change percent={h.dayChangePct} />
+                              </span>
+                            ) : null}
+                          </>
+                        ) : (
+                          "No price"
+                        )}
+                      </td>
+                    ) : null}
+                    <td className="num hidden px-3 py-3 text-right font-medium text-fg sm:table-cell">
+                      {formatMoney(priced ? h.marketValueBase : h.costBasisBase, base)}
                     </td>
-                    <td className="num hidden px-3 py-3 text-right font-medium text-fg sm:table-cell">{formatMoney(h.marketValueBase, base)}</td>
                     <td className="py-3 pl-3 text-right">
-                      <span className="num block font-display font-semibold text-fg">{h.weight ? formatPercent(h.weight) : "—"}</span>
-                      {h.unrealizedPct ? (
+                      <span className="num block font-display font-semibold text-fg">
+                        {priced ? (h.weight ? formatPercent(h.weight) : "—") : paidOf.get(h.instrument.id)?.share ? formatPercent(paidOf.get(h.instrument.id)!.share!) : "—"}
+                      </span>
+                      {priced && h.unrealizedPct ? (
                         <span className="mt-1 inline-flex rounded-full bg-field px-2 py-0.5">
                           <Change percent={h.unrealizedPct} />
                         </span>
@@ -267,7 +304,10 @@ export default async function PortfolioPage({ searchParams }: { searchParams: Pr
             </table>
           </Panel>
 
-          <Panel title="Value over time" actions={<LinkTabs label="Chart range" current={range} items={RANGES.map((r) => ({ value: r, label: r, href: qs({ range: r }) }))} />}>
+          <Panel
+            title="Value over time"
+            actions={priced ? <LinkTabs label="Chart range" current={range} items={RANGES.map((r) => ({ value: r, label: r, href: qs({ range: r }) }))} /> : null}
+          >
             {perf?.available ? (
               <LineChart points={perf.points.map((p) => ({ date: p.date, value: Number(p.value) }))} mode="money" currency={base} label="Holdings value" height={200} />
             ) : (
@@ -276,7 +316,11 @@ export default async function PortfolioPage({ searchParams }: { searchParams: Pr
               </Callout>
             )}
             <dl className="mt-6 grid grid-cols-2 gap-x-6 gap-y-5 sm:grid-cols-4">
-              <Stat label="Unrealized P/L" value={<Change value={v.totals.unrealized} percent={v.totals.unrealizedPct} currency={base} size="md" />} hint="Open positions vs. cost" />
+              <Stat
+                label="Unrealized P/L"
+                value={priced ? <Change value={v.totals.unrealized} percent={v.totals.unrealizedPct} currency={base} size="md" /> : "—"}
+                hint={priced ? "Open positions vs. cost" : "Needs real prices"}
+              />
               <Stat label="Realized P/L" value={<Change value={v.totals.realized} currency={base} size="md" />} hint="Closed lots, after fees" />
               <Stat label="Dividends & income" value={<Money value={v.totals.income} currency={base} />} />
               <Stat

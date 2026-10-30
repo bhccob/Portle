@@ -37,7 +37,15 @@ export type BrokerActivity = {
   currency: string;
 };
 
-export type ProviderStatus = { id: string; label: string; configured: boolean; note: string; docsUrl: string };
+export type ProviderStatus = {
+  id: string;
+  label: string;
+  configured: boolean;
+  note: string;
+  docsUrl: string;
+  /** How many broker links this Portle may hold at once, across every member, when the provider's plan caps it. */
+  connectionLimit?: number | null;
+};
 
 export interface BrokerProvider {
   readonly id: string;

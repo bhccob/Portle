@@ -7,18 +7,15 @@ import { toast } from "sonner";
 import { chipClass } from "@/components/forms/compose";
 import { fieldError, useResultToast } from "@/components/forms/use-result";
 import { Button } from "@/components/ui/button";
-import { Field, Input, Textarea } from "@/components/ui/field";
+import { Field, Input, Select, Textarea } from "@/components/ui/field";
 import { Dialog, Switch } from "@/components/ui/overlay";
 import { Callout } from "@/components/ui/states";
-import { INTERESTS, topicLabel, type Interest } from "@/domain/topics";
-import { cn } from "@/lib/cn";
+import { INTERESTS, topicLabel } from "@/domain/topics";
 import { createGuildAction, guildOpAction, inviteAction } from "./actions";
 
 /** Starting a Guild: a name, an optional topic from the onboarding list, and who can join. */
 export function CreateGuildDialog() {
   const [state, action, pending] = useActionState(createGuildAction, null);
-  const [topic, setTopic] = useState("");
-  const [allTopics, setAllTopics] = useState(false);
   const [join, setJoin] = useState<Join>("request");
   const [listed, setListed] = useState(true);
   const [describe, setDescribe] = useState(false);
@@ -37,42 +34,32 @@ export function CreateGuildDialog() {
           {(p) => <Input {...p} name="name" required minLength={3} maxLength={48} placeholder="e.g. Dividend Gardeners" className="h-12 text-base" />}
         </Field>
 
-        <div role="group" aria-labelledby="guild-topic-label">
-          <p id="guild-topic-label" className="mb-2 text-[0.8125rem] font-medium text-fg-muted">
-            Topic <span className="font-normal text-fg-subtle">· optional</span>
-          </p>
-          <input type="hidden" name="topic" value={topic} />
-          <div className="flex flex-wrap gap-2">
-            {(allTopics ? INTERESTS : FIRST_TOPICS).map((t) => (
-              <button key={t} type="button" aria-pressed={topic === topicLabel(t)} onClick={() => setTopic(topic === topicLabel(t) ? "" : topicLabel(t))} className={chipClass}>
-                {topicLabel(t)}
-              </button>
-            ))}
-            {allTopics ? null : (
-              <button type="button" onClick={() => setAllTopics(true)} className={cn(chipClass, "text-fg-muted")}>
-                More topics
-              </button>
+        <div className="grid grid-cols-2 gap-3">
+          <Field label="Topic" optional>
+            {(p) => (
+              <Select {...p} name="topic" defaultValue="" className="h-11">
+                <option value="">No topic</option>
+                {INTERESTS.map((t) => (
+                  <option key={t} value={topicLabel(t)}>
+                    {topicLabel(t)}
+                  </option>
+                ))}
+              </Select>
             )}
-          </div>
+          </Field>
+          <Field label="Who can join">
+            {(p) => (
+              <Select {...p} name="joinPolicy" value={join} onChange={(e) => setJoin(e.target.value as Join)} className="h-11">
+                {JOIN.map(([value, label]) => (
+                  <option key={value} value={value}>
+                    {label}
+                  </option>
+                ))}
+              </Select>
+            )}
+          </Field>
         </div>
-
-        <div>
-          <p id="guild-join-label" className="mb-2 text-[0.8125rem] font-medium text-fg-muted">
-            Who can join
-          </p>
-          <div role="radiogroup" aria-labelledby="guild-join-label" className="grid grid-cols-3 gap-1 rounded-[16px] bg-field p-1">
-            {JOIN.map(([value, label]) => (
-              <label
-                key={value}
-                className="relative grid h-10 cursor-pointer place-items-center rounded-[12px] text-sm font-medium text-fg-muted transition-colors select-none has-[:checked]:bg-[color-mix(in_srgb,var(--fg)_12%,transparent)] has-[:checked]:font-semibold has-[:checked]:text-fg has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-[var(--focus)]"
-              >
-                <input type="radio" name="joinPolicy" value={value} checked={join === value} onChange={() => setJoin(value)} className="sr-only" />
-                {label}
-              </label>
-            ))}
-          </div>
-          <p className="mt-2 text-[0.8125rem] text-fg-subtle">{JOIN_HINT[join]}</p>
-        </div>
+        <p className="-mt-2 text-[0.8125rem] text-fg-subtle">{JOIN_HINT[join]}</p>
 
         <label className="flex items-center justify-between gap-4">
           <span>
@@ -101,8 +88,6 @@ export function CreateGuildDialog() {
     </Dialog>
   );
 }
-
-const FIRST_TOPICS = ["Long-term investing", "ETFs", "Dividends", "Technology", "Market news", "Crypto"] as const satisfies readonly Interest[];
 
 const JOIN = [
   ["open", "Anyone"],

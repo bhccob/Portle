@@ -6,7 +6,7 @@ import { toast } from "sonner";
 import { fieldError, useResultToast } from "@/components/forms/use-result";
 import { Avatar } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { Field, Input, Select, Textarea } from "@/components/ui/field";
+import { Field, Input, MultiSelect, Select, Textarea } from "@/components/ui/field";
 import { Dialog } from "@/components/ui/overlay";
 import { Callout } from "@/components/ui/states";
 import { topicLabel } from "@/domain/topics";
@@ -37,20 +37,18 @@ export function ProfileForm({ profile, interests }: { profile: { displayName: st
       <Field label="Bio" optional hint="Up to 280 characters. Don't include account details.">
         {(p) => <Textarea {...p} name="bio" defaultValue={profile.bio} maxLength={280} className="min-h-20" />}
       </Field>
-      <fieldset>
-        <legend className="mb-2 text-[0.8125rem] font-medium text-fg-muted">Interests</legend>
-        <div className="flex flex-wrap gap-2">
-          {interests.map((i) => (
-            <label
-              key={i}
-              className="cursor-pointer rounded-full border border-transparent bg-field px-3 py-1.5 text-[0.8125rem] text-fg-muted select-none hover:bg-field-hover has-[:checked]:bg-selected has-[:checked]:text-fg has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-[var(--focus)]"
-            >
-              <input type="checkbox" name="interests" value={i} defaultChecked={profile.interests.includes(i)} className="sr-only" />
-              {topicLabel(i)}
-            </label>
-          ))}
-        </div>
-      </fieldset>
+      <Field label="Interests" optional hint="Portle suggests Guilds around them.">
+        {(p) => (
+          <MultiSelect
+            {...p}
+            name="interests"
+            defaultValue={profile.interests.filter((i) => interests.includes(i))}
+            options={interests.map((i) => ({ value: i, label: topicLabel(i) }))}
+            placeholder="Pick a few"
+            className="h-11"
+          />
+        )}
+      </Field>
       <Button type="submit" loading={pending}>
         Save profile
       </Button>

@@ -23,3 +23,8 @@ export async function createTestUser(db: Db, name = "Test User") {
   await db.insert(schema.user).values({ id, name, email: `${id}@example.test`, emailVerified: true });
   return { id, name };
 }
+
+/** Lets a test member use real prices and broker linking, as if the owner had let them in. */
+export async function grantFullAccess(db: Db, userId: string) {
+  await db.insert(schema.fullAccess).values({ userId, status: "granted", decidedAt: new Date() }).onConflictDoNothing();
+}

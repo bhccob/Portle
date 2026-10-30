@@ -2,7 +2,7 @@
 
 import { useActionState, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { Ban, Check, PieChart, ScrollText, Trash2, UserMinus, UserPlus, X } from "lucide-react";
+import { Ban, Check, Trash2, UserMinus, UserPlus, X } from "lucide-react";
 import { toast } from "sonner";
 import { useResultToast } from "@/components/forms/use-result";
 import { Button } from "@/components/ui/button";
@@ -45,12 +45,13 @@ export function Composer({ theses, guilds }: { theses: { id: string; title: stri
             ))}
           </Select>
         ) : null}
-        <Button type="button" variant={attach === "thesis" ? "secondary" : "ghost"} size="sm" onClick={() => setAttach(attach === "thesis" ? "none" : "thesis")} aria-pressed={attach === "thesis"} disabled={!theses.length}>
-          <ScrollText className="size-4" aria-hidden /> Thesis
-        </Button>
-        <Button type="button" variant={attach === "insight" ? "secondary" : "ghost"} size="sm" onClick={() => setAttach(attach === "insight" ? "none" : "insight")} aria-pressed={attach === "insight"}>
-          <PieChart className="size-4" aria-hidden /> Allocation
-        </Button>
+        <Select aria-label="Attach" value={attach} onChange={(e) => setAttach(e.target.value as typeof attach)} className="h-9 w-auto text-[0.8125rem]">
+          <option value="none">Attach nothing</option>
+          <option value="thesis" disabled={!theses.length}>
+            Attach a thesis
+          </option>
+          <option value="insight">Attach my mix</option>
+        </Select>
         <Button type="submit" size="sm" loading={pending} className="ml-auto">
           Share
         </Button>

@@ -2,20 +2,45 @@ import { and, asc, desc, eq, ilike, inArray, or, sql } from "drizzle-orm";
 import { createFxConverter, type FxConverter, type FxRate } from "@/domain/fx";
 import type { PriceInfo } from "@/domain/valuation";
 import { demoFx, getFxProvider } from "@/integrations/fx";
-import { getMarketDataProvider, refKey, type Bar } from "@/integrations/market-data";
+import { getMarketDataProvider, refKey, type Bar, type MarketDataProvider } from "@/integrations/market-data";
+import { DemoMarketDataProvider } from "@/integrations/market-data/demo";
 import { getDb } from "../db";
-import { fxRates, guildMembers, instruments, quotes, watchlistItems, watchlists } from "../db/schema";
+import { fxRates, guildMembers, instruments, priceBars, priceChecks, quotes, watchlistItems, watchlists } from "../db/schema";
 import { forbidden, notFound, UserFacingError } from "../errors";
+import { hasFullAccess } from "./access";
 
 export type InstrumentRow = typeof instruments.$inferSelect;
 
 const QUOTE_TTL_MS = 15 * 60 * 1000;
 
+/** Closing prices settle once per weekday. 23:00 UTC is after every market Portle prices has closed. */
+export function lastSettle(now = new Date()) {
+  const t = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), 23));
+  if (t > now) t.setUTCDate(t.getUTCDate() - 1);
+  while (t.getUTCDay() === 0 || t.getUTCDay() === 6) t.setUTCDate(t.getUTCDate() - 1);
+  return t;
+}
+
+/** Whether something fetched at `at` is still current: until the next close for daily prices, 15 minutes otherwise. */
+function isFresh(at: Date | null | undefined, dailyCloses: boolean | undefined, now = new Date()) {
+  if (!at) return false;
+  return dailyCloses ? at >= lastSettle(now) : now.getTime() - at.getTime() <= QUOTE_TTL_MS;
+}
+
+/**
+ * Whose prices: a member's, which are real only with full access, or the Practice room's,
+ * which are always pretend so practising never spends the data plan.
+ */
+export type PriceFor = { userId: string } | "practice";
+
+const practiceProvider: MarketDataProvider = new DemoMarketDataProvider();
+
 /** Prices for instruments, keyed by instrument id. Missing entries mean "no price", never zero. */
-export async function getPrices(rows: Pick<InstrumentRow, "id" | "symbol" | "exchange">[]): Promise<Map<string, PriceInfo>> {
+export async function getPrices(rows: Pick<InstrumentRow, "id" | "symbol" | "exchange">[], viewer: PriceFor): Promise<Map<string, PriceInfo>> {
   const out = new Map<string, PriceInfo>();
   if (!rows.length) return out;
-  const provider = getMarketDataProvider();
+  if (viewer !== "practice" && !(await hasFullAccess(viewer.userId))) return out;
+  const provider = viewer === "practice" ? practiceProvider : getMarketDataProvider();
   const status = provider.status();
 
   const toInfo = (q: { price: string; previousClose: string | null; currency: string; asOf: string; source: string; isDemo: boolean; delayMinutes: number }): PriceInfo => q;
@@ -30,14 +55,22 @@ export async function getPrices(rows: Pick<InstrumentRow, "id" | "symbol" | "exc
   }
 
   const db = getDb();
-  const cached = await db.select().from(quotes).where(inArray(quotes.instrumentId, rows.map((r) => r.id)));
+  const ids = rows.map((r) => r.id);
+  const [cached, checks] = await Promise.all([
+    db.select().from(quotes).where(inArray(quotes.instrumentId, ids)),
+    db.select().from(priceChecks).where(inArray(priceChecks.instrumentId, ids)),
+  ]);
   const byId = new Map(cached.map((c) => [c.instrumentId, c]));
-  const stale = rows.filter((r) => {
-    const c = byId.get(r.id);
-    return !c || Date.now() - c.fetchedAt.getTime() > QUOTE_TTL_MS;
-  });
+  const checkedAt = new Map(checks.map((c) => [c.instrumentId, c.quoteCheckedAt]));
+  // A security the provider didn't know is not asked about again until the next close.
+  const stale = rows.filter((r) => !isFresh(byId.get(r.id)?.fetchedAt, status.dailyCloses) && !isFresh(checkedAt.get(r.id), status.dailyCloses));
   if (stale.length && status.configured) {
     const fresh = await provider.getQuotes(stale.map((r) => ({ symbol: r.symbol, exchange: r.exchange })));
+    const now = new Date();
+    await db
+      .insert(priceChecks)
+      .values(stale.map((r) => ({ instrumentId: r.id, quoteCheckedAt: now })))
+      .onConflictDoUpdate({ target: priceChecks.instrumentId, set: { quoteCheckedAt: now } });
     for (const r of stale) {
       const q = fresh.get(refKey(r));
       if (!q) continue;
@@ -62,7 +95,8 @@ export async function getPrices(rows: Pick<InstrumentRow, "id" | "symbol" | "exc
         price: c.price,
         previousClose: c.previousClose,
         currency: c.currency,
-        asOf: c.asOf.toISOString(),
+        // A closing price belongs to a day, not a moment.
+        asOf: status.dailyCloses ? c.asOf.toISOString().slice(0, 10) : c.asOf.toISOString(),
         source: c.source,
         isDemo: false,
         delayMinutes: c.delayMinutes,
@@ -121,12 +155,55 @@ export function rangeStart(range: Range, now = new Date()): string {
   return new Date(now.getTime() - RANGES[range] * 86400_000).toISOString().slice(0, 10);
 }
 
-export async function getHistory(inst: Pick<InstrumentRow, "symbol" | "exchange">, range: Range): Promise<Bar[]> {
+export async function getHistory(inst: Pick<InstrumentRow, "id" | "symbol" | "exchange">, range: Range, viewer: { userId: string }): Promise<Bar[]> {
+  if (!(await hasFullAccess(viewer.userId))) return [];
   const now = new Date();
-  return getMarketDataProvider().getHistory(inst, rangeStart(range, now), now.toISOString().slice(0, 10));
+  return getBars(inst, rangeStart(range, now), now.toISOString().slice(0, 10));
 }
 
-export async function getIndices(days = 92) {
+/**
+ * Daily closes, oldest first. Providers with daily closes are asked at most once per close for each
+ * security, and only for the days Portle doesn't already have; everything else reads from price_bars.
+ */
+export async function getBars(inst: Pick<InstrumentRow, "id" | "symbol" | "exchange">, from: string, to: string): Promise<Bar[]> {
+  const provider = getMarketDataProvider();
+  const status = provider.status();
+  if (!status.dailyCloses) return provider.getHistory(inst, from, to);
+
+  const db = getDb();
+  const [check] = await db.select().from(priceChecks).where(eq(priceChecks.instrumentId, inst.id));
+  const covered = !!check?.historyFrom && check.historyFrom <= from;
+  if (status.configured && !(covered && isFresh(check.historyCheckedAt, true))) {
+    const [newest] = covered
+      ? await db.select({ date: priceBars.date }).from(priceBars).where(eq(priceBars.instrumentId, inst.id)).orderBy(desc(priceBars.date)).limit(1)
+      : [];
+    try {
+      const bars = await provider.getHistory(inst, newest?.date ?? from, to);
+      for (let i = 0; i < bars.length; i += 500) {
+        await db
+          .insert(priceBars)
+          .values(bars.slice(i, i + 500).map((b) => ({ instrumentId: inst.id, date: b.date, close: b.close, source: status.label })))
+          .onConflictDoUpdate({ target: [priceBars.instrumentId, priceBars.date], set: { close: sql`excluded.close`, source: sql`excluded.source` } });
+      }
+      const historyFrom = covered ? check.historyFrom! : from;
+      await db
+        .insert(priceChecks)
+        .values({ instrumentId: inst.id, historyFrom, historyCheckedAt: new Date() })
+        .onConflictDoUpdate({ target: priceChecks.instrumentId, set: { historyFrom, historyCheckedAt: new Date() } });
+    } catch (e) {
+      // Keep showing what's cached; the next page load asks again.
+      console.warn("[market] history failed:", (e as Error).message);
+    }
+  }
+  return db
+    .select({ date: priceBars.date, close: priceBars.close })
+    .from(priceBars)
+    .where(and(eq(priceBars.instrumentId, inst.id), sql`${priceBars.date} between ${from} and ${to}`))
+    .orderBy(asc(priceBars.date));
+}
+
+export async function getIndices(viewer: { userId: string }, days = 92) {
+  if (!(await hasFullAccess(viewer.userId))) return [];
   return getMarketDataProvider().getIndices(days);
 }
 

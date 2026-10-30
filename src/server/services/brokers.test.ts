@@ -1,8 +1,8 @@
-import { and, eq } from "drizzle-orm";
+import { and, eq, ne, sql } from "drizzle-orm";
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
 import { buildLedger } from "@/domain/accounting";
 import { setBrokerProviderForTests, type BrokerActivity, type BrokerPosition, type BrokerProvider, type BrokerUser } from "@/integrations/brokers";
-import { createTestDb, createTestUser } from "@/test/db";
+import { createTestDb, createTestUser as createUser, grantFullAccess } from "@/test/db";
 import type { Db } from "../db";
 import { accounts, brokerConnections, brokerUsers, transactions } from "../db/schema";
 import { resetRateLimits } from "../rate-limit";
@@ -22,16 +22,19 @@ class FakeBroker implements BrokerProvider {
   registered: string[] = [];
   removed: string[] = [];
   disabled = false;
+  limit: number | null = null;
+  connectError: number | null = null;
   positions: Record<string, BrokerPosition[]> = {};
   activities: Record<string, BrokerActivity[]> = {};
   status() {
-    return { id: this.id, label: "Fake", configured: true, note: "", docsUrl: "" };
+    return { id: this.id, label: "Fake", configured: true, note: "", docsUrl: "", connectionLimit: this.limit };
   }
   async registerUser(ref: string): Promise<BrokerUser> {
     this.registered.push(ref);
     return { userId: ref, userSecret: `secret-for-${ref}` };
   }
   async connectUrl(user: BrokerUser, returnUrl: string, reconnect?: string) {
+    if (this.connectError) throw Object.assign(new Error("Refused"), { status: this.connectError });
     return `https://broker.example/connect?u=${user.userId}&back=${encodeURIComponent(returnUrl)}${reconnect ? `&fix=${reconnect}` : ""}`;
   }
   async listConnections() {
@@ -61,6 +64,13 @@ const vwrl = { symbol: "VWRL", name: "Vanguard FTSE All-World", currency: "EUR",
 
 let db: Db;
 let broker: FakeBroker;
+
+/** Broker linking is part of full access, so test members get it unless a test says otherwise. */
+async function createTestUser(database: Db, name: string) {
+  const u = await createUser(database, name);
+  await grantFullAccess(database, u.id);
+  return u;
+}
 
 beforeAll(async () => {
   db = await createTestDb();
@@ -136,6 +146,31 @@ describe("connecting a broker", () => {
     expect(res.ok).toBe(false);
     expect(res.error).toMatch(/Reconnect/);
     expect(await startBrokerConnection(u.id, "http://localhost:3000/portfolio/connected", conn.id)).toContain("fix=auth-1");
+  });
+
+  it("says plainly when every broker spot is taken, but still lets a member repair their own link", async () => {
+    const first = await createTestUser(db, "Spot");
+    await startBrokerConnection(first.id, "http://x/back");
+    await addBrokerAccounts(first.id, ["acc-main"]);
+    // Every active link in this Portle counts, whoever made it.
+    const [{ n }] = await db
+      .select({ n: sql<number>`count(*)::int` })
+      .from(brokerConnections)
+      .where(ne(brokerConnections.status, "disconnected"));
+    broker.limit = n;
+
+    const late = await createTestUser(db, "Late");
+    await expect(startBrokerConnection(late.id, "http://x/back")).rejects.toThrow(/spots are taken/);
+    const [conn] = await db.select().from(brokerConnections).where(eq(brokerConnections.userId, first.id));
+    expect(await startBrokerConnection(first.id, "http://x/back", conn.id)).toContain("fix=auth-1");
+  });
+
+  it("explains a refused new link instead of asking the member to sign in again", async () => {
+    const u = await createTestUser(db, "Refused");
+    broker.connectError = 403;
+    await expect(startBrokerConnection(u.id, "http://x/back")).rejects.toThrow(/spots may be taken/);
+    broker.connectError = 500;
+    await expect(startBrokerConnection(u.id, "http://x/back")).rejects.toThrow(/didn't answer/);
   });
 
   it("disconnects, keeping the records or removing them", async () => {

@@ -1,7 +1,7 @@
 import { randomUUID } from "node:crypto";
 import { eq, sql } from "drizzle-orm";
 import { beforeAll, describe, expect, it } from "vitest";
-import { createTestDb, createTestUser } from "@/test/db";
+import { createTestDb, createTestUser, grantFullAccess } from "@/test/db";
 import type { Db } from "../db";
 import * as s from "../db/schema";
 import { resetRateLimits } from "../rate-limit";
@@ -33,6 +33,8 @@ let alice: string, bob: string, carol: string;
 async function member(name: string, handle: string) {
   const u = await createTestUser(db, name);
   await completeOnboarding(u.id, { handle, displayName: name, baseCurrency: "EUR", acceptTerms: true, paperStartingCash: "10000" });
+  // These members value holdings, so they have prices, as if the owner had let them in.
+  await grantFullAccess(db, u.id);
   return u.id;
 }
 
