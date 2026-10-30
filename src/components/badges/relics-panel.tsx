@@ -273,7 +273,11 @@ export function RelicRow({
   };
   return (
     <>
-      <ul className="mt-3 flex flex-wrap items-center gap-1" aria-label="Relics">
+      {/* One see-through pill around the row, so the Relics read as a set. */}
+      <ul
+        className="mt-3 flex w-fit max-w-full flex-wrap items-center gap-1 rounded-[12px] bg-[color-mix(in_srgb,var(--fg)_5%,transparent)] p-1 shadow-[inset_0_0_0_1px_var(--line)] backdrop-blur-sm"
+        aria-label="Relics"
+      >
         {relics.slice(0, limit).map((r) => (
           <li key={r.key}>
             <Tip
