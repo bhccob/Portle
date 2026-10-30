@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { MessageSquare, ShieldCheck, Users } from "lucide-react";
 import { DeletePostButton } from "@/app/(app)/feed/feed-client";
+import { AuthorTag } from "@/components/badges/author-tag";
 import { AllocationRing } from "@/components/charts/allocation";
 import { Avatar } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -21,9 +22,12 @@ export function PostCard({ item, viewerId, guildName, link = true }: { item: Fee
         <div className="flex min-w-0 items-center gap-3">
           <Avatar name={author.displayName} hue={author.avatarHue} size="md" />
           <div className="min-w-0">
-            <Link href={`/u/${author.handle}`} className="block truncate font-medium text-fg hover:underline">
-              {author.displayName}
-            </Link>
+            <span className="flex min-w-0 items-center gap-1.5">
+              <Link href={`/u/${author.handle}`} className="truncate font-medium text-fg hover:underline">
+                {author.displayName}
+              </Link>
+              <AuthorTag userId={author.userId} />
+            </span>
             <p className="flex flex-wrap items-center gap-1.5 text-xs text-fg-subtle">
               <span>@{author.handle}</span>·<time dateTime={post.createdAt.toISOString()}>{relativeTime(post.createdAt)}</time>·
               <span className="inline-flex items-center gap-1">

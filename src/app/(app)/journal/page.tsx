@@ -4,7 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { ButtonLink } from "@/components/ui/button";
 import { PageHeader, Panel } from "@/components/ui/panel";
 import { EmptyState } from "@/components/ui/states";
-import { longestStreak } from "@/domain/relics";
+import { longestStreak } from "@/domain/badges";
 import { cn } from "@/lib/cn";
 import { formatDate } from "@/lib/format";
 import { listEntries } from "@/server/services/journal";

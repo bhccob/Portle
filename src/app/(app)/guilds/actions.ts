@@ -17,7 +17,7 @@ import {
   setShareAllocation,
   transferOwnership,
 } from "@/server/services/guilds";
-import { evaluateRelicsQuietly } from "@/server/services/relics";
+import { syncBadgesQuietly } from "@/server/services/badges";
 import { requireMember } from "@/server/session";
 
 export async function createGuildAction(_: ActionResult<{ slug: string }> | null, form: FormData): Promise<ActionResult<{ slug: string }>> {
@@ -35,7 +35,7 @@ export async function createGuildAction(_: ActionResult<{ slug: string }> | null
   });
   if (!res.ok) return res;
   revalidatePath("/guilds");
-  await evaluateRelicsQuietly(user.id);
+  await syncBadgesQuietly(user.id);
   redirect(`/guilds/${res.data.slug}`);
 }
 
@@ -84,7 +84,7 @@ export async function guildOpAction(input: GuildOp): Promise<ActionResult<string
   });
   if (res.ok) {
     revalidatePath("/guilds", "layout");
-    await evaluateRelicsQuietly(user.id);
+    await syncBadgesQuietly(user.id);
   }
   return res;
 }

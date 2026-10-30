@@ -80,6 +80,9 @@ export async function listOwners() {
     .where(inArray(sql`lower(${user.email})`, emails));
 }
 
+/** The member ids that wear the Founder tag. Read once per request. */
+export const founderIds = cache(async () => new Set((await listOwners()).map((o) => o.id)));
+
 /** The owner's first name for "Ask Bob for full access", or a plain stand-in when none is set up. */
 export async function ownerName() {
   const [first] = await listOwners();

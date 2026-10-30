@@ -39,7 +39,7 @@ export default async function NotificationsPage() {
     <>
       <PageHeader
         title="Notifications"
-        description="Friend requests, replies to your reasoning, Guild activity, Relics, and the revisit dates you set yourself. No engagement nudges."
+        description="Friend requests, replies to your reasoning, Guild activity, badges, and the revisit dates you set yourself. No engagement nudges."
         actions={
           unread ? (
             <form action={markAll}>

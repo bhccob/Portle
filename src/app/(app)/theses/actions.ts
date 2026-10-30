@@ -5,7 +5,7 @@ import { redirect } from "next/navigation";
 import { runAction } from "@/server/action";
 import type { ActionResult } from "@/server/errors";
 import { assertRateLimit } from "@/server/rate-limit";
-import { evaluateRelicsQuietly } from "@/server/services/relics";
+import { syncBadgesQuietly } from "@/server/services/badges";
 import { addComment, REACTIONS, reportContent, REPORT_REASONS, toggleBookmark, toggleReaction } from "@/server/services/social";
 import { addThesisNote, createThesis, deleteThesis, reviseThesis, setReviewDate, type ThesisInput } from "@/server/services/theses";
 import { buildViewer } from "@/server/services/viewer";
@@ -52,7 +52,7 @@ export async function saveThesisAction(_: ActionResult<{ id: string }> | null, f
   });
   if (!res.ok) return res;
   revalidatePath("/theses", "layout");
-  await evaluateRelicsQuietly(user.id);
+  await syncBadgesQuietly(user.id);
   redirect(`/theses/${res.data.id}${id ? "?revised=1" : "?created=1"}`);
 }
 
@@ -98,7 +98,7 @@ export async function commentAction(target: { type: "post" | "thesis"; id: strin
   if (res.ok) {
     revalidatePath(target.type === "thesis" ? `/theses/${target.id}` : `/feed/${target.id}`);
     revalidatePath("/feed");
-    await evaluateRelicsQuietly(user.id);
+    await syncBadgesQuietly(user.id);
   }
   return res;
 }

@@ -2,18 +2,18 @@ import { and, desc, eq, ne, sql } from "drizzle-orm";
 import { z } from "zod";
 import { isCurrency } from "@/domain/money";
 import { canView, profileAccess, type Audience, type Viewer } from "@/domain/permissions";
-import { RELIC_BY_KEY } from "@/domain/relics";
 import { EXPERIENCE, INTERESTS } from "@/domain/topics";
 import { audit } from "../audit";
 import { getDb } from "../db";
-import { consents, friendships, guildMembers, guilds, privacySettings, profiles, theses, user, userRelics } from "../db/schema";
+import { consents, friendships, guildMembers, guilds, privacySettings, profiles, theses, user } from "../db/schema";
 import { notFound, UserFacingError } from "../errors";
+import { shownBadges } from "./badges";
 import { ensureDefaultWatchlist } from "./market";
 import { ensurePaperAccount } from "./paper";
 import { ensurePortfolio, getValuation } from "./portfolio";
 
 export const TERMS_VERSION = "2026-10";
-const RESERVED = new Set(["admin", "portle", "porfael", "support", "help", "settings", "api", "root", "system", "me", "guild", "guilds", "relics"]);
+const RESERVED = new Set(["admin", "portle", "porfael", "support", "help", "settings", "api", "root", "system", "me", "guild", "guilds", "relics", "badges", "founder"]);
 
 export const handleSchema = z
   .string()
@@ -167,11 +167,7 @@ export async function getProfileView(viewer: Viewer, handle: string) {
     }
   }
 
-  const relics = access.relics
-    ? (await db.select().from(userRelics).where(and(eq(userRelics.userId, p.userId), eq(userRelics.displayed, true))))
-        .map((r) => ({ ...RELIC_BY_KEY.get(r.relicKey)!, awardedAt: r.awardedAt }))
-        .filter((r) => r.key)
-    : [];
+  const relics = access.relics ? await shownBadges(p.userId) : [];
 
   const guildRows = access.guilds
     ? await db

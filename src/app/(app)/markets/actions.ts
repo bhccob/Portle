@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import { runAction } from "@/server/action";
 import type { ActionResult } from "@/server/errors";
 import { addToWatchlist, createWatchlist, deleteWatchlist, removeFromWatchlist } from "@/server/services/market";
-import { evaluateRelicsQuietly } from "@/server/services/relics";
+import { syncBadgesQuietly } from "@/server/services/badges";
 import { requireMember } from "@/server/session";
 
 export async function addToWatchlistAction(watchlistId: string, instrumentId: string): Promise<ActionResult> {
@@ -12,7 +12,7 @@ export async function addToWatchlistAction(watchlistId: string, instrumentId: st
   const res = await runAction(() => addToWatchlist(user.id, watchlistId, instrumentId), "Added to watchlist.");
   if (res.ok) {
     revalidatePath("/markets", "layout");
-    await evaluateRelicsQuietly(user.id);
+    await syncBadgesQuietly(user.id);
   }
   return res;
 }

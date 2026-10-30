@@ -5,7 +5,7 @@ import { runAction } from "@/server/action";
 import type { ActionResult } from "@/server/errors";
 import { assertRateLimit } from "@/server/rate-limit";
 import { cancelOrder, placeOrder, resetLab, updateLabAssumptions } from "@/server/services/paper";
-import { evaluateRelicsQuietly } from "@/server/services/relics";
+import { syncBadgesQuietly } from "@/server/services/badges";
 import { requireMember } from "@/server/session";
 
 export type OrderOutcome = { status: string; reason: string | null; duplicate: boolean };
@@ -29,7 +29,7 @@ export async function placeOrderAction(_: ActionResult<OrderOutcome> | null, for
   });
   if (res.ok) {
     revalidatePath("/lab");
-    await evaluateRelicsQuietly(user.id);
+    await syncBadgesQuietly(user.id);
   }
   return res;
 }

@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import { runAction } from "@/server/action";
 import type { ActionResult } from "@/server/errors";
 import { previewProfileAs, updatePrivacy, updateProfile } from "@/server/services/profile";
-import { evaluateRelicsQuietly } from "@/server/services/relics";
+import { syncBadgesQuietly } from "@/server/services/badges";
 import { requireMember } from "@/server/session";
 
 export async function updateProfileAction(_: ActionResult | null, form: FormData): Promise<ActionResult> {
@@ -48,5 +48,5 @@ export async function updatePrivacyAction(_: ActionResult | null, form: FormData
 export async function recordPreviewAction(as: "friend" | "member") {
   const { user } = await requireMember();
   await previewProfileAs(user.id, as);
-  await evaluateRelicsQuietly(user.id);
+  await syncBadgesQuietly(user.id);
 }

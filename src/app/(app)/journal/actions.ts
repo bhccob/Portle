@@ -5,7 +5,7 @@ import { redirect } from "next/navigation";
 import { runAction } from "@/server/action";
 import type { ActionResult } from "@/server/errors";
 import { createEntry, deleteEntry, updateEntry } from "@/server/services/journal";
-import { evaluateRelicsQuietly } from "@/server/services/relics";
+import { syncBadgesQuietly } from "@/server/services/badges";
 import { requireMember } from "@/server/session";
 
 function read(form: FormData) {
@@ -37,7 +37,7 @@ export async function saveEntryAction(_: ActionResult<{ id: string }> | null, fo
   if (!res.ok) return res;
   revalidatePath("/journal", "layout");
   revalidatePath("/home");
-  await evaluateRelicsQuietly(user.id);
+  await syncBadgesQuietly(user.id);
   redirect(`/journal/${res.data.id}`);
 }
 

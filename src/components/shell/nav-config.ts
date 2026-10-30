@@ -18,7 +18,7 @@ export const MORE_NAV: NavItem[] = [
   { href: "/spending", label: "Spending", icon: Receipt },
   { href: "/archives", label: "Archives", icon: Library },
   { href: "/guilds", label: "Guilds", icon: Users },
-  { href: "/relics", label: "Relics", icon: Gem },
+  { href: "/badges", label: "Badges", icon: Gem },
 ];
 
 export const UTILITY_NAV: NavItem[] = [

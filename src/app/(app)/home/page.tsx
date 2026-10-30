@@ -1,5 +1,6 @@
 import Link from "next/link";
-import { BookOpen, CalendarClock, CheckCircle2, ChevronRight, Circle, FlaskConical, Gem, Lock, NotebookPen, ScrollText, ShieldAlert } from "lucide-react";
+import { BookOpen, CalendarClock, CheckCircle2, ChevronRight, Circle, FlaskConical, Lock, NotebookPen, ScrollText, ShieldAlert } from "lucide-react";
+import { BadgeIcon } from "@/components/badges/badge-icon";
 import { Ring } from "@/components/charts/ring";
 import { holdingSlices, practiceSlices } from "@/components/charts/ring-data";
 import { Avatar } from "@/components/ui/avatar";
@@ -15,7 +16,7 @@ import { listEntries, REFLECTION_PROMPTS } from "@/server/services/journal";
 import { getPrices, listWatchlists } from "@/server/services/market";
 import { getLab } from "@/server/services/paper";
 import { getValuation } from "@/server/services/portfolio";
-import { listRelics } from "@/server/services/relics";
+import { listBadges } from "@/server/services/badges";
 import { listFeed } from "@/server/services/social";
 import { listOwnTheses } from "@/server/services/theses";
 import { requireViewer } from "@/server/viewer-session";
@@ -48,14 +49,14 @@ const START_HERE = ["paper-lab", "diversification", "writing-a-thesis"].map((slu
 
 export default async function HomePage() {
   const { user, profile, viewer } = await requireViewer();
-  const [val, lab, theses, journal, lists, feed, relics] = await Promise.all([
+  const [val, lab, theses, journal, lists, feed, badges] = await Promise.all([
     getValuation(user.id),
     getLab(user.id),
     listOwnTheses(user.id),
     listEntries(user.id),
     listWatchlists(user.id),
     listFeed(viewer, { limit: 4 }),
-    listRelics(user.id),
+    listBadges(user.id),
   ]);
   const base = val.portfolio.baseCurrency;
   const v = val.valuation;
@@ -82,14 +83,17 @@ export default async function HomePage() {
     .slice(0, Math.max(0, 3 - revisits.length));
   const wroteToday = journal.some((j) => j.entry.entryDate === today);
   const prompt = REFLECTION_PROMPTS[new Date().getUTCDate() % REFLECTION_PROMPTS.length];
-  const next = relics.filter((r) => !r.earned).sort((a, b) => b.progress.value / b.progress.threshold - a.progress.value / a.progress.threshold)[0];
+  // The badge closest to its next level, earned or not.
+  const next = [...badges.earned, ...badges.locked]
+    .filter((b) => b.progress?.toNext)
+    .sort((a, b) => b.progress!.fraction - a.progress!.fraction)[0];
 
   const steps = [
     { done: val.accounts.length > 0 && v.holdings.length > 0, label: "Add what you own", href: "/portfolio" },
     { done: theses.length > 0, label: "Write a thesis with what would prove it wrong", href: "/theses/new" },
     { done: lab.orders.length > 0, label: "Try an idea with practice money", href: "/lab" },
     { done: journal.length > 0, label: "Write your first journal entry", href: "/journal/new" },
-    { done: relics.some((r) => r.key === "veil" && r.earned), label: "Check what others can see", href: "/settings/privacy" },
+    { done: badges.earned.some((b) => b.key === "veil"), label: "Check what others can see", href: "/settings/privacy" },
   ];
   const showChecklist = steps.some((s) => !s.done);
   const hour = new Date().getHours();
@@ -371,17 +375,13 @@ export default async function HomePage() {
           ) : null}
 
           {next ? (
-            <Panel title="Next Relic">
+            <Panel title="Next badge">
               <ul>
                 <RowLink
-                  href="/relics"
-                  lead={
-                    <span className={`${tile} bg-selected text-accent`}>
-                      <Gem className="size-[18px]" aria-hidden />
-                    </span>
-                  }
-                  title={next.name}
-                  sub={`${next.rule} · ${next.progress.value} of ${next.progress.threshold}`}
+                  href="/badges"
+                  lead={<BadgeIcon badgeKey={next.key} level={next.level + 1} size="md" label={next.name} />}
+                  title={`${next.name} · ${next.ladder[next.level]?.name ?? next.levelName}`}
+                  sub={next.progress!.toNext}
                 />
               </ul>
             </Panel>

@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
+import { AuthorTag } from "@/components/badges/author-tag";
 import { CommentForm } from "@/components/social/interactions";
 import { PostCard } from "@/components/social/post-card";
 import { Avatar } from "@/components/ui/avatar";
@@ -41,6 +42,7 @@ export default async function PostPage({ params }: { params: Promise<{ id: strin
                   <Link href={`/u/${author.handle}`} className="font-medium text-fg hover:underline">
                     {author.displayName}
                   </Link>{" "}
+                  <AuthorTag userId={author.userId} />{" "}
                   <span className="text-xs text-fg-subtle">{relativeTime(comment.createdAt)}</span>
                 </p>
                 <p className="mt-0.5 whitespace-pre-wrap text-fg-muted">{comment.body}</p>

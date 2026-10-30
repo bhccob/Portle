@@ -4,7 +4,7 @@ import { Panel } from "@/components/ui/panel";
 import { Callout } from "@/components/ui/states";
 import { formatPercent } from "@/lib/format";
 import { getPrivacy, previewProfileAs } from "@/server/services/profile";
-import { evaluateRelicsQuietly } from "@/server/services/relics";
+import { syncBadgesQuietly } from "@/server/services/badges";
 import { requireMember } from "@/server/session";
 import { PrivacyForm } from "../settings-forms";
 
@@ -41,7 +41,7 @@ function PreviewCard({ title, preview }: { title: string; preview: Preview }) {
             <dd className="text-fg-muted">{preview.view.theses.length}</dd>
           </div>
           <div>
-            <dt className="text-xs text-fg-subtle">Relics shown</dt>
+            <dt className="text-xs text-fg-subtle">Badges shown</dt>
             <dd className="text-fg-muted">{preview.view.relics.length}</dd>
           </div>
         </dl>
@@ -53,7 +53,7 @@ function PreviewCard({ title, preview }: { title: string; preview: Preview }) {
 export default async function PrivacyPage() {
   const { user } = await requireMember();
   const [privacy, asFriend, asMember] = await Promise.all([getPrivacy(user.id), previewProfileAs(user.id, "friend"), previewProfileAs(user.id, "member")]);
-  await evaluateRelicsQuietly(user.id);
+  await syncBadgesQuietly(user.id);
   return (
     <div className="space-y-5">
       <Callout tone="neutral" icon={Lock} title="Never shared, under any setting">

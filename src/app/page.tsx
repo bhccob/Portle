@@ -49,7 +49,7 @@ export default async function Landing() {
                 <a href="#guilds">Guilds</a>
               </li>
               <li>
-                <a href="#relics">Relics</a>
+                <a href="#relics">Badges</a>
               </li>
             </ul>
           </nav>

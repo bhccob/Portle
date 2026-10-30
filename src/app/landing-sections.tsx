@@ -2,16 +2,16 @@ import Image from "next/image";
 import Link from "next/link";
 import { Check, FileSpreadsheet, LockKeyhole, MessageCircle, Plus } from "lucide-react";
 import { PortleMark } from "@/components/brand/logo";
-import { RelicIcon } from "@/components/relics/relic-icon";
+import { BadgeIcon } from "@/components/badges/badge-icon";
 import "./landing-sections.css";
 
 /* Everything on this page is illustrative sample content; each panel says so. */
 
-const RELICS = [
-  { key: "first-specimen", tier: "common", name: "First Specimen", rule: "Write your first thesis.", progress: "Earned", earned: true },
-  { key: "fault-line", tier: "rare", name: "Fault Line", rule: "Note what would change your mind, three times.", progress: "2 of 3", earned: false },
-  { key: "growth-rings", tier: "rare", name: "Growth Rings", rule: "Revise a thesis as things change.", progress: "1 of 5", earned: false },
-  { key: "honest-ledger", tier: "epic", name: "Honest Ledger", rule: "Mark a thesis wrong, and say why.", progress: "Not yet", earned: false },
+const BADGES = [
+  { key: "first-specimen", level: 2, name: "Thesis writer", rule: "Write theses with your reasons.", progress: "Quartz · 3 more to Amethyst", earned: true },
+  { key: "fault-line", level: 1, name: "Fault lines", rule: "Write down what would prove you wrong.", progress: "Pebble · 2 more to Quartz", earned: true },
+  { key: "member", level: 3, name: "Member", rule: "Keep coming back. Time does the rest.", progress: "Amethyst · 6 months", earned: true },
+  { key: "honest-ledger", level: 1, name: "Honest ledger", rule: "Mark a thesis wrong, and say why.", progress: "Not yet", earned: false },
 ] as const;
 
 const FAQ = [
@@ -231,20 +231,20 @@ export function LandingSections() {
           Little rewards for good habits.
         </h2>
         <p className="l-lede">
-          Collect Relics for the habits that make you a better investor: writing down your reasons, revisiting them, being honest when you were wrong. Never for
+          Earn badges for the habits that make you a better investor: writing down your reasons, revisiting them, being honest when you were wrong. Each one levels up from Pebble to Diamond. Never for
           how much you made.
         </p>
         <ul className="l-relic-row">
-          {RELICS.map((r) => (
+          {BADGES.map((r) => (
             <li key={r.key} className={r.earned ? "is-earned" : undefined}>
-              <RelicIcon relicKey={r.key} tier={r.tier} label={r.name} locked={!r.earned} />
+              <BadgeIcon badgeKey={r.key} level={r.level} label={r.name} locked={!r.earned} size="lg" />
               <h3>{r.name}</h3>
               <p>{r.rule}</p>
               <span className="l-relic-progress">{r.progress}</span>
             </li>
           ))}
         </ul>
-        <p className="l-relic-note">16 to collect, from common to epic. Show the ones you&rsquo;ve earned on your profile, to whoever you choose.</p>
+        <p className="l-relic-note">16 badges with up to five levels each. Show the ones you&rsquo;ve earned on your profile, to whoever you choose.</p>
       </section>
 
       <section className="l-faq" aria-labelledby="faq-title">

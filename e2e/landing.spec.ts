@@ -22,7 +22,7 @@ test.describe("landing page", () => {
       ["Theses", "Write down why"],
       ["Paper Lab", "Practise without the pressure."],
       ["Guilds", "Share ideas, not your balance."],
-      ["Relics", "Little rewards for good habits."],
+      ["Badges", "Little rewards for good habits."],
     ] as const) {
       await page.getByRole("navigation", { name: "Product" }).getByRole("link", { name: link }).click();
       await expect(page.getByRole("heading", { name: heading })).toBeInViewport();

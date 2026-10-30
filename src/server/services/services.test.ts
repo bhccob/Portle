@@ -10,7 +10,7 @@ import { addToWatchlist, getInstrumentBySymbol, listWatchlists } from "./market"
 import { getLab, placeOrder, processOpenOrders } from "./paper";
 import { addTransaction, createAccount, getPerformance, getValuation, importCsv } from "./portfolio";
 import { completeOnboarding, getProfileView, previewProfileAs, updatePrivacy } from "./profile";
-import { evaluateRelics } from "./relics";
+import { listBadges, syncBadges } from "./badges";
 import { addComment, blockUser, createPost, listFeed, respondFriendRequest, sendFriendRequest } from "./social";
 import {
   createGuild,
@@ -285,19 +285,25 @@ describe("guilds", () => {
   });
 });
 
-describe("relics", () => {
-  it("awards from server-side metrics exactly once", async () => {
-    const first = await evaluateRelics(alice);
-    expect(first).toContain("first-specimen");
-    expect(await evaluateRelics(alice)).toEqual([]);
+describe("badges", () => {
+  it("awards from server-side metrics exactly once, at the right level", async () => {
+    await syncBadges(alice);
+    await syncBadges(alice);
     const rows = await db.select().from(s.userRelics).where(eq(s.userRelics.userId, alice));
     expect(rows.filter((r) => r.relicKey === "first-specimen")).toHaveLength(1);
+    const { earned } = await listBadges(alice);
+    expect(earned.find((b) => b.key === "first-specimen")).toMatchObject({ level: 1, levelName: "Pebble" });
+    // Portle isn't public yet, so every member so far is an early member.
+    expect(earned.map((b) => b.key)).toContain("early");
+    const notes = await db.select().from(s.notifications).where(eq(s.notifications.userId, alice));
+    expect(notes.filter((n) => n.title === "Badge earned: Thesis writer")).toHaveLength(1);
   });
 
-  it("counts watchlist breadth", async () => {
+  it("counts watchlist breadth and says what the next level needs", async () => {
     const [wl] = await listWatchlists(carol);
     for (const sym of ["AAPL", "MSFT", "NVDA", "ASML", "SAP"]) await addToWatchlist(carol, wl.id, (await getInstrumentBySymbol(sym))!.id);
-    expect(await evaluateRelics(carol)).toContain("watchkeeper");
+    const watch = (await listBadges(carol)).earned.find((b) => b.key === "watchkeeper");
+    expect(watch).toMatchObject({ level: 1, progress: { toNext: "5 more securities" } });
   });
 });
 

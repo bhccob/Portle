@@ -43,6 +43,13 @@
       "when": 1793353003818,
       "tag": "0005_access_and_spending",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1793358098748,
+      "tag": "0006_badge_levels",
+      "breakpoints": true
     }
   ]
 }

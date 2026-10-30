@@ -7,7 +7,7 @@ import { runAction } from "@/server/action";
 import { UserFacingError, type ActionResult } from "@/server/errors";
 import { assertRateLimit } from "@/server/rate-limit";
 import { archiveAccount, createAccount, deleteTransaction, addTransaction, importCsv, loadSamplePortfolio, setBaseCurrency } from "@/server/services/portfolio";
-import { evaluateRelicsQuietly } from "@/server/services/relics";
+import { syncBadgesQuietly } from "@/server/services/badges";
 import { requireMember } from "@/server/session";
 
 const s = (f: FormData, k: string) => {
@@ -50,7 +50,7 @@ export async function addTransactionAction(_: ActionResult | null, form: FormDat
   if (res.ok) {
     revalidatePath("/portfolio", "layout");
     revalidatePath("/home");
-    await evaluateRelicsQuietly(user.id);
+    await syncBadgesQuietly(user.id);
   }
   return res;
 }
@@ -81,7 +81,7 @@ export async function importCsvAction(input: { accountId: string; filename: stri
   });
   if (res.ok) {
     revalidatePath("/portfolio", "layout");
-    await evaluateRelicsQuietly(user.id);
+    await syncBadgesQuietly(user.id);
   }
   return res;
 }

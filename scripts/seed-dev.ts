@@ -15,7 +15,7 @@ import { createEntry } from "../src/server/services/journal";
 import { addToWatchlist, getInstrumentBySymbol, listWatchlists } from "../src/server/services/market";
 import { loadSamplePortfolio } from "../src/server/services/portfolio";
 import { completeOnboarding, updatePrivacy } from "../src/server/services/profile";
-import { evaluateRelics } from "../src/server/services/relics";
+import { syncBadges } from "../src/server/services/badges";
 import { createPost, respondFriendRequest, sendFriendRequest } from "../src/server/services/social";
 import { createThesis, reviseThesis } from "../src/server/services/theses";
 
@@ -117,7 +117,7 @@ async function main() {
   await createPost(ben.id, { body: "Rebalanced back to target after the quarter. Boring is the point.", audience: "friends" });
   await createPost(cleo.id, { body: "Welcome to Long Horizon. Post your rebalancing rules here.", audience: "guild", guildId: g.id });
 
-  for (const m of [ada, ben, cleo]) await evaluateRelics(m.id);
+  for (const m of [ada, ben, cleo]) await syncBadges(m.id);
   console.log("Seeded ada, ben and cleo @example.test (password in e2e/fixtures.ts).");
   process.exit(0);
 }

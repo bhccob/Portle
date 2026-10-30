@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLeft, CalendarClock, FlaskConical, History, Link2, Lock, PenLine, ShieldAlert } from "lucide-react";
+import { AuthorTag } from "@/components/badges/author-tag";
 import { Avatar } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { ButtonLink } from "@/components/ui/button";
@@ -112,6 +113,7 @@ export default async function ThesisPage({ params, searchParams }: { params: Pro
                 <Link href={`/u/${t.author.handle}`} className="font-medium text-fg hover:underline">
                   {t.isOwner ? "You" : t.author.displayName}
                 </Link>
+                <AuthorTag userId={t.thesis.userId} />
                 <span className="text-fg-subtle">
                   · Rev {shown.revision} · {formatDate(shown.createdAt)}
                 </span>
@@ -201,6 +203,7 @@ export default async function ThesisPage({ params, searchParams }: { params: Pro
                       <Link href={`/u/${author.handle}`} className="font-medium text-fg hover:underline">
                         {author.displayName}
                       </Link>{" "}
+                      <AuthorTag userId={author.userId} />{" "}
                       <span className="text-xs text-fg-subtle">{relativeTime(comment.createdAt)}</span>
                     </p>
                     <p className="mt-0.5 text-sm whitespace-pre-wrap text-fg-muted">{comment.body}</p>

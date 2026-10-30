@@ -61,7 +61,7 @@ const ROWS: { name: string; label: string; hint: string; options?: [string, stri
   { name: "profileVisibility", label: "Your profile", hint: "Name, bio and interests." },
   { name: "allocationVisibility", label: "Allocation percentages", hint: "By asset class, region and sector. Never values." },
   { name: "holdingsVisibility", label: "Holdings by weight", hint: "Symbols and percentages. Never quantities or values." },
-  { name: "relicsVisibility", label: "Relics", hint: "Only the ones you choose to display." },
+  { name: "relicsVisibility", label: "Badges", hint: "Only the ones you choose to show." },
   { name: "guildsVisibility", label: "Guild memberships", hint: "Private Guilds stay hidden from non-members regardless." },
   { name: "activityVisibility", label: "Activity", hint: "Reserved for future activity summaries." },
   { name: "thesesDefaultVisibility", label: "Default for new theses", hint: "You can change it per thesis." },

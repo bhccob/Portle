@@ -3,7 +3,8 @@ import { notFound } from "next/navigation";
 import { EyeOff, Lock, Settings2 } from "lucide-react";
 import { FriendButton } from "@/app/(app)/feed/feed-client";
 import { AllocationRing } from "@/components/charts/allocation";
-import { RelicIcon } from "@/components/relics/relic-icon";
+import { AuthorTag } from "@/components/badges/author-tag";
+import { BadgeRow } from "@/components/badges/badge-sheet";
 import { Avatar } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { ButtonLink } from "@/components/ui/button";
@@ -43,18 +44,12 @@ export default async function ProfilePage({ params, searchParams }: { params: Pr
             <Avatar name={p.displayName} hue={p.avatarHue} size="xl" />
             <div className="min-w-0">
               <h1 className="font-display text-[1.75rem] leading-tight font-bold tracking-[-0.02em] text-fg">{p.displayName}</h1>
-              <p className="text-sm text-fg-subtle">
-                @{p.handle} · member since {formatDate(p.memberSince)}
+              <p className="mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-fg-subtle">
+                @{p.handle}
+                <AuthorTag userId={p.userId} size="md" />
+                <span>member since {formatDate(p.memberSince)}</span>
               </p>
-              {view.relics.length ? (
-                <ul className="mt-3 flex flex-wrap gap-1.5" aria-label="Relics">
-                  {view.relics.slice(0, 8).map((r) => (
-                    <li key={r.key} title={`${r.name}: ${r.description}`}>
-                      <RelicIcon relicKey={r.key} tier={r.tier} size="sm" label={r.name} />
-                    </li>
-                  ))}
-                </ul>
-              ) : null}
+              <BadgeRow badges={view.relics} />
             </div>
           </div>
           <div className="flex flex-wrap gap-2">
