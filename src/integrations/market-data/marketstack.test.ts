@@ -19,11 +19,17 @@ function provider(respond: (url: URL) => Response) {
 }
 
 describe("marketstack", () => {
-  it("names US listings by their ticker and other listings with the exchange code", () => {
+  // Endings checked against marketstack's own ticker list (2026-10-31).
+  it("names US listings by their ticker and other listings with their Yahoo-style ending", () => {
     expect(marketstackSymbol({ symbol: "AAPL", exchange: "XNAS" })).toBe("AAPL");
     expect(marketstackSymbol({ symbol: "VOO", exchange: "ARCX" })).toBe("VOO");
     expect(marketstackSymbol({ symbol: "ZETA", exchange: "" })).toBe("ZETA");
-    expect(marketstackSymbol({ symbol: "ASML", exchange: "XAMS" })).toBe("ASML.XAMS");
+    expect(marketstackSymbol({ symbol: "ASML", exchange: "XAMS" })).toBe("ASML.AS");
+    expect(marketstackSymbol({ symbol: "VWCE", exchange: "XETR" })).toBe("VWCE.DE");
+    expect(marketstackSymbol({ symbol: "NOVO-B", exchange: "XCSE" })).toBe("NOVO-B.CO");
+    expect(marketstackSymbol({ symbol: "VUSA", exchange: "XLON" })).toBe("VUSA.L");
+    // An exchange without a known ending is skipped rather than risk a US company with the same ticker.
+    expect(marketstackSymbol({ symbol: "CDR", exchange: "XWAR" })).toBeNull();
   });
 
   it("turns the last two closes into a price and the day before", async () => {
@@ -33,8 +39,8 @@ describe("marketstack", () => {
         data: [
           row("AAPL", "2026-10-28", 230),
           row("AAPL", "2026-10-29", 233.5),
-          row("ASML.XAMS", "2026-10-29", 690, "EUR"),
-          row("VUSA.XLON", "2026-10-29", 8650, "GBX"),
+          row("ASML.AS", "2026-10-29", 690, "EUR"),
+          row("VUSA.L", "2026-10-29", 8650, "GBX"),
         ],
       }),
     );
@@ -43,16 +49,24 @@ describe("marketstack", () => {
       { symbol: "ASML", exchange: "XAMS" },
       { symbol: "VUSA", exchange: "XLON" },
       { symbol: "NOPE", exchange: "XNYS" },
+      { symbol: "CDR", exchange: "XWAR" },
     ]);
     expect(calls).toHaveLength(1);
     expect(calls[0].pathname).toBe("/v2/eod");
-    expect(calls[0].searchParams.get("symbols")).toBe("AAPL,ASML.XAMS,VUSA.XLON,NOPE");
+    expect(calls[0].searchParams.get("symbols")).toBe("AAPL,ASML.AS,VUSA.L,NOPE");
     expect(calls[0].searchParams.get("date_from")).toBe("2026-10-20");
     expect(quotes.get("AAPL:XNAS")).toMatchObject({ price: "233.5", previousClose: "230", currency: "USD", asOf: "2026-10-29T00:00:00.000Z", isDemo: false });
     expect(quotes.get("ASML:XAMS")).toMatchObject({ price: "690", previousClose: null, currency: "EUR" });
     // London quotes in pence; Portle keeps pounds.
     expect(quotes.get("VUSA:XLON")).toMatchObject({ price: "86.5", currency: "GBP" });
     expect(quotes.has("NOPE:XNYS")).toBe(false);
+    expect(quotes.has("CDR:XWAR")).toBe(false);
+  });
+
+  it("doesn't spend a request on history for an exchange it can't name", async () => {
+    const { p, calls } = provider(() => answer({ data: [] }));
+    expect(await p.getHistory({ symbol: "CDR", exchange: "XWAR" }, "2026-01-01", "2026-10-30")).toEqual([]);
+    expect(calls).toHaveLength(0);
   });
 
   it("asks for at most 100 symbols at a time", async () => {

@@ -1,5 +1,6 @@
 import { eq, inArray } from "drizzle-orm";
 import sharp from "sharp";
+import { LISTING_SUFFIX } from "@/integrations/market-data/listing-suffix";
 import { getDb } from "../db";
 import { logos } from "../db/schema";
 
@@ -19,32 +20,9 @@ const MAX_BYTES = 200_000;
 export const DARK_TILE = "#1b1b20";
 
 /** The logo service's ticker for a listing: ASML.AS for Amsterdam, plain AAPL for US listings. */
-const SUFFIX: Record<string, string> = {
-  XAMS: "AS",
-  XLON: "L",
-  XETR: "DE",
-  XFRA: "F",
-  XPAR: "PA",
-  XMIL: "MI",
-  XSWX: "SW",
-  XBRU: "BR",
-  XMAD: "MC",
-  XSTO: "ST",
-  XHEL: "HE",
-  XCSE: "CO",
-  XOSL: "OL",
-  XLIS: "LS",
-  XDUB: "IR",
-  XWBO: "VI",
-  XTSE: "TO",
-  XASX: "AX",
-  XHKG: "HK",
-  XTKS: "T",
-};
-
 export function logoKeys(ref: { symbol: string; exchange: string }) {
   const bare = ref.symbol.trim().toUpperCase();
-  const suffix = SUFFIX[ref.exchange];
+  const suffix = LISTING_SUFFIX[ref.exchange];
   return suffix ? [`${bare}.${suffix}`, bare] : [bare];
 }
 

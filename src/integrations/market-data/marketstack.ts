@@ -1,3 +1,4 @@
+import { LISTING_SUFFIX, US_MICS } from "./listing-suffix";
 import { refKey, type Bar, type IndexQuote, type InstrumentRef, type MarketDataProvider, type Quote } from "./types";
 
 type EodRow = { symbol: string; date: string; close: number | string | null; price_currency?: string | null };
@@ -6,10 +7,17 @@ type EodPage = { data?: EodRow[]; pagination?: { total?: number }; error?: { cod
 const PAGE = 1000;
 const BATCH = 100;
 /** Listings marketstack knows by their bare ticker. Broker-only securities with no known listing ("") try the same. */
-const BARE = new Set(["", "XNAS", "XNYS", "ARCX", "BATS", "XASE"]);
+const BARE = new Set(["", ...US_MICS]);
 
-/** marketstack's name for a listing: AAPL for US listings, ASML.XAMS elsewhere. */
-export const marketstackSymbol = (ref: InstrumentRef) => (BARE.has(ref.exchange) ? ref.symbol : `${ref.symbol}.${ref.exchange}`);
+/**
+ * marketstack's name for a listing: AAPL for US listings, ASML.AS or VUSA.L elsewhere. Null for an exchange
+ * without a known ending, which is never asked about: the bare ticker could be a different US company.
+ */
+export function marketstackSymbol(ref: InstrumentRef) {
+  if (BARE.has(ref.exchange)) return ref.symbol;
+  const suffix = LISTING_SUFFIX[ref.exchange];
+  return suffix ? `${ref.symbol}.${suffix}` : null;
+}
 
 const day = (iso: string) => iso.slice(0, 10);
 
@@ -75,7 +83,11 @@ export class MarketstackMarketDataProvider implements MarketDataProvider {
     const to = day(now.toISOString());
     // Ten days back always holds the last two trading days, even across holidays.
     const from = day(new Date(now.getTime() - 10 * 86400_000).toISOString());
-    const bySymbol = new Map(refs.map((r) => [marketstackSymbol(r).toUpperCase(), r]));
+    const bySymbol = new Map<string, InstrumentRef>();
+    for (const r of refs) {
+      const symbol = marketstackSymbol(r);
+      if (symbol) bySymbol.set(symbol.toUpperCase(), r);
+    }
     const symbols = [...bySymbol.keys()];
     for (let i = 0; i < symbols.length; i += BATCH) {
       let rows: EodRow[];
@@ -118,7 +130,9 @@ export class MarketstackMarketDataProvider implements MarketDataProvider {
 
   /** Throws when marketstack refuses, so the caller can tell "no history" from "couldn't ask". */
   async getHistory(ref: InstrumentRef, from: string, to: string): Promise<Bar[]> {
-    const rows = await this.eod([marketstackSymbol(ref)], from, to);
+    const symbol = marketstackSymbol(ref);
+    if (!symbol) return [];
+    const rows = await this.eod([symbol], from, to);
     return rows
       .filter((r) => r.close !== null && r.close !== "" && Number.isFinite(Number(r.close)))
       .map((r) => ({ date: day(r.date), close: money(r.close!, r.price_currency).price }))
