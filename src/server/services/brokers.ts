@@ -7,7 +7,7 @@ import { getBrokerProvider, NotConfiguredError, type BrokerAccount, type BrokerS
 import { audit } from "../audit";
 import { decryptSecret, encryptionReady, encryptSecret } from "../crypto";
 import { getDb } from "../db";
-import { accounts, brokerConnections, brokerUsers, instruments, memberPrices, transactions } from "../db/schema";
+import { accounts, brokerConnections, brokerUsers, instruments, journalEntries, memberPrices, theses, transactions } from "../db/schema";
 import { notFound, UserFacingError } from "../errors";
 import { assertRateLimit } from "../rate-limit";
 import { hasFullAccess } from "./access";
@@ -240,30 +240,73 @@ export async function addBrokerAccounts(userId: string, externalIds: string[]) {
   return results;
 }
 
-/** Finds a security by its ticker, or records it (unpriced until market data knows it). */
+/**
+ * Finds a security, or records it (unpriced until market data knows it). With the listing the broker
+ * names, that exact listing: the bare ticker could belong to a different company on another exchange.
+ */
 async function securityId(s: BrokerSecurity, cache: Map<string, string>) {
-  const key = `${s.symbol.toUpperCase()}::${s.currency}`;
+  const exchange = s.exchange ?? "";
+  const key = `${s.symbol.toUpperCase()}::${exchange}::${s.currency}`;
   const hit = cache.get(key);
   if (hit) return hit;
   const db = getDb();
   const symbol = s.symbol.toUpperCase().slice(0, 32);
-  const [match] = await db
-    .select({ id: instruments.id })
-    .from(instruments)
-    .where(sql`upper(${instruments.symbol}) = ${symbol} or upper(${instruments.isin}) = ${symbol}`)
-    .orderBy(sql`case when ${instruments.currency} = ${s.currency} then 0 else 1 end`, sql`case when ${instruments.exchange} = '' then 1 else 0 end`)
-    .limit(1);
+  const [match] = exchange
+    ? await db
+        .select({ id: instruments.id })
+        .from(instruments)
+        .where(and(sql`upper(${instruments.symbol}) = ${symbol}`, eq(instruments.exchange, exchange)))
+        .limit(1)
+    : await db
+        .select({ id: instruments.id })
+        .from(instruments)
+        .where(sql`upper(${instruments.symbol}) = ${symbol} or upper(${instruments.isin}) = ${symbol}`)
+        .orderBy(sql`case when ${instruments.currency} = ${s.currency} then 0 else 1 end`, sql`case when ${instruments.exchange} = '' then 1 else 0 end`)
+        .limit(1);
   const id =
     match?.id ??
     (
       await db
         .insert(instruments)
-        .values({ symbol, exchange: "", name: s.name, assetClass: s.kind, currency: s.currency })
+        .values({ symbol, exchange, name: s.name, assetClass: s.kind, currency: s.currency })
         .onConflictDoUpdate({ target: [instruments.symbol, instruments.exchange], set: { symbol } })
         .returning({ id: instruments.id })
     )[0].id;
   cache.set(key, id);
   return id;
+}
+
+/**
+ * Broker rows of this account filed under another listing of the same ticker (from before Portle kept the
+ * broker's listing) move to the listing the broker names, so holdings line up without extra "Matched" rows.
+ * The member's theses and journal entries about that holding move with it. A ticker the broker reports on
+ * two exchanges is left alone: there's no telling which row was which.
+ */
+async function moveToBrokerListings(userId: string, accountId: string, securities: BrokerSecurity[], cache: Map<string, string>) {
+  const listed = new Map<string, BrokerSecurity[]>();
+  for (const s of securities) {
+    if (!s.exchange) continue;
+    const symbol = s.symbol.toUpperCase().slice(0, 32);
+    listed.set(symbol, [...(listed.get(symbol) ?? []), s]);
+  }
+  const db = getDb();
+  for (const [symbol, list] of listed) {
+    if (new Set(list.map((s) => s.exchange)).size > 1) continue;
+    const id = await securityId(list[0], cache);
+    const sameTicker = db.select({ id: instruments.id }).from(instruments).where(and(sql`upper(${instruments.symbol}) = ${symbol}`, ne(instruments.id, id)));
+    const filed = and(eq(transactions.accountId, accountId), eq(transactions.source, "broker"), inArray(transactions.instrumentId, sameTicker));
+    const from = (await db.selectDistinct({ id: transactions.instrumentId }).from(transactions).where(filed)).flatMap((r) => (r.id ? [r.id] : []));
+    if (!from.length) continue;
+    await db.update(transactions).set({ instrumentId: id }).where(filed);
+    await db
+      .update(theses)
+      .set({ instrumentId: id })
+      .where(and(eq(theses.userId, userId), inArray(theses.instrumentId, from)));
+    await db
+      .update(journalEntries)
+      .set({ instrumentId: id })
+      .where(and(eq(journalEntries.userId, userId), inArray(journalEntries.instrumentId, from)));
+  }
 }
 
 type SyncedAccount = { id: string; externalId: string | null; institution: string };
@@ -305,6 +348,7 @@ async function syncAccount(userId: string, user: BrokerUser, account: SyncedAcco
       })
       .onConflictDoNothing();
   }
+  await moveToBrokerListings(userId, account.id, [...activities.flatMap((a) => (a.security ? [a.security] : [])), ...positions], ids);
 
   // 2. Then whatever still differs from what the broker holds today.
   const ledger = buildLedger(await ledgerRows(userId, [account.id])).positions.map((p) => ({

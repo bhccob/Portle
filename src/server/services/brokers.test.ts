@@ -4,7 +4,7 @@ import { buildLedger } from "@/domain/accounting";
 import { setBrokerProviderForTests, type BrokerActivity, type BrokerPosition, type BrokerProvider, type BrokerUser } from "@/integrations/brokers";
 import { createTestDb, createTestUser as createUser, grantFullAccess } from "@/test/db";
 import type { Db } from "../db";
-import { accounts, brokerConnections, brokerUsers, instruments, transactions } from "../db/schema";
+import { accounts, brokerConnections, brokerUsers, instruments, theses, transactions } from "../db/schema";
 import { resetRateLimits } from "../rate-limit";
 import {
   addBrokerAccounts,
@@ -176,6 +176,49 @@ describe("connecting a broker", () => {
     await expect(startBrokerConnection(u.id, "http://x/back")).rejects.toThrow(/free plan links one broker/);
     // Repairing the one link is always allowed.
     expect(await startBrokerConnection(u.id, "http://x/back", acc.brokerConnectionId!)).toContain("fix=auth-1");
+  });
+
+  it("files a holding under the listing the broker names, not the same ticker on another exchange", async () => {
+    const u = await createTestUser(db, "Lister");
+    await db.insert(instruments).values({ symbol: "VUSA", exchange: "XLON", name: "Vanguard S&P 500 (London)", assetClass: "etf", currency: "GBP" });
+    await startBrokerConnection(u.id, "http://x/back");
+    broker.positions["acc-main"] = [{ symbol: "VUSA", name: "Vanguard S&P 500", currency: "EUR", kind: "etf", exchange: "XAMS", quantity: "4", averagePrice: "100", price: "129" }];
+    await addBrokerAccounts(u.id, ["acc-main"]);
+    const [acc] = await db.select().from(accounts).where(eq(accounts.userId, u.id));
+    const [held] = await db.select().from(instruments).where(inArray(instruments.id, Object.keys(await holdings(u.id, acc.id))));
+    expect(held).toMatchObject({ symbol: "VUSA", exchange: "XAMS" });
+  });
+
+  it("moves holdings synced before Portle kept the listing, without extra rows", async () => {
+    const u = await createTestUser(db, "Mover");
+    await startBrokerConnection(u.id, "http://x/back");
+    const iwda = { symbol: "IWDA", name: "iShares Core MSCI World", currency: "EUR", kind: "etf" as const };
+    broker.activities["acc-main"] = [
+      { externalId: "m1", type: "buy", tradeDate: "2026-02-02", security: iwda, quantity: "5", price: "90", amount: null, fee: "1", currency: "EUR" },
+    ];
+    broker.positions["acc-main"] = [{ ...iwda, quantity: "5", averagePrice: "90", price: "101" }];
+    await addBrokerAccounts(u.id, ["acc-main"]);
+    const [acc] = await db.select().from(accounts).where(eq(accounts.userId, u.id));
+    const before = await db.select().from(transactions).where(eq(transactions.accountId, acc.id));
+    const [thesis] = await db
+      .insert(theses)
+      .values({ userId: u.id, instrumentId: Object.keys(await holdings(u.id, acc.id))[0], title: "World in one fund" })
+      .returning();
+
+    // The broker now says where it trades.
+    broker.activities["acc-main"] = [{ ...broker.activities["acc-main"][0], security: { ...iwda, exchange: "XAMS" } }];
+    broker.positions["acc-main"] = [{ ...iwda, exchange: "XAMS", quantity: "5", averagePrice: "90", price: "101" }];
+    expect(await syncBrokerConnection(u.id, acc.brokerConnectionId!)).toEqual({ ok: true });
+
+    const after = await db.select().from(transactions).where(eq(transactions.accountId, acc.id));
+    expect(after).toHaveLength(before.length);
+    const [listing] = await db
+      .select()
+      .from(instruments)
+      .where(and(eq(instruments.symbol, "IWDA"), eq(instruments.exchange, "XAMS")));
+    expect(await holdings(u.id, acc.id)).toEqual({ [listing.id]: "5" });
+    const [moved] = await db.select().from(theses).where(eq(theses.id, thesis.id));
+    expect(moved.instrumentId).toBe(listing.id);
   });
 
   it("keeps a member's broker price to that member", async () => {

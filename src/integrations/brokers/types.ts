@@ -20,7 +20,14 @@ export type BrokerAccount = {
   currency: string;
 };
 
-export type BrokerSecurity = { symbol: string; name: string; currency: string; kind: "equity" | "etf" | "fund" | "bond" | "crypto" | "other" };
+export type BrokerSecurity = {
+  symbol: string;
+  name: string;
+  currency: string;
+  kind: "equity" | "etf" | "fund" | "bond" | "crypto" | "other";
+  /** The listing's MIC (XAMS, XNAS) when the broker names one Portle knows; empty or missing otherwise. */
+  exchange?: string;
+};
 
 /** What the broker says the account holds right now. Quantities and prices are decimal strings. */
 export type BrokerPosition = BrokerSecurity & { quantity: string; averagePrice: string | null; price: string | null };

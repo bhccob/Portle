@@ -1,5 +1,6 @@
 import "server-only";
 import { Snaptrade, SnaptradeAuth, type Instrument, type UniversalSymbol } from "snaptrade-typescript-sdk";
+import { listingMic } from "@/integrations/market-data/listing-suffix";
 import { NotConfiguredError, type BrokerActivity, type BrokerProvider, type BrokerSecurity, type BrokerUser, type ProviderStatus } from "./types";
 
 /** SnapTrade's activity kinds that Portle's ledger can hold. Anything else is left out; holdings still match through the daily check. */
@@ -55,6 +56,7 @@ function security(s: Partial<UniversalSymbol> | null | undefined, fallbackCurren
     name: (s?.description || symbol).slice(0, 120),
     currency: s?.currency?.code || fallbackCurrency,
     kind: KIND[s?.type?.code ?? ""] ?? "other",
+    exchange: listingMic(s?.symbol ?? "", s?.exchange?.mic_code || s?.exchange?.code),
   };
 }
 
@@ -135,7 +137,7 @@ export class SnapTradeProvider implements BrokerProvider {
     const { data } = await this.client().accountInformation.getAllAccountPositions({ ...user, accountId: accountExternalId });
     return (data.results ?? []).flatMap((p) => {
       const kind = POSITION_KIND[p.instrument?.kind];
-      const inst = p.instrument as { raw_symbol?: string; symbol?: string; description?: string | null; currency?: string | null };
+      const inst = p.instrument as { raw_symbol?: string; symbol?: string; description?: string | null; currency?: string | null; exchange?: string | null };
       const symbol = (inst.raw_symbol || inst.symbol || "").trim();
       const quantity = num(p.units);
       if (!kind || p.cash_equivalent || !symbol || !quantity) return [];
@@ -145,6 +147,7 @@ export class SnapTradeProvider implements BrokerProvider {
           name: (inst.description || symbol).slice(0, 120),
           currency: p.currency || inst.currency || "EUR",
           kind,
+          exchange: listingMic(inst.symbol ?? "", inst.exchange),
           quantity,
           averagePrice: num(p.cost_basis),
           price: num(p.price),
