@@ -33,6 +33,11 @@ const nextConfig: NextConfig = {
   async headers() {
     return [{ source: "/:path*", headers: securityHeaders }];
   },
+  // Portle first went live on its Vercel address. Visits there move to portle.cc, so sign-in,
+  // links in older emails and the installed app all end up on one address.
+  async redirects() {
+    return [{ source: "/:path*", has: [{ type: "host", value: "portle-azure.vercel.app" }], destination: "https://portle.cc/:path*", permanent: true }];
+  },
 };
 
 export default nextConfig;
