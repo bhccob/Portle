@@ -23,6 +23,7 @@ const TYPE_LABEL: Record<string, string> = {
   split: "Split",
   transfer_in: "Transfer in",
   transfer_out: "Transfer out",
+  cash_match: "Cash matched",
 };
 const PAGE = 50;
 

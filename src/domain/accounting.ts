@@ -10,7 +10,8 @@ export type TransactionType =
   | "withdrawal"
   | "split"
   | "transfer_in"
-  | "transfer_out";
+  | "transfer_out"
+  | "cash_match";
 
 export type LedgerTransaction = {
   id: string;
@@ -240,6 +241,12 @@ export function buildLedger(transactions: LedgerTransaction[]): LedgerResult {
         const c = cashFor(t.accountId, t.currency);
         c.balance = c.balance.plus(amount.times(sign)).minus(fee);
         c.netContributions = c.netContributions.plus(amount.times(sign));
+        break;
+      }
+      case "cash_match": {
+        // Signed, and never money put in or taken out: it stands for the broker's exchanges and fees.
+        const c = cashFor(t.accountId, t.currency);
+        c.balance = c.balance.plus(d(amount));
         break;
       }
     }

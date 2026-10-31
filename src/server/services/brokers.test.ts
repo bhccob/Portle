@@ -1,7 +1,14 @@
 import { and, eq, inArray, ne, sql } from "drizzle-orm";
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
 import { buildLedger } from "@/domain/accounting";
-import { setBrokerProviderForTests, type BrokerActivity, type BrokerPosition, type BrokerProvider, type BrokerUser } from "@/integrations/brokers";
+import {
+  setBrokerProviderForTests,
+  type BrokerActivity,
+  type BrokerBalance,
+  type BrokerPosition,
+  type BrokerProvider,
+  type BrokerUser,
+} from "@/integrations/brokers";
 import { createTestDb, createTestUser as createUser, grantFullAccess } from "@/test/db";
 import type { Db } from "../db";
 import { accounts, brokerConnections, brokerUsers, instruments, theses, transactions } from "../db/schema";
@@ -27,6 +34,7 @@ class FakeBroker implements BrokerProvider {
   connectError: number | null = null;
   positions: Record<string, BrokerPosition[]> = {};
   activities: Record<string, BrokerActivity[]> = {};
+  balances: Record<string, BrokerBalance[] | null> = {};
   status() {
     return { id: this.id, label: "Fake", configured: true, note: "", docsUrl: "", connectionLimit: this.limit };
   }
@@ -53,6 +61,9 @@ class FakeBroker implements BrokerProvider {
   }
   async listActivities(_: BrokerUser, accountId: string) {
     return this.activities[accountId] ?? [];
+  }
+  async listBalances(_: BrokerUser, accountId: string) {
+    return this.balances[accountId] ?? null;
   }
   async removeConnection(_: BrokerUser, id: string) {
     this.removed.push(id);
@@ -219,6 +230,46 @@ describe("connecting a broker", () => {
     expect(await holdings(u.id, acc.id)).toEqual({ [listing.id]: "5" });
     const [moved] = await db.select().from(theses).where(eq(theses.id, thesis.id));
     expect(moved.instrumentId).toBe(listing.id);
+  });
+
+  it("matches cash to the broker's balance, which history alone gets wrong", async () => {
+    const u = await createTestUser(db, "Casher");
+    await startBrokerConnection(u.id, "http://x/back");
+    const amzn = { symbol: "AMZN", name: "Amazon", currency: "USD", kind: "equity" as const, exchange: "XNAS" };
+    // DEGIRO's history: the deposit and the buy, but the euros it took for the dollars and its €2 fee come as unlabelled rows.
+    broker.activities["acc-main"] = [
+      { externalId: "c1", type: "deposit", tradeDate: "2026-10-01", security: null, quantity: null, price: null, amount: "1000", fee: "0", currency: "EUR" },
+      { externalId: "c2", type: "buy", tradeDate: "2026-10-02", security: amzn, quantity: "2", price: "250", amount: null, fee: "0", currency: "USD" },
+    ];
+    broker.positions["acc-main"] = [{ ...amzn, quantity: "2", averagePrice: "250", price: "254" }];
+    broker.balances["acc-main"] = [{ currency: "EUR", cash: "569.2" }];
+    await addBrokerAccounts(u.id, ["acc-main"]);
+    const [acc] = await db.select().from(accounts).where(eq(accounts.userId, u.id));
+
+    const cash = async () => Object.fromEntries(buildLedger(await ledgerRows(u.id, [acc.id])).cash.map((c) => [c.currency, c.balance.toFixed()]));
+    expect(await cash()).toEqual({ EUR: "569.2", USD: "0" });
+    // Still "what you put in": the match isn't a deposit.
+    expect(buildLedger(await ledgerRows(u.id, [acc.id])).cash.find((c) => c.currency === "EUR")!.netContributions.toFixed()).toBe("1000");
+
+    // Syncing again adds nothing; a new balance is matched once.
+    expect(await syncBrokerConnection(u.id, acc.brokerConnectionId!)).toEqual({ ok: true });
+    const rows = (await db.select().from(transactions).where(eq(transactions.accountId, acc.id))).length;
+    expect(await syncBrokerConnection(u.id, acc.brokerConnectionId!)).toEqual({ ok: true });
+    expect(await db.select().from(transactions).where(eq(transactions.accountId, acc.id))).toHaveLength(rows);
+    broker.balances["acc-main"] = [{ currency: "EUR", cash: "600" }];
+    await syncBrokerConnection(u.id, acc.brokerConnectionId!);
+    expect(await cash()).toEqual({ EUR: "600", USD: "0" });
+  });
+
+  it("leaves cash to history when the broker doesn't say what it holds", async () => {
+    const u = await createTestUser(db, "NoBalance");
+    await startBrokerConnection(u.id, "http://x/back");
+    broker.activities["acc-main"] = [
+      { externalId: "n1", type: "deposit", tradeDate: "2026-10-01", security: null, quantity: null, price: null, amount: "300", fee: "0", currency: "EUR" },
+    ];
+    await addBrokerAccounts(u.id, ["acc-main"]);
+    const [acc] = await db.select().from(accounts).where(eq(accounts.userId, u.id));
+    expect(buildLedger(await ledgerRows(u.id, [acc.id])).cash.map((c) => c.balance.toFixed())).toEqual(["300"]);
   });
 
   it("keeps a member's broker price to that member", async () => {

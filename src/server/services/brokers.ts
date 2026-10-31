@@ -2,7 +2,7 @@ import { randomUUID } from "node:crypto";
 import { and, asc, eq, inArray, isNotNull, isNull, ne, sql } from "drizzle-orm";
 import { buildLedger } from "@/domain/accounting";
 import { reconcileHoldings } from "@/domain/broker-sync";
-import { isCurrency } from "@/domain/money";
+import { d, isCurrency, ZERO } from "@/domain/money";
 import { getBrokerProvider, NotConfiguredError, type BrokerAccount, type BrokerSecurity, type BrokerUser } from "@/integrations/brokers";
 import { audit } from "../audit";
 import { decryptSecret, encryptionReady, encryptSecret } from "../crypto";
@@ -33,6 +33,8 @@ const NOT_SYNCING = "On the free plan only your first broker keeps syncing. Port
 const SETUP = "Broker linking isn't set up correctly on this Portle yet, so nothing was sent to SnapTrade. A CSV export from your broker works in the meantime.";
 const FIRST_HISTORY_YEARS = 5;
 const OVERLAP_DAYS = 30;
+/** Cash differences below this are rounding. */
+const CENT = d("0.01");
 
 const isoDay = (date: Date) => date.toISOString().slice(0, 10);
 const daysAgo = (from: Date, days: number) => new Date(from.getTime() - days * 86400_000);
@@ -316,9 +318,10 @@ async function syncAccount(userId: string, user: BrokerUser, account: SyncedAcco
   const provider = getBrokerProvider();
   const now = new Date();
   const since = isoDay(lastSyncAt ? daysAgo(lastSyncAt, OVERLAP_DAYS) : daysAgo(now, FIRST_HISTORY_YEARS * 365));
-  const [activities, positions] = await Promise.all([
+  const [activities, positions, balances] = await Promise.all([
     provider.listActivities(user, account.externalId, since),
     provider.listPositions(user, account.externalId),
+    provider.listBalances(user, account.externalId),
   ]);
   const db = getDb();
   const ids = new Map<string, string>();
@@ -351,7 +354,8 @@ async function syncAccount(userId: string, user: BrokerUser, account: SyncedAcco
   await moveToBrokerListings(userId, account.id, [...activities.flatMap((a) => (a.security ? [a.security] : [])), ...positions], ids);
 
   // 2. Then whatever still differs from what the broker holds today.
-  const ledger = buildLedger(await ledgerRows(userId, [account.id])).positions.map((p) => ({
+  const built = buildLedger(await ledgerRows(userId, [account.id]));
+  const ledger = built.positions.map((p) => ({
     instrumentId: p.instrumentId,
     quantity: p.quantity,
     currency: p.currency,
@@ -379,7 +383,33 @@ async function syncAccount(userId: string, user: BrokerUser, account: SyncedAcco
       .onConflictDoNothing();
   }
 
-  // 3. The broker's own price for each holding, kept for this member only, so a real portfolio never needs made-up prices.
+  // 3. Cash too: the broker's balance is the truth. History can't get there on its own, because brokers like DEGIRO
+  // send their currency exchanges and fees as unlabelled rows. A currency the broker no longer lists holds nothing.
+  if (balances) {
+    const reported = new Map(balances.map((b) => [b.currency, d(b.cash)]));
+    const recorded = new Map(built.cash.map((c) => [c.currency, c.balance]));
+    for (const currency of new Set([...reported.keys(), ...recorded.keys()])) {
+      const has = recorded.get(currency) ?? ZERO;
+      const diff = (reported.get(currency) ?? ZERO).minus(has);
+      if (diff.abs().lt(CENT)) continue;
+      await db
+        .insert(transactions)
+        .values({
+          userId,
+          accountId: account.id,
+          type: "cash_match",
+          tradeDate: today,
+          amount: diff.toFixed(),
+          currency,
+          source: "broker",
+          dedupeHash: `broker-cash:${today}:${currency}:${has.toFixed()}:${diff.toFixed()}`,
+          note: `Matched to ${account.institution || "the broker"}'s cash`,
+        })
+        .onConflictDoNothing();
+    }
+  }
+
+  // 4. The broker's own price for each holding, kept for this member only, so a real portfolio never needs made-up prices.
   const source = `${account.institution || "Your broker"} via ${provider.status().label}`;
   for (const h of held) {
     if (!h.price || !(Number(h.price) > 0)) continue;

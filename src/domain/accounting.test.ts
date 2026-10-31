@@ -84,6 +84,18 @@ describe("buildLedger", () => {
     expect(cash[0].balance.toFixed()).toBe("410.62");
   });
 
+  it("moves cash either way on a broker's cash match, without counting it as money put in", () => {
+    const { cash } = buildLedger([
+      tx({ type: "deposit", tradeDate: "2024-01-01", instrumentId: null, amount: "1000" }),
+      tx({ type: "cash_match", tradeDate: "2024-02-01", instrumentId: null, amount: "-912.4" }),
+      tx({ type: "cash_match", tradeDate: "2024-02-01", instrumentId: null, amount: "50", currency: "USD" }),
+    ]);
+    const eur = cash.find((c) => c.currency === "EUR")!;
+    expect(eur.balance.toFixed()).toBe("87.6");
+    expect(eur.netContributions.toFixed()).toBe("1000");
+    expect(cash.find((c) => c.currency === "USD")!.balance.toFixed()).toBe("50");
+  });
+
   it("rejects malformed rows as issues", () => {
     const { issues } = buildLedger([tx({ type: "buy", tradeDate: "2024-01-01", quantity: "0", price: "1" })]);
     expect(issues[0].kind).toBe("invalid");

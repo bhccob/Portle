@@ -1,7 +1,7 @@
 import "server-only";
 import { Snaptrade, SnaptradeAuth, type Instrument, type UniversalSymbol } from "snaptrade-typescript-sdk";
 import { listingMic } from "@/integrations/market-data/listing-suffix";
-import { NotConfiguredError, type BrokerActivity, type BrokerProvider, type BrokerSecurity, type BrokerUser, type ProviderStatus } from "./types";
+import { NotConfiguredError, type BrokerActivity, type BrokerBalance, type BrokerProvider, type BrokerSecurity, type BrokerUser, type ProviderStatus } from "./types";
 
 /** SnapTrade's activity kinds that Portle's ledger can hold. Anything else is left out; holdings still match through the daily check. */
 const ACTIVITY: Record<string, BrokerActivity["type"]> = {
@@ -190,6 +190,18 @@ export class SnapTradeProvider implements BrokerProvider {
       if (!page.length || offset >= (data.pagination?.total ?? 0)) break;
     }
     return out;
+  }
+
+  /** Money market funds count as cash here; the positions call marks them cash_equivalent, and Portle skips them there. */
+  async listBalances(user: BrokerUser, accountExternalId: string) {
+    const { data } = await this.client().accountInformation.getUserAccountBalance({ ...user, accountId: accountExternalId });
+    const out: BrokerBalance[] = [];
+    for (const b of data ?? []) {
+      const currency = b.currency?.code?.trim().toUpperCase();
+      if (!currency || b.cash === null || b.cash === undefined || !Number.isFinite(Number(b.cash))) continue;
+      out.push({ currency, cash: String(b.cash) });
+    }
+    return out.length ? out : null;
   }
 
   async removeConnection(user: BrokerUser, externalId: string) {

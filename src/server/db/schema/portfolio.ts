@@ -33,6 +33,8 @@ export const transactionType = pgEnum("transaction_type", [
   "split",
   "transfer_in",
   "transfer_out",
+  // A synced broker's cash brought in line with what it reports (its currency exchanges and fees come unlabelled). Signed amount.
+  "cash_match",
 ]);
 
 /** Normalized securities. Shared reference data, not user-owned. */

@@ -44,6 +44,9 @@ export type BrokerActivity = {
   currency: string;
 };
 
+/** Cash the broker says the account holds in one currency, as a decimal string. */
+export type BrokerBalance = { currency: string; cash: string };
+
 export type ProviderStatus = {
   id: string;
   label: string;
@@ -66,6 +69,8 @@ export interface BrokerProvider {
   listPositions(user: BrokerUser, accountExternalId: string): Promise<BrokerPosition[]>;
   /** Activity from `since` (YYYY-MM-DD) to today. Kinds Portle can't represent are left out. */
   listActivities(user: BrokerUser, accountExternalId: string, since: string): Promise<BrokerActivity[]>;
+  /** Cash per currency right now, or null when the broker doesn't say. */
+  listBalances(user: BrokerUser, accountExternalId: string): Promise<BrokerBalance[] | null>;
   removeConnection(user: BrokerUser, externalId: string): Promise<void>;
   deleteUser(user: BrokerUser): Promise<void>;
 }

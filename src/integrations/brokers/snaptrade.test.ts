@@ -11,6 +11,32 @@ function withPositions(results: unknown[]) {
   return { provider, getAllAccountPositions };
 }
 
+describe("SnapTradeProvider.listBalances", () => {
+  function withBalances(data: unknown[]) {
+    const provider = new SnapTradeProvider("client", "key");
+    const getUserAccountBalance = vi.fn(async () => ({ data }));
+    vi.spyOn(provider as unknown as { client: () => unknown }, "client").mockReturnValue({ accountInformation: { getUserAccountBalance } });
+    return { provider, getUserAccountBalance };
+  }
+
+  it("reads cash per currency and leaves out currencies without a figure", async () => {
+    const { provider, getUserAccountBalance } = withBalances([
+      { currency: { code: "EUR" }, cash: 569.2, buying_power: 569.2 },
+      { currency: { code: "usd" }, cash: 0 },
+      { currency: { code: "GBP" }, cash: null },
+    ]);
+    expect(await provider.listBalances(user, "acc")).toEqual([
+      { currency: "EUR", cash: "569.2" },
+      { currency: "USD", cash: "0" },
+    ]);
+    expect(getUserAccountBalance).toHaveBeenCalledWith({ ...user, accountId: "acc" });
+  });
+
+  it("says nothing rather than zero when the broker reports no cash at all", async () => {
+    expect(await withBalances([]).provider.listBalances(user, "acc")).toBeNull();
+  });
+});
+
 describe("SnapTradeProvider.listPositions", () => {
   it("reads the positions call, which replaced the holdings call", async () => {
     const { provider, getAllAccountPositions } = withPositions([

@@ -71,6 +71,13 @@
       "when": 1793393847050,
       "tag": "0009_profile_comments",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1793441189303,
+      "tag": "0010_broker_cash_match",
+      "breakpoints": true
     }
   ]
 }
