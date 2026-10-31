@@ -30,6 +30,11 @@ export function maskFor(currency: string) {
   return `${symbol}••••`;
 }
 
+/** Where the exchange rates behind converted amounts come from, for the foot of the currency list. */
+export function ratesNote(fx: { isDemo: boolean; asOf: string }) {
+  return fx.isDemo ? "Demo rates, fixed for testing" : `European Central Bank rates from ${formatDate(fx.asOf, { withYear: false })}`;
+}
+
 export function formatNumber(value: Num, opts: { decimals?: number; maxDecimals?: number; signed?: boolean; compact?: boolean } = {}) {
   const s = str(value);
   if (s === null) return "—";

@@ -4,9 +4,10 @@ import { parseDecimalInput, toDb, d } from "@/domain/money";
 import { CATEGORIES, FREQUENCIES, summarizeCosts, type Per } from "@/domain/spending";
 import { utcToday } from "@/domain/review";
 import { getDb } from "../db";
-import { costs, profiles } from "../db/schema";
+import { costs } from "../db/schema";
 import { notFound, UserFacingError } from "../errors";
 import { getFx } from "./market";
+import { getDisplayCurrency } from "./portfolio";
 
 const MAX_COSTS = 200;
 
@@ -28,11 +29,6 @@ export const costInput = z.object({
     .transform((v) => v || null),
 });
 
-async function baseCurrency(userId: string) {
-  const [p] = await getDb().select({ c: profiles.baseCurrency }).from(profiles).where(eq(profiles.userId, userId));
-  return p?.c ?? "EUR";
-}
-
 export async function listCosts(userId: string) {
   return getDb().select().from(costs).where(eq(costs.userId, userId)).orderBy(asc(costs.createdAt));
 }
@@ -43,7 +39,7 @@ export async function addCost(userId: string, raw: unknown) {
   if ((await listCosts(userId)).length >= MAX_COSTS) throw new UserFacingError(`Spending holds up to ${MAX_COSTS} costs.`);
   const [row] = await db
     .insert(costs)
-    .values({ userId, ...input, amount: toDb(d(input.amount)), currency: await baseCurrency(userId) })
+    .values({ userId, ...input, amount: toDb(d(input.amount)), currency: await getDisplayCurrency(userId) })
     .returning();
   return row;
 }
@@ -69,10 +65,10 @@ export async function deleteCost(userId: string, id: string) {
 
 /** Everything the Spending page shows, in the member's own currency. Only ever for the owner of the costs. */
 export async function getSpending(userId: string, per: Per) {
-  const [rows, currency, fxCtx] = await Promise.all([listCosts(userId), baseCurrency(userId), getFx()]);
+  const [rows, currency, fxCtx] = await Promise.all([listCosts(userId), getDisplayCurrency(userId), getFx()]);
   const summary = summarizeCosts(
     rows.map((r) => ({ id: r.id, name: r.name, amount: r.amount, currency: r.currency, frequency: r.frequency, category: r.category, nextDate: r.nextDate })),
     { per, currency, today: utcToday(), convert: (amount, from) => fxCtx.fx.convert(amount, from, currency) },
   );
-  return { currency, per, ...summary };
+  return { currency, per, rates: { isDemo: fxCtx.isDemo, asOf: fxCtx.asOf }, ...summary };
 }

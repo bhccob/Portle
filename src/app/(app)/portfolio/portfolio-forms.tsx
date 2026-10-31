@@ -11,7 +11,7 @@ import { Field, Input, Select, Textarea } from "@/components/ui/field";
 import { Dialog } from "@/components/ui/overlay";
 import { SUPPORTED_CURRENCIES } from "@/domain/money";
 import { today } from "@/lib/format";
-import { addTransactionAction, archiveAccountAction, createAccountAction, deleteTransactionAction, loadSampleAction, setBaseCurrencyAction } from "./actions";
+import { addTransactionAction, archiveAccountAction, createAccountAction, deleteTransactionAction, loadSampleAction } from "./actions";
 
 type Account = { id: string; name: string; currency: string };
 
@@ -221,33 +221,6 @@ export function ArchiveAccountButton({ id, name }: { id: string; name: string })
     >
       <Archive className="size-4" aria-hidden /> Archive
     </Button>
-  );
-}
-
-export function BaseCurrencySelect({ value }: { value: string }) {
-  const [pending, start] = useTransition();
-  const router = useRouter();
-  return (
-    <label className="inline-flex items-center gap-2 text-[0.8125rem] text-fg-muted">
-      Show in
-      <Select
-        aria-label="Base currency"
-        className="h-8 w-[92px] text-[0.8125rem]"
-        value={value}
-        disabled={pending}
-        onChange={(e) =>
-          start(async () => {
-            const r = await setBaseCurrencyAction(e.target.value);
-            if (!r.ok) toast.error(r.error);
-            router.refresh();
-          })
-        }
-      >
-        {SUPPORTED_CURRENCIES.map((c) => (
-          <option key={c}>{c}</option>
-        ))}
-      </Select>
-    </label>
   );
 }
 

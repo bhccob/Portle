@@ -10,7 +10,7 @@ import { valuePortfolio, type InstrumentInfo, type PortfolioValuation } from "@/
 import { getMarketDataProvider } from "@/integrations/market-data";
 import { audit } from "../audit";
 import { getDb } from "../db";
-import { accounts, importBatches, instruments, memberPrices, portfolios, transactions } from "../db/schema";
+import { accounts, importBatches, instruments, memberPrices, portfolios, profiles, transactions } from "../db/schema";
 import { notFound, UserFacingError } from "../errors";
 import { getAccess, hasFullAccess } from "./access";
 import { getBars, getFx, getPrices, ownListing, rangeStart, type Range } from "./market";
@@ -34,10 +34,20 @@ export async function ensurePortfolio(userId: string, baseCurrency = "EUR") {
   return created;
 }
 
+/** The currency the member sees money in, on every screen and device. Spending, Home and Portfolio all read this one. */
+export async function getDisplayCurrency(userId: string) {
+  return (await ensurePortfolio(userId)).baseCurrency;
+}
+
+/** Changing it anywhere changes it everywhere; the profile keeps a copy so the two never disagree. */
 export async function setBaseCurrency(userId: string, currency: string) {
   if (!isCurrency(currency)) throw new UserFacingError("Unsupported currency.");
-  const p = await ensurePortfolio(userId);
-  await getDb().update(portfolios).set({ baseCurrency: currency, updatedAt: new Date() }).where(eq(portfolios.id, p.id));
+  await ensurePortfolio(userId);
+  const now = new Date();
+  await getDb().transaction(async (tx) => {
+    await tx.update(portfolios).set({ baseCurrency: currency, updatedAt: now }).where(eq(portfolios.userId, userId));
+    await tx.update(profiles).set({ baseCurrency: currency, updatedAt: now }).where(eq(profiles.userId, userId));
+  });
 }
 
 export async function listAccounts(userId: string, includeArchived = false) {

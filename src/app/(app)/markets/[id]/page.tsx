@@ -6,14 +6,15 @@ import { LineChart } from "@/components/charts/line-chart";
 import { HideTotalButton } from "@/components/shell/hide-total";
 import { Badge, SourceBadge } from "@/components/ui/badge";
 import { ButtonLink } from "@/components/ui/button";
+import { CurrencySwitch } from "@/components/ui/currency-switch";
 import { Change } from "@/components/ui/finance";
 import { PageHeader, Panel, Stat } from "@/components/ui/panel";
 import { Callout, PrivateNote } from "@/components/ui/states";
 import { LinkTabs } from "@/components/ui/tabs";
 import { d } from "@/domain/money";
-import { formatDate, formatMoney, formatPercent, formatQuantity } from "@/lib/format";
+import { formatDate, formatMoney, formatPercent, formatQuantity, ratesNote } from "@/lib/format";
 import { accessInfo } from "@/server/services/access";
-import { getHistory, getInstrument, getPrices, listWatchlists, type Range } from "@/server/services/market";
+import { getFx, getHistory, getInstrument, getPrices, listWatchlists, type Range } from "@/server/services/market";
 import { getValuation } from "@/server/services/portfolio";
 import { listOwnTheses, listSharedTheses } from "@/server/services/theses";
 import { requireViewer } from "@/server/viewer-session";
@@ -36,7 +37,7 @@ export default async function InstrumentPage({ params, searchParams }: { params:
   if (!inst) notFound();
   const range = (RANGES.includes(sp.range as Range) ? sp.range : "1Y") as Range;
 
-  const [access, prices, history, lists, valuation, mine, shared] = await Promise.all([
+  const [access, prices, history, lists, valuation, mine, shared, fx] = await Promise.all([
     accessInfo(user.id),
     getPrices([inst], { userId: user.id }),
     getHistory(inst, range, { userId: user.id }),
@@ -44,8 +45,12 @@ export default async function InstrumentPage({ params, searchParams }: { params:
     getValuation(user.id),
     listOwnTheses(user.id),
     listSharedTheses(viewer),
+    getFx(),
   ]);
+  const base = valuation.portfolio.baseCurrency;
   const price = prices.get(inst.id);
+  // The price stays in what it trades at; a quiet line shows it in the member's own currency.
+  const priceInBase = price && price.currency !== base ? fx.fx.convert(d(price.price), price.currency, base) : null;
   const change = price?.previousClose && Number(price.previousClose) ? d(price.price).minus(price.previousClose).div(price.previousClose) : null;
   const holding = valuation.valuation.holdings.find((h) => h.instrument.id === inst.id);
   const theses = [...mine, ...shared].filter((t) => t.instrument?.id === inst.id);
@@ -108,6 +113,7 @@ export default async function InstrumentPage({ params, searchParams }: { params:
               <p className="num text-[2rem] leading-none font-semibold tracking-[-0.03em] text-fg">
                 {price ? formatMoney(price.price, price.currency) : "No price"}
               </p>
+              {priceInBase ? <p className="num mt-2 text-[0.8125rem] text-fg-subtle">≈ {formatMoney(priceInBase, base)} at today&apos;s rate</p> : null}
               <p className="mt-2 text-sm">
                 <Change percent={change} /> <span className="text-fg-subtle">today</span>
               </p>
@@ -139,9 +145,10 @@ export default async function InstrumentPage({ params, searchParams }: { params:
           <Panel
             title="Your position"
             actions={
-              <div className="flex items-center gap-3">
-                <PrivateNote>Private</PrivateNote>
+              <div className="flex items-center gap-1.5">
+                <PrivateNote className="mr-1.5">Private</PrivateNote>
                 <HideTotalButton />
+                {holding ? <CurrencySwitch value={base} rates={ratesNote(fx)} /> : null}
               </div>
             }
           >
@@ -152,17 +159,14 @@ export default async function InstrumentPage({ params, searchParams }: { params:
                   label="Average cost"
                   value={holding.averageCost ? <span className="secret">{formatMoney(holding.averageCost, inst.currency)}</span> : "Unknown"}
                 />
-                <Stat
-                  label={`Value (${valuation.portfolio.baseCurrency})`}
-                  value={<span className="secret">{formatMoney(holding.marketValueBase, valuation.portfolio.baseCurrency)}</span>}
-                />
+                <Stat label="Value" value={<span className="secret">{formatMoney(holding.marketValueBase, base)}</span>} />
                 <Stat label="Weight" value={holding.weight ? formatPercent(holding.weight) : "—"} />
                 <Stat
                   className="col-span-2"
                   label="Unrealized"
                   value={
                     holding.unrealizedBase ? (
-                      <Change value={holding.unrealizedBase} percent={holding.unrealizedPct} currency={valuation.portfolio.baseCurrency} size="md" />
+                      <Change value={holding.unrealizedBase} percent={holding.unrealizedPct} currency={base} size="md" />
                     ) : (
                       "—"
                     )

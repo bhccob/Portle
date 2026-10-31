@@ -10,7 +10,6 @@ import {
   ChevronDown,
   ChevronRight,
   Coins,
-  Euro,
   FileUp,
   Gem,
   Landmark,
@@ -34,7 +33,7 @@ import { Dialog, Menu, MenuItem, MenuSeparator } from "@/components/ui/overlay";
 import { SUPPORTED_CURRENCIES } from "@/domain/money";
 import { cn } from "@/lib/cn";
 import { today } from "@/lib/format";
-import { addOwnItemAction, setBaseCurrencyAction, setOwnPriceAction, shareMixAction } from "./actions";
+import { addOwnItemAction, setOwnPriceAction, shareMixAction } from "./actions";
 import { ConnectBrokerSheet } from "./broker-client";
 import { AddTransactionDialog } from "./portfolio-forms";
 
@@ -176,33 +175,6 @@ export function AccountPicker({
       </Menu>
       {ask ? <AskAccessSheet access={access} open onOpenChange={setAsk} /> : null}
     </>
-  );
-}
-
-/** The currency totals are shown in, as a pill dropdown. */
-export function CurrencyPicker({ value }: { value: string }) {
-  const [pending, start] = useTransition();
-  const router = useRouter();
-  return (
-    <span className="relative inline-flex">
-      <select
-        aria-label="Show totals in"
-        value={value}
-        disabled={pending}
-        onChange={(e) =>
-          start(async () => {
-            const r = await setBaseCurrencyAction(e.target.value);
-            if (!r.ok) toast.error(r.error);
-            router.refresh();
-          })
-        }
-        className={cn(pill, "select-chevron cursor-pointer appearance-none pr-8")}
-      >
-        {SUPPORTED_CURRENCIES.map((c) => (
-          <option key={c}>{c}</option>
-        ))}
-      </select>
-    </span>
   );
 }
 
@@ -398,16 +370,6 @@ function ManageSheets({ sheet, onClose, accounts, access, broker, baseCurrency, 
         <Link href="/portfolio/accounts" className={row} onClick={onClose}>
           <OptionRow icon={Wallet} tint={tints.teal} title="Accounts" text="Rename an account or remove it." />
         </Link>
-        <div className={row}>
-          <span className={cn(rowIcon, tints.blue)}>
-            <Euro className="size-[18px]" aria-hidden />
-          </span>
-          <span className="min-w-0 flex-1">
-            <span className="block font-display text-[0.9375rem] font-semibold text-fg">Main currency</span>
-            <span className="block text-[0.8125rem] text-fg-muted">Everything is added up in {baseCurrency}.</span>
-          </span>
-          <CurrencyPicker value={baseCurrency} />
-        </div>
         <Link href="/settings/connections" className={row} onClick={onClose}>
           <OptionRow icon={RefreshCw} tint={tints.gold} title="Linked brokers" text="Sync now, sign in again or unlink." />
         </Link>

@@ -14,7 +14,6 @@ import {
   addTransaction,
   importCsv,
   loadSamplePortfolio,
-  setBaseCurrency,
   setOwnPrice,
 } from "@/server/services/portfolio";
 import { createPost } from "@/server/services/social";
@@ -112,13 +111,6 @@ export async function deleteTransactionAction(id: string): Promise<ActionResult>
   const { user } = await requireMember();
   const res = await runAction(() => deleteTransaction(user.id, id), "Transaction deleted.");
   if (res.ok) revalidatePath("/portfolio", "layout");
-  return res;
-}
-
-export async function setBaseCurrencyAction(currency: string): Promise<ActionResult> {
-  const { user } = await requireMember();
-  const res = await runAction(() => setBaseCurrency(user.id, currency), `Totals now shown in ${currency}.`);
-  if (res.ok) revalidatePath("/", "layout");
   return res;
 }
 

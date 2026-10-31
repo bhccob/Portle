@@ -10,13 +10,14 @@ import { foldSlices } from "@/components/charts/ring-geometry";
 import { HideNumbersButton } from "@/components/shell/hide-numbers";
 import { SourceBadge } from "@/components/ui/badge";
 import { ButtonLink } from "@/components/ui/button";
+import { CurrencySwitch } from "@/components/ui/currency-switch";
 import { Change, Money, Secret } from "@/components/ui/finance";
 import { LogoTile } from "@/components/ui/logo-tile";
 import { PageHeader, Panel, Stat } from "@/components/ui/panel";
 import { Callout, EmptyState } from "@/components/ui/states";
 import { LinkTabs } from "@/components/ui/tabs";
 import { d, type Dec } from "@/domain/money";
-import { formatMoney, formatPercent, formatQuantity, maskFor } from "@/lib/format";
+import { formatMoney, formatPercent, formatQuantity, maskFor, ratesNote } from "@/lib/format";
 import { accessInfo } from "@/server/services/access";
 import { brokerSpotsFull, brokerStatus, listBrokerConnections, syncStaleBrokerConnections } from "@/server/services/brokers";
 import { logosFor, type LogoInfo } from "@/server/services/logos";
@@ -27,7 +28,6 @@ import { AddWays } from "./broker-client";
 import {
   AccountPicker,
   AddInvestmentsButton,
-  CurrencyPicker,
   ManageMenu,
   ReturnPicker,
   ShareButton,
@@ -77,6 +77,7 @@ export default async function PortfolioPage({ searchParams }: { searchParams: Pr
   const data = await getValuation(user.id, { accountId });
   const { valuation: v, accounts, portfolio } = data;
   const base = portfolio.baseCurrency;
+  const rates = ratesNote(data.fx);
   const jar = await cookies();
   const hideAmounts = jar.get("portle-hide-amounts")?.value === "1";
   const ringReturn = jar.get("portle-ring-return")?.value === "all" ? "all" : "today";
@@ -324,7 +325,7 @@ export default async function PortfolioPage({ searchParams }: { searchParams: Pr
 
   return (
     <>
-      {/* The title; on computers the account switch sits beside it and three actions on the right. The currency lives in Manage. */}
+      {/* The title; on computers the account switch sits beside it and three actions on the right. The currency sits under the total in the ring. */}
       <div className="mb-4 flex flex-wrap items-center justify-between gap-3 lg:mb-2">
         <div className="flex items-center gap-3.5">
           <h1 className="font-display text-[1.75rem] leading-tight font-bold tracking-[-0.02em] text-fg lg:text-[2rem]">Portfolio</h1>
@@ -357,7 +358,7 @@ export default async function PortfolioPage({ searchParams }: { searchParams: Pr
         </div>
         <div className="mt-3.5 flex items-center gap-2">
           <AccountPicker accounts={accountOptions} current={accountId} access={access} />
-          <CurrencyPicker value={base} />
+          <CurrencySwitch value={base} rates={rates} variant="field" />
           <span className="ml-auto">
             <ManageMenu {...manage} />
           </span>
@@ -427,8 +428,8 @@ export default async function PortfolioPage({ searchParams }: { searchParams: Pr
                   >
                     {formatMoney(total, base)}
                   </span>
-                  <span className="mt-1 text-xs text-fg-subtle">
-                    {held} · {base}
+                  <span className="mt-1.5 inline-flex items-center gap-1.5 text-xs text-fg-subtle">
+                    {held} · <CurrencySwitch value={base} rates={rates} />
                   </span>
                 </OrbitRing>
                 {source}

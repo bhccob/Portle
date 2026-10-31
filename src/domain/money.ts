@@ -55,6 +55,24 @@ export function isCurrency(code: string): code is CurrencyCode {
   return (SUPPORTED_CURRENCIES as readonly string[]).includes(code);
 }
 
+const CURRENCY_NAMES: Record<CurrencyCode, string> = {
+  EUR: "Euro",
+  USD: "US dollar",
+  GBP: "British pound",
+  CHF: "Swiss franc",
+  DKK: "Danish krone",
+  SEK: "Swedish krona",
+  NOK: "Norwegian krone",
+  JPY: "Japanese yen",
+  CAD: "Canadian dollar",
+  AUD: "Australian dollar",
+};
+
+/** "US dollar" for USD; any other code is returned as it is. */
+export function currencyName(code: string) {
+  return isCurrency(code) ? CURRENCY_NAMES[code] : code;
+}
+
 /** Minor-unit rounding for presenting or booking cash amounts. */
 export function roundCash(value: Dec, currency: string): Dec {
   const places = currency === "JPY" ? 0 : 2;

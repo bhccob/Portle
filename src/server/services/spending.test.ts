@@ -1,6 +1,10 @@
+import { eq } from "drizzle-orm";
 import { beforeAll, describe, expect, it } from "vitest";
 import { createTestDb, createTestUser } from "@/test/db";
 import type { Db } from "../db";
+import { profiles } from "../db/schema";
+import { getValuation, setBaseCurrency } from "./portfolio";
+import { completeOnboarding } from "./profile";
 import { addCost, deleteCost, getSpending, listCosts, updateCost } from "./spending";
 
 let db: Db;
@@ -19,6 +23,22 @@ describe("spending", () => {
     expect(month.total.toFixed(2)).toBe("895.00");
     expect(month.byCategory.map((c) => c.category)).toEqual(["housing", "insurance"]);
     expect((await getSpending(u.id, "year")).total.toFixed(2)).toBe("10740.00");
+  });
+
+  it("follows the currency the member shows money in, wherever they changed it", async () => {
+    const u = await createTestUser(db, "Traveller");
+    await completeOnboarding(u.id, { handle: "traveller", displayName: "Traveller", baseCurrency: "EUR", acceptTerms: true });
+    await addCost(u.id, { name: "Rent", amount: "1000", frequency: "monthly", category: "housing" });
+    await setBaseCurrency(u.id, "USD");
+    const month = await getSpending(u.id, "month");
+    expect(month.currency).toBe("USD");
+    expect(month.total.toFixed(2)).toBe("1080.00"); // demo rate: 1 EUR = 1.08 USD
+    expect(month.rates.isDemo).toBe(true);
+    // One choice, kept on the portfolio and the profile alike.
+    expect((await getValuation(u.id)).portfolio.baseCurrency).toBe("USD");
+    const [profile] = await db.select({ c: profiles.baseCurrency }).from(profiles).where(eq(profiles.userId, u.id));
+    expect(profile.c).toBe("USD");
+    await expect(setBaseCurrency(u.id, "BRL")).rejects.toThrow(/Unsupported currency/);
   });
 
   it("explains what's wrong with a cost instead of saving it", async () => {

@@ -7,12 +7,13 @@ import { HideTotalButton } from "@/components/shell/hide-total";
 import { Avatar } from "@/components/ui/avatar";
 import { Badge, SourceBadge } from "@/components/ui/badge";
 import { ButtonLink } from "@/components/ui/button";
+import { CurrencySwitch } from "@/components/ui/currency-switch";
 import { Change } from "@/components/ui/finance";
 import { Panel } from "@/components/ui/panel";
 import { GUIDE_BY_SLUG } from "@/content/guides";
 import { d } from "@/domain/money";
 import { reviewState, utcToday } from "@/domain/review";
-import { formatDate, formatMoney, formatPercent, relativeTime } from "@/lib/format";
+import { formatDate, formatMoney, formatPercent, ratesNote, relativeTime } from "@/lib/format";
 import { listEntries, REFLECTION_PROMPTS } from "@/server/services/journal";
 import { getPrices, listWatchlists } from "@/server/services/market";
 import { getLab } from "@/server/services/paper";
@@ -73,6 +74,13 @@ export default async function HomePage() {
   ]);
   const base = val.portfolio.baseCurrency;
   const v = val.valuation;
+  // Hide and the currency sit on the total's label; on phones the ring leaves too little room, so they move under the total.
+  const totalControls = (
+    <>
+      <HideTotalButton className="relative z-10" />
+      <CurrencySwitch value={base} rates={ratesNote(val.fx)} className="relative z-10" />
+    </>
+  );
   const watchItems = lists.flatMap((l) => l.items.map((i) => i.instrument));
   const prices = await getPrices(watchItems, { userId: user.id });
   const movers = watchItems
@@ -132,7 +140,7 @@ export default async function HomePage() {
                       <span id="real-title" className="flex items-center gap-1.5 font-display text-[0.8125rem] font-semibold text-fg-subtle">
                         <Lock className="size-3.5" aria-hidden /> My real portfolio
                       </span>
-                      <HideTotalButton className="relative z-10" />
+                      <span className="hidden items-center gap-1.5 sm:flex">{totalControls}</span>
                     </span>
                     <Link
                       href="/portfolio"
@@ -145,6 +153,7 @@ export default async function HomePage() {
                         <Change value={v.totals.dayChange} percent={v.totals.dayChangePct} currency={base} /> <span className="text-fg-subtle">today</span>
                       </span>
                     ) : null}
+                    <span className="mt-2.5 flex items-center gap-1.5 sm:hidden">{totalControls}</span>
                     {v.usesDemoPrices ? <SourceBadge kind="demo" className="mt-2.5" detail="Demo prices" /> : null}
                   </span>
                 </div>
@@ -162,7 +171,7 @@ export default async function HomePage() {
                       <span id="real-title" className="flex items-center gap-1.5 font-display text-[0.8125rem] font-semibold text-fg-subtle">
                         <Lock className="size-3.5" aria-hidden /> What you put in
                       </span>
-                      <HideTotalButton className="relative z-10" />
+                      <span className="hidden items-center gap-1.5 sm:flex">{totalControls}</span>
                     </span>
                     <Link
                       href="/portfolio"
@@ -173,6 +182,7 @@ export default async function HomePage() {
                     <span className="mt-2 block text-sm text-fg-subtle">
                       {val.access.status === "requested" ? "Market prices: Plus requested" : "Market prices come with Portle Plus"}
                     </span>
+                    <span className="mt-2.5 flex items-center gap-1.5 sm:hidden">{totalControls}</span>
                   </span>
                 </div>
               )
