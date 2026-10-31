@@ -39,7 +39,7 @@ export default async function AccessPage() {
           <ul>
             {o.requests.map((r) => (
               <li key={r.userId} className="flex items-start gap-3 border-t border-line py-4 first:border-t-0 first:pt-0">
-                <Avatar name={r.name} hue={r.avatarHue} />
+                <Avatar name={r.name} hue={r.avatarHue} src={r.pictureUrl} />
                 <div className="min-w-0 flex-1">
                   <p className="font-medium text-fg">
                     {r.name} <span className="text-[0.8125rem] font-normal text-fg-subtle">@{r.handle}</span>
@@ -60,7 +60,7 @@ export default async function AccessPage() {
         <ul>
           {o.members.map((m) => (
             <li key={m.userId} className="flex items-center gap-3 border-t border-line py-3.5 first:border-t-0 first:pt-0">
-              <Avatar name={m.name} hue={m.avatarHue} />
+              <Avatar name={m.name} hue={m.avatarHue} src={m.pictureUrl} />
               <div className="min-w-0 flex-1">
                 <p className="truncate font-medium text-fg">{m.userId === user.id ? "You" : m.name}</p>
                 <p className="mt-0.5 text-[0.8125rem] text-fg-subtle">

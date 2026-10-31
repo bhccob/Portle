@@ -21,6 +21,9 @@ export async function exportUserData(userId: string) {
     format: "portle-export/1",
     user: u,
     profile: (await db.select().from(s.profiles).where(eq(s.profiles.userId, userId)))[0] ?? null,
+    // Their picture as Portle stores it: a WebP in base64.
+    profilePicture:
+      (await db.select({ contentType: s.profilePictures.contentType, data: s.profilePictures.data, createdAt: s.profilePictures.createdAt }).from(s.profilePictures).where(eq(s.profilePictures.userId, userId)))[0] ?? null,
     privacy: (await db.select().from(s.privacySettings).where(eq(s.privacySettings.userId, userId)))[0] ?? null,
     consents: await db.select().from(s.consents).where(eq(s.consents.userId, userId)),
     portfolios: await db.select().from(s.portfolios).where(eq(s.portfolios.userId, userId)),

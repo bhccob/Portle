@@ -14,6 +14,7 @@ import {
   type CommentAudience,
   type SectionSetting,
 } from "@/domain/profile-layout";
+import { pictureAddress } from "@/domain/profile-picture";
 import { EXPERIENCE, INTERESTS } from "@/domain/topics";
 import { audit } from "../audit";
 import { getDb } from "../db";
@@ -23,6 +24,7 @@ import { shownBadges } from "./badges";
 import { ensureDefaultWatchlist } from "./market";
 import { ensurePaperAccount } from "./paper";
 import { ensurePortfolio } from "./portfolio";
+import { personColumns, withPictures } from "./pictures";
 import { listProfileComments } from "./profile-comments";
 
 export const TERMS_VERSION = "2026-10";
@@ -287,7 +289,7 @@ export async function getProfileView(viewer: Viewer, handle: string, opts: { all
     db.select({ n: sql<number>`count(*)::int` }).from(friendships).where(accepted),
     showFriends
       ? db
-          .select({ userId: profiles.userId, handle: profiles.handle, displayName: profiles.displayName, avatarHue: profiles.avatarHue })
+          .select(personColumns)
           .from(friendships)
           .innerJoin(profiles, sql`${profiles.userId} = case when ${friendships.userLow} = ${p.userId} then ${friendships.userHigh} else ${friendships.userLow} end`)
           .where(accepted)
@@ -306,6 +308,8 @@ export async function getProfileView(viewer: Viewer, handle: string, opts: { all
       displayName: p.displayName,
       bio: p.bio,
       avatarHue: p.avatarHue,
+      // Whoever got this far may see the profile, so the picture too.
+      pictureUrl: p.picture ? pictureAddress(p.picture) : null,
       interests: p.interests,
       memberSince: p.createdAt,
       headline: p.headline,
@@ -320,7 +324,7 @@ export async function getProfileView(viewer: Viewer, handle: string, opts: { all
     featured,
     experience,
     friendCount: friendCount?.n ?? 0,
-    friends: friends.filter((f) => !viewer.blockedIds.has(f.userId)),
+    friends: await withPictures(viewer, friends.filter((f) => !viewer.blockedIds.has(f.userId))),
     access,
     relics,
     guilds: guildRows.filter((g) => g.visibility === "discoverable" || viewer.guildIds.has(g.id) || isOwner),
@@ -359,10 +363,13 @@ export async function searchMembers(viewer: Viewer, q: string) {
   if (term.length < 2) return [];
   const like = `%${term.replace(/[%_\\]/g, "\\$&")}%`;
   const rows = await getDb()
-    .select({ userId: profiles.userId, handle: profiles.handle, displayName: profiles.displayName, avatarHue: profiles.avatarHue, discoverable: privacySettings.discoverable })
+    .select({ ...personColumns, discoverable: privacySettings.discoverable })
     .from(profiles)
     .innerJoin(privacySettings, eq(privacySettings.userId, profiles.userId))
     .where(sql`(lower(${profiles.handle}) like ${like} or lower(${profiles.displayName}) like ${like}) and ${profiles.onboardedAt} is not null`)
     .limit(20);
-  return rows.filter((r) => r.userId !== viewer.userId && !viewer.blockedIds.has(r.userId) && (r.discoverable || viewer.friendIds.has(r.userId)));
+  return withPictures(
+    viewer,
+    rows.filter((r) => r.userId !== viewer.userId && !viewer.blockedIds.has(r.userId) && (r.discoverable || viewer.friendIds.has(r.userId))),
+  );
 }

@@ -78,6 +78,13 @@
       "when": 1793441189303,
       "tag": "0010_broker_cash_match",
       "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1793450655158,
+      "tag": "0011_profile_pictures",
+      "breakpoints": true
     }
   ]
 }

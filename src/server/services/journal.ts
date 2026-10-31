@@ -4,6 +4,7 @@ import { canView, type Viewer } from "@/domain/permissions";
 import { getDb } from "../db";
 import { instruments, journalEntries, paperOrders, profiles, theses, transactions } from "../db/schema";
 import { notFound, UserFacingError } from "../errors";
+import { personColumns, withAuthorPictures } from "./pictures";
 
 export const REFLECTION_PROMPTS = [
   "What did I believe at the time?",
@@ -102,7 +103,7 @@ export async function listEntries(userId: string, opts: { q?: string; tag?: stri
 
 export async function getEntry(viewer: Viewer, id: string) {
   const [row] = await getDb()
-    .select({ entry: journalEntries, author: { handle: profiles.handle, displayName: profiles.displayName, avatarHue: profiles.avatarHue }, thesisTitle: theses.title, symbol: instruments.symbol })
+    .select({ entry: journalEntries, author: personColumns, thesisTitle: theses.title, symbol: instruments.symbol })
     .from(journalEntries)
     .innerJoin(profiles, eq(profiles.userId, journalEntries.userId))
     .leftJoin(theses, eq(theses.id, journalEntries.thesisId))
@@ -110,6 +111,7 @@ export async function getEntry(viewer: Viewer, id: string) {
     .where(eq(journalEntries.id, id));
   if (!row || !canView(viewer, { ownerId: row.entry.userId, audience: row.entry.visibility as "private" | "friends" })) throw notFound("Journal entry");
   const isOwner = row.entry.userId === viewer.userId;
+  const [shown] = await withAuthorPictures(viewer, [row]);
   // Links to private records are shown to the owner only.
-  return isOwner ? { ...row, isOwner } : { ...row, isOwner, entry: { ...row.entry, transactionId: null, paperOrderId: null } };
+  return isOwner ? { ...shown, isOwner } : { ...shown, isOwner, entry: { ...shown.entry, transactionId: null, paperOrderId: null } };
 }

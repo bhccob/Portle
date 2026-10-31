@@ -333,7 +333,7 @@ export default async function HomePage() {
                   <RowLink
                     key={p.post.id}
                     href={`/feed/${p.post.id}`}
-                    lead={<Avatar name={p.author.displayName} hue={p.author.avatarHue} size="md" />}
+                    lead={<Avatar name={p.author.displayName} hue={p.author.avatarHue} src={p.author.pictureUrl} size="md" />}
                     title={p.post.insight ? `${p.author.displayName.split(" ")[0]} shared their mix` : p.author.displayName}
                     sub={
                       p.post.insight

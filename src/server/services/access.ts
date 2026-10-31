@@ -7,6 +7,7 @@ import { forbidden, notFound, UserFacingError } from "../errors";
 import { assertRateLimit } from "../rate-limit";
 import { brokerSpotsLeft, brokerStatus, disconnectBroker, listBrokerConnections } from "./brokers";
 import { notify } from "./notifications";
+import { pictureLookup } from "./pictures";
 
 export type AccessStatus = "none" | "requested" | "granted" | "declined";
 export type Access = { full: boolean; owner: boolean; status: AccessStatus };
@@ -199,6 +200,7 @@ export async function accessOverview(ownerId: string) {
       name: profiles.displayName,
       handle: profiles.handle,
       avatarHue: profiles.avatarHue,
+      picture: profiles.picture,
       email: user.email,
     })
     .from(fullAccess)
@@ -208,7 +210,7 @@ export async function accessOverview(ownerId: string) {
     .orderBy(desc(fullAccess.requestedAt));
   const ownerRows = owners.size
     ? await db
-        .select({ userId: user.id, name: profiles.displayName, handle: profiles.handle, avatarHue: profiles.avatarHue, email: user.email })
+        .select({ userId: user.id, name: profiles.displayName, handle: profiles.handle, avatarHue: profiles.avatarHue, picture: profiles.picture, email: user.email })
         .from(user)
         .innerJoin(profiles, eq(profiles.userId, user.id))
         .where(inArray(sql`lower(${user.email})`, [...owners]))
@@ -219,12 +221,14 @@ export async function accessOverview(ownerId: string) {
     .where(and(eq(brokerConnections.provider, brokerStatus().id), ne(brokerConnections.status, "disconnected")))
     .groupBy(brokerConnections.userId);
   const brokers = (id: string) => linked.find((l) => l.userId === id)?.n ?? 0;
+  // Pictures follow their profile here too, even for the owner.
+  const face = await pictureLookup(ownerId, [...rows, ...ownerRows]);
   const granted = rows.filter((r) => r.status === "granted" && !owners.has(r.email.toLowerCase()));
   return {
-    requests: rows.filter((r) => r.status === "requested").map((r) => ({ ...r, email: undefined })),
+    requests: rows.filter((r) => r.status === "requested").map((r) => ({ ...face(r), email: undefined })),
     members: [
-      ...ownerRows.map((o) => ({ ...o, email: undefined, owner: true, since: null as Date | null, brokers: brokers(o.userId) })),
-      ...granted.map((g) => ({ ...g, email: undefined, owner: false, since: g.decidedAt, brokers: brokers(g.userId) })),
+      ...ownerRows.map((o) => ({ ...face(o), email: undefined, owner: true, since: null as Date | null, brokers: brokers(o.userId) })),
+      ...granted.map((g) => ({ ...face(g), email: undefined, owner: false, since: g.decidedAt, brokers: brokers(g.userId) })),
     ],
     invites: await db.select().from(accessInvites).orderBy(asc(accessInvites.createdAt)),
     brokerSpotsUsed: linked.reduce((s, l) => s + l.n, 0),

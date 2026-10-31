@@ -73,7 +73,7 @@ export default async function FeedPage({ searchParams }: { searchParams: Promise
                 {friends.friends.slice(0, 8).map((f) => (
                   <li key={f.userId}>
                     <Link href={`/u/${f.handle}`} className="flex items-center gap-2 text-sm hover:underline">
-                      <Avatar name={f.displayName} hue={f.avatarHue} size="xs" /> {f.displayName}
+                      <Avatar name={f.displayName} hue={f.avatarHue} src={f.pictureUrl} size="xs" /> {f.displayName}
                     </Link>
                   </li>
                 ))}
@@ -118,7 +118,7 @@ async function People({ q, viewer, friends }: { q: string; viewer: Awaited<Retur
           {results.map((r) => (
             <li key={r.userId} className="flex items-center justify-between gap-3">
               <Link href={`/u/${r.handle}`} className="flex min-w-0 items-center gap-3 hover:underline">
-                <Avatar name={r.displayName} hue={r.avatarHue} size="sm" />
+                <Avatar name={r.displayName} hue={r.avatarHue} src={r.pictureUrl} size="sm" />
                 <span className="min-w-0">
                   <span className="block truncate text-sm font-medium text-fg">{r.displayName}</span>
                   <span className="block text-xs text-fg-subtle">@{r.handle}</span>
@@ -138,7 +138,7 @@ async function People({ q, viewer, friends }: { q: string; viewer: Awaited<Retur
               {friends.incoming.map((f) => (
                 <li key={f.userId} className="flex flex-wrap items-center justify-between gap-2">
                   <Link href={`/u/${f.handle}`} className="flex items-center gap-2 text-sm font-medium text-fg hover:underline">
-                    <Avatar name={f.displayName} hue={f.avatarHue} size="sm" /> {f.displayName}
+                    <Avatar name={f.displayName} hue={f.avatarHue} src={f.pictureUrl} size="sm" /> {f.displayName}
                   </Link>
                   <span className="flex gap-1">
                     <FriendButton kind="accept" userId={f.userId} />
@@ -157,7 +157,7 @@ async function People({ q, viewer, friends }: { q: string; viewer: Awaited<Retur
               {friends.friends.map((f) => (
                 <li key={f.userId} className="flex items-center justify-between gap-2">
                   <Link href={`/u/${f.handle}`} className="flex items-center gap-2 text-sm text-fg hover:underline">
-                    <Avatar name={f.displayName} hue={f.avatarHue} size="sm" /> {f.displayName}
+                    <Avatar name={f.displayName} hue={f.avatarHue} src={f.pictureUrl} size="sm" /> {f.displayName}
                   </Link>
                   <FriendButton kind="remove" userId={f.userId} name={f.displayName} />
                 </li>

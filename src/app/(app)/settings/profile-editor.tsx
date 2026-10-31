@@ -11,6 +11,7 @@ import { Field, Input, MultiSelect, Select, Textarea } from "@/components/ui/fie
 import { Dialog, Switch } from "@/components/ui/overlay";
 import { Callout } from "@/components/ui/states";
 import { AboutEditor } from "@/components/profile/about-editor";
+import { PictureButton } from "@/components/profile/picture-button";
 import {
   APPROACHES,
   BANNERS,
@@ -35,6 +36,7 @@ export type EditableProfile = {
   bio: string;
   interests: string[];
   avatarHue: string;
+  pictureUrl: string | null;
   headline: string;
   location: string;
   bannerStyle: BannerStyle;
@@ -138,19 +140,26 @@ export function ProfileEditor({
       <div>
         <ProfileBanner style={banner} className="h-24 rounded-[18px]" />
         <div className="-mt-9 flex items-end gap-4 px-3">
-          <Avatar name={name} hue={hue} size="xl" className="relative z-10 ring-4 ring-bg" />
-          <Field label="Avatar colour" className="mb-1 flex-1">
+          <div className="relative z-10 shrink-0">
+            <Avatar name={name} hue={hue} src={profile.pictureUrl} size="xl" className="ring-4 ring-bg" />
+            <PictureButton hasPicture={!!profile.pictureUrl} className="absolute -right-0.5 bottom-0" />
+          </div>
+          {/* With a photo, the small letters show what people who can't see your profile get. */}
+          <Field label="Letter colour" className="mb-1 flex-1">
             {(p) => (
-              <input
-                {...p}
-                type="range"
-                name="avatarHue"
-                min={0}
-                max={359}
-                value={hue}
-                onChange={(ev) => setHue(ev.target.value)}
-                className="w-full accent-[var(--primary)]"
-              />
+              <span className="flex items-center gap-2.5">
+                {profile.pictureUrl ? <Avatar name={name} hue={hue} size="xs" /> : null}
+                <input
+                  {...p}
+                  type="range"
+                  name="avatarHue"
+                  min={0}
+                  max={359}
+                  value={hue}
+                  onChange={(ev) => setHue(ev.target.value)}
+                  className="w-full accent-[var(--primary)]"
+                />
+              </span>
             )}
           </Field>
         </div>

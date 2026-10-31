@@ -21,6 +21,7 @@ import {
 import { forbidden, notFound, UserFacingError } from "../errors";
 import { assertRateLimit } from "../rate-limit";
 import { notify } from "./notifications";
+import { personColumns, pictureLookup, withAuthorPictures } from "./pictures";
 import { getValuation } from "./portfolio";
 
 const pair = (a: string, b: string) => (a < b ? [a, b] : [b, a]) as [string, string];
@@ -86,10 +87,12 @@ export async function listFriends(userId: string) {
   const otherIds = rows.map((r) => (r.userLow === userId ? r.userHigh : r.userLow));
   const people = otherIds.length ? await db.select().from(profiles).where(inArray(profiles.userId, otherIds)) : [];
   const byId = new Map(people.map((p) => [p.userId, p]));
+  const face = await pictureLookup(userId, people);
   const shape = (r: (typeof rows)[number]) => {
     const other = r.userLow === userId ? r.userHigh : r.userLow;
     const p = byId.get(other);
-    return { userId: other, handle: p?.handle ?? "", displayName: p?.displayName ?? "Member", avatarHue: p?.avatarHue ?? "262", since: r.acceptedAt ?? r.createdAt };
+    const person = { userId: other, handle: p?.handle ?? "", displayName: p?.displayName ?? "Member", avatarHue: p?.avatarHue ?? "262", picture: p?.picture ?? null };
+    return { ...face(person), since: r.acceptedAt ?? r.createdAt };
   };
   return {
     friends: rows.filter((r) => r.status === "accepted").map(shape),
@@ -215,7 +218,7 @@ export async function listFeed(viewer: Viewer, opts: { filter?: FeedFilter; guil
   if (opts.before) conds.push(lt(posts.createdAt, new Date(opts.before)));
 
   const rows = await db
-    .select({ post: posts, author: { userId: profiles.userId, handle: profiles.handle, displayName: profiles.displayName, avatarHue: profiles.avatarHue } })
+    .select({ post: posts, author: personColumns })
     .from(posts)
     .innerJoin(profiles, eq(profiles.userId, posts.userId))
     .where(and(...conds))
@@ -225,12 +228,12 @@ export async function listFeed(viewer: Viewer, opts: { filter?: FeedFilter; guil
   return decorate(viewer, visible);
 }
 
-async function decorate(viewer: Viewer, rows: { post: typeof posts.$inferSelect; author: { userId: string; handle: string; displayName: string; avatarHue: string } }[]) {
+async function decorate(viewer: Viewer, rows: { post: typeof posts.$inferSelect; author: { userId: string; handle: string; displayName: string; avatarHue: string; picture: string | null } }[]) {
   const db = getDb();
   const ids = rows.map((r) => r.post.id);
   if (!ids.length) return [];
   const thesisIds = rows.map((r) => r.post.thesisId).filter((x): x is string => !!x);
-  const [commentCounts, reactionRows, bookmarkRows, thesisRows] = await Promise.all([
+  const [commentCounts, reactionRows, bookmarkRows, thesisRows, face] = await Promise.all([
     db
       .select({ targetId: comments.targetId, n: sql<number>`count(*)::int` })
       .from(comments)
@@ -239,6 +242,7 @@ async function decorate(viewer: Viewer, rows: { post: typeof posts.$inferSelect;
     db.select().from(reactions).where(and(eq(reactions.targetType, "post"), inArray(reactions.targetId, ids))),
     db.select().from(bookmarks).where(and(eq(bookmarks.userId, viewer.userId), eq(bookmarks.targetType, "post"), inArray(bookmarks.targetId, ids))),
     thesisIds.length ? db.select().from(theses).where(inArray(theses.id, thesisIds)) : Promise.resolve([]),
+    pictureLookup(viewer, rows.map((r) => r.author)),
   ]);
   const thesisById = new Map(thesisRows.map((t) => [t.id, t]));
   return rows.map((r) => {
@@ -250,6 +254,7 @@ async function decorate(viewer: Viewer, rows: { post: typeof posts.$inferSelect;
     for (const x of mine) counts[x.kind] = (counts[x.kind] ?? 0) + 1;
     return {
       ...r,
+      author: face(r.author),
       thesis,
       comments: commentCounts.find((c) => c.targetId === r.post.id)?.n ?? 0,
       reactions: counts,
@@ -262,7 +267,7 @@ async function decorate(viewer: Viewer, rows: { post: typeof posts.$inferSelect;
 export async function getPost(viewer: Viewer, postId: string) {
   const db = getDb();
   const [row] = await db
-    .select({ post: posts, author: { userId: profiles.userId, handle: profiles.handle, displayName: profiles.displayName, avatarHue: profiles.avatarHue } })
+    .select({ post: posts, author: personColumns })
     .from(posts)
     .innerJoin(profiles, eq(profiles.userId, posts.userId))
     .where(and(eq(posts.id, postId), isNull(posts.deletedAt)));
@@ -315,12 +320,12 @@ export async function addComment(viewer: Viewer, target: Target, body: string) {
 export async function listComments(viewer: Viewer, target: Target) {
   await resolveTarget(viewer, target);
   const rows = await getDb()
-    .select({ comment: comments, author: { userId: profiles.userId, handle: profiles.handle, displayName: profiles.displayName, avatarHue: profiles.avatarHue } })
+    .select({ comment: comments, author: personColumns })
     .from(comments)
     .innerJoin(profiles, eq(profiles.userId, comments.userId))
     .where(and(eq(comments.targetType, target.type), eq(comments.targetId, target.id), isNull(comments.deletedAt)))
     .orderBy(comments.createdAt);
-  return rows.filter((r) => !viewer.blockedIds.has(r.comment.userId));
+  return withAuthorPictures(viewer, rows.filter((r) => !viewer.blockedIds.has(r.comment.userId)));
 }
 
 export async function deleteComment(userId: string, commentId: string) {

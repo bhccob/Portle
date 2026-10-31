@@ -6,6 +6,8 @@
  * attributes and Sonner injects a <style> tag without a nonce; the XSS risk is in scripts.
  * Everything else the browser loads comes from this site: fonts are self-hosted by
  * next/font, and market data, FX and email are fetched by the server, never the browser.
+ * Profile pictures and company logos are served by Portle itself (/api/pictures, /api/logos),
+ * so images need no outside host; blob: is the crop step's preview of a chosen photo.
  */
 export function contentSecurityPolicy(nonce: string, { dev }: { dev: boolean }) {
   return [

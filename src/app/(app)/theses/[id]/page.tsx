@@ -109,7 +109,7 @@ export default async function ThesisPage({ params, searchParams }: { params: Pro
             {shown.summary ? <p className="mt-2 max-w-[68ch] text-[1.0625rem] text-fg-muted">{shown.summary}</p> : null}
             <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
               <span className="inline-flex items-center gap-2 text-sm text-fg-muted">
-                <Avatar name={t.author.displayName} hue={t.author.avatarHue} size="sm" />
+                <Avatar name={t.author.displayName} hue={t.author.avatarHue} src={t.author.pictureUrl} size="sm" />
                 <Link href={`/u/${t.author.handle}`} className="font-medium text-fg hover:underline">
                   {t.isOwner ? "You" : t.author.displayName}
                 </Link>
@@ -197,7 +197,7 @@ export default async function ThesisPage({ params, searchParams }: { params: Pro
               {comments.length === 0 ? <li className="text-sm text-fg-subtle">No comments yet. Challenges with evidence are the most useful.</li> : null}
               {comments.map(({ comment, author }) => (
                 <li key={comment.id} className="flex gap-3">
-                  <Avatar name={author.displayName} hue={author.avatarHue} size="sm" />
+                  <Avatar name={author.displayName} hue={author.avatarHue} src={author.pictureUrl} size="sm" />
                   <div className="min-w-0">
                     <p className="text-sm">
                       <Link href={`/u/${author.handle}`} className="font-medium text-fg hover:underline">

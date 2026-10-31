@@ -43,7 +43,7 @@ export default async function MembersPage({ params }: { params: Promise<{ slug: 
             {members.map((m) => (
               <li key={m.userId} className="flex flex-wrap items-center justify-between gap-3 border-t border-line px-5 py-3 first:border-t-0">
                 <Link href={`/u/${m.handle}`} className="flex min-w-0 items-center gap-3 hover:underline">
-                  <Avatar name={m.displayName} hue={m.avatarHue} size="sm" />
+                  <Avatar name={m.displayName} hue={m.avatarHue} src={m.pictureUrl} size="sm" />
                   <span className="min-w-0">
                     <span className="block truncate text-sm font-medium text-fg">{m.displayName}</span>
                     <span className="block text-xs text-fg-subtle">
@@ -85,7 +85,7 @@ export default async function MembersPage({ params }: { params: Promise<{ slug: 
                   {requests.map((r) => (
                     <li key={r.invite.id} className="flex flex-wrap items-center justify-between gap-2">
                       <span className="flex items-center gap-2 text-sm text-fg">
-                        <Avatar name={r.displayName} hue={r.avatarHue} size="xs" /> {r.displayName}
+                        <Avatar name={r.displayName} hue={r.avatarHue} src={r.pictureUrl} size="xs" /> {r.displayName}
                       </span>
                       <span className="flex gap-1">
                         <GuildOpButton input={{ op: "respond", inviteId: r.invite.id, accept: true }} label="Approve" variant="primary" />

@@ -6,6 +6,7 @@ import { privacySettings, profileComments, profiles } from "../db/schema";
 import { notFound, UserFacingError } from "../errors";
 import { assertRateLimit } from "../rate-limit";
 import { notify } from "./notifications";
+import { personColumns, withAuthorPictures } from "./pictures";
 
 /** A profile someone may see, with who may write on it. Hidden and missing profiles look the same. */
 async function visibleProfile(viewer: Viewer, profileUserId: string) {
@@ -34,7 +35,7 @@ export async function listProfileComments(viewer: Viewer, profileUserId: string,
       id: profileComments.id,
       body: profileComments.body,
       createdAt: profileComments.createdAt,
-      author: { userId: profiles.userId, handle: profiles.handle, displayName: profiles.displayName, avatarHue: profiles.avatarHue },
+      author: personColumns,
     })
     .from(profileComments)
     .innerJoin(profiles, eq(profiles.userId, profileComments.authorId))
@@ -45,7 +46,7 @@ export async function listProfileComments(viewer: Viewer, profileUserId: string,
     .select({ n: sql<number>`count(*)::int` })
     .from(profileComments)
     .where(where);
-  return { comments: rows, total: n };
+  return { comments: await withAuthorPictures(viewer, rows), total: n };
 }
 
 export async function addProfileComment(viewer: Viewer, profileUserId: string, body: string) {

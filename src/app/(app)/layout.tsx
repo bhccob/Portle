@@ -1,5 +1,6 @@
 import { cookies } from "next/headers";
 import { AppShell } from "@/components/shell/app-shell";
+import { pictureAddress } from "@/domain/profile-picture";
 import { unreadCount } from "@/server/services/notifications";
 import { remindDueReviews } from "@/server/services/theses";
 import { requireMember } from "@/server/session";
@@ -11,7 +12,11 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   const unread = await unreadCount(user.id);
   const hideAmounts = (await cookies()).get("portle-hide-amounts")?.value === "1";
   return (
-    <AppShell me={{ displayName: profile.displayName, handle: profile.handle, avatarHue: profile.avatarHue }} unread={unread} hideAmounts={hideAmounts}>
+    <AppShell
+      me={{ displayName: profile.displayName, handle: profile.handle, avatarHue: profile.avatarHue, pictureUrl: profile.picture ? pictureAddress(profile.picture) : null }}
+      unread={unread}
+      hideAmounts={hideAmounts}
+    >
       {children}
     </AppShell>
   );

@@ -8,6 +8,7 @@ import { guildInvites, guildMembers, guildModerationActions, guilds, posts, prof
 import { forbidden, notFound, UserFacingError } from "../errors";
 import { assertRateLimit } from "../rate-limit";
 import { notify } from "./notifications";
+import { personColumns, withPictures } from "./pictures";
 import { getValuation } from "./portfolio";
 
 export const guildInput = z.object({
@@ -251,6 +252,7 @@ export async function listMembers(viewerId: string, guildId: string) {
       handle: profiles.handle,
       displayName: profiles.displayName,
       avatarHue: profiles.avatarHue,
+      picture: profiles.picture,
       posts30d: sql<number>`(select count(*)::int from ${posts} where ${posts.userId} = ${guildMembers.userId} and ${posts.guildId} = ${guildId} and ${posts.deletedAt} is null and ${posts.createdAt} >= ${since})`,
       theses: sql<number>`(select count(*)::int from ${theses} where ${theses.userId} = ${guildMembers.userId} and ${theses.guildId} = ${guildId})`,
     })
@@ -258,18 +260,19 @@ export async function listMembers(viewerId: string, guildId: string) {
     .innerJoin(profiles, eq(profiles.userId, guildMembers.userId))
     .where(eq(guildMembers.guildId, guildId))
     .orderBy(sql`case ${guildMembers.role} when 'owner' then 0 when 'admin' then 1 else 2 end`, asc(guildMembers.joinedAt));
-  return rows;
+  return withPictures(viewerId, rows);
 }
 
 export async function listPendingRequests(actorId: string, guildId: string) {
   const role = await roleIn(actorId, guildId);
   if (!guildCan(role, "approve_request")) return [];
-  return getDb()
-    .select({ invite: guildInvites, handle: profiles.handle, displayName: profiles.displayName, avatarHue: profiles.avatarHue })
+  const rows = await getDb()
+    .select({ invite: guildInvites, ...personColumns })
     .from(guildInvites)
     .innerJoin(profiles, eq(profiles.userId, guildInvites.userId))
     .where(and(eq(guildInvites.guildId, guildId), eq(guildInvites.kind, "request"), eq(guildInvites.status, "pending")))
     .orderBy(asc(guildInvites.createdAt));
+  return withPictures(actorId, rows);
 }
 
 export async function moderationLog(actorId: string, guildId: string) {

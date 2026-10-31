@@ -46,7 +46,7 @@ export default async function EntryPage({ params }: { params: Promise<{ id: stri
           <div className="mt-3 flex flex-wrap items-center gap-2">
             {!isOwner ? (
               <span className="inline-flex items-center gap-2 text-sm text-fg-muted">
-                <Avatar name={author.displayName} hue={author.avatarHue} size="xs" /> {author.displayName}
+                <Avatar name={author.displayName} hue={author.avatarHue} src={author.pictureUrl} size="xs" /> {author.displayName}
               </span>
             ) : null}
             {entry.visibility === "private" ? (

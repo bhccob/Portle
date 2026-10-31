@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Eye } from "lucide-react";
 import { Panel } from "@/components/ui/panel";
 import { BANNER_STYLES, profileSections, type BannerStyle, type CommentAudience, type SectionSetting } from "@/domain/profile-layout";
+import { pictureAddress } from "@/domain/profile-picture";
 import { INTERESTS, listExperience } from "@/server/services/profile";
 import { listOwnTheses } from "@/server/services/theses";
 import { requireMember } from "@/server/session";
@@ -33,6 +34,7 @@ export default async function ProfileSettingsPage() {
             bio: profile.bio,
             interests: profile.interests,
             avatarHue: profile.avatarHue,
+            pictureUrl: profile.picture ? pictureAddress(profile.picture) : null,
             headline: profile.headline,
             location: profile.location,
             bannerStyle: (BANNER_STYLES.includes(profile.bannerStyle as BannerStyle) ? profile.bannerStyle : "dial") as BannerStyle,

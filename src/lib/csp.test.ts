@@ -19,6 +19,12 @@ describe("content security policy", () => {
     expect(policy.has("upgrade-insecure-requests")).toBe(true);
   });
 
+  it("loads profile pictures and logos from this site, and the crop step's local preview, but no outside image host", () => {
+    const img = directives(contentSecurityPolicy("abc123", { dev: false })).get("img-src");
+    expect(img).toEqual(["'self'", "blob:", "data:"]);
+    expect(img?.some((source) => source.includes("."))).toBe(false);
+  });
+
   it("allows eval in development only, where React uses it for error stacks", () => {
     const dev = directives(contentSecurityPolicy("abc123", { dev: true }));
     expect(dev.get("script-src")).toContain("'unsafe-eval'");

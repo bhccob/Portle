@@ -20,7 +20,7 @@ export function PostCard({ item, viewerId, guildName, link = true }: { item: Fee
     <article className="border-t border-line py-5 first:border-t-0">
       <header className="flex items-start justify-between gap-3">
         <div className="flex min-w-0 items-center gap-3">
-          <Avatar name={author.displayName} hue={author.avatarHue} size="md" />
+          <Avatar name={author.displayName} hue={author.avatarHue} src={author.pictureUrl} size="md" />
           <div className="min-w-0">
             <span className="flex min-w-0 items-center gap-1.5">
               <Link href={`/u/${author.handle}`} className="truncate font-medium text-fg hover:underline">

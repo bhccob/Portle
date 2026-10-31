@@ -107,7 +107,7 @@ export default async function ThesesPage({ searchParams }: { searchParams: Promi
                 <div className="mt-4 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-fg-subtle">
                   {view === "shared" ? (
                     <span className="inline-flex items-center gap-1.5">
-                      <Avatar name={author.displayName} hue={author.avatarHue} size="xs" /> {author.displayName}
+                      <Avatar name={author.displayName} hue={author.avatarHue} src={author.pictureUrl} size="xs" /> {author.displayName}
                     </span>
                   ) : (
                     <span>{VIS_LABEL[t.visibility]}</span>

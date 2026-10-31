@@ -36,7 +36,7 @@ export default async function PostPage({ params }: { params: Promise<{ id: strin
           {comments.length === 0 ? <li className="text-sm text-fg-subtle">No comments yet.</li> : null}
           {comments.map(({ comment, author }) => (
             <li key={comment.id} className="flex gap-3">
-              <Avatar name={author.displayName} hue={author.avatarHue} size="sm" />
+              <Avatar name={author.displayName} hue={author.avatarHue} src={author.pictureUrl} size="sm" />
               <div className="min-w-0 text-sm">
                 <p>
                   <Link href={`/u/${author.handle}`} className="font-medium text-fg hover:underline">

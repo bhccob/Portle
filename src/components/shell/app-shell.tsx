@@ -14,7 +14,7 @@ import { HideNumbersButton } from "./hide-numbers";
 import { isActive, MORE_NAV, PRIMARY_NAV, UTILITY_NAV, type NavItem } from "./nav-config";
 import { WriteSheet } from "./write-sheet";
 
-type Me = { displayName: string; handle: string; avatarHue: string };
+type Me = { displayName: string; handle: string; avatarHue: string; pictureUrl: string | null };
 
 function SideLink({ item, pathname, badge }: { item: NavItem; pathname: string; badge?: number }) {
   const active = isActive(pathname, item.href);
@@ -57,7 +57,7 @@ function AccountMenu({ me, withName }: { me: Me; withName?: boolean }) {
           className={cn("flex items-center gap-2.5 rounded-full text-left transition-colors hover:bg-field", withName ? "w-full p-1.5 pr-3" : "p-0.5")}
           aria-label="You, more places and settings"
         >
-          <Avatar name={me.displayName} hue={me.avatarHue} size={withName ? "sm" : "md"} />
+          <Avatar name={me.displayName} hue={me.avatarHue} src={me.pictureUrl} size={withName ? "sm" : "md"} />
           {withName ? (
             <span className="min-w-0">
               <span className="block truncate text-sm font-medium text-fg">{me.displayName}</span>

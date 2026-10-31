@@ -29,6 +29,8 @@ export const profiles = pgTable(
     displayName: text().notNull(),
     bio: text().notNull().default(""),
     avatarHue: text().notNull().default("262"),
+    /** Their own picture in profile_pictures, or null for initials on avatarHue. */
+    picture: uuid(),
     baseCurrency: text().notNull().default("EUR"),
     interests: text()
       .array()
@@ -60,6 +62,22 @@ export const profiles = pgTable(
   },
   (t) => [uniqueIndex("profiles_handle_lower_idx").on(sql`lower(${t.handle})`)],
 );
+
+/**
+ * Members' own profile pictures, one each: a 256px square WebP Portle made from their upload, in base64.
+ * A new upload gets a new id, so its address changes. Served by /api/pictures/[id] only to
+ * people who may see the profile (see services/pictures).
+ */
+export const profilePictures = pgTable("profile_pictures", {
+  id: uuid().primaryKey().defaultRandom(),
+  userId: text()
+    .notNull()
+    .unique()
+    .references(() => user.id, { onDelete: "cascade" }),
+  data: text().notNull(),
+  contentType: text().notNull(),
+  createdAt: ts().notNull().defaultNow(),
+});
 
 /**
  * Granular privacy controls. Every value defaults to the most private option.

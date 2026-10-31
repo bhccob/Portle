@@ -7,6 +7,7 @@ import { getDb } from "../db";
 import { guildMembers, instruments, profiles, theses, thesisNotes, thesisRevisions, thesisTransactionLinks, transactions } from "../db/schema";
 import { forbidden, notFound, UserFacingError } from "../errors";
 import { notify } from "./notifications";
+import { personColumns, withAuthorPictures } from "./pictures";
 
 const STATUSES = ["researching", "active", "under_review", "validated", "invalidated", "archived"] as const;
 export type ThesisStatus = (typeof STATUSES)[number];
@@ -225,20 +226,21 @@ export async function deleteThesis(userId: string, thesisId: string) {
 const listColumns = {
   thesis: theses,
   instrument: { id: instruments.id, symbol: instruments.symbol, name: instruments.name },
-  author: { handle: profiles.handle, displayName: profiles.displayName, avatarHue: profiles.avatarHue },
+  author: personColumns,
 };
 
 export async function listOwnTheses(userId: string, opts: { status?: ThesisStatus; tag?: string } = {}) {
   const conds = [eq(theses.userId, userId)];
   if (opts.status) conds.push(eq(theses.status, opts.status));
   if (opts.tag) conds.push(sql`${opts.tag} = any(${theses.tags})`);
-  return getDb()
+  const rows = await getDb()
     .select(listColumns)
     .from(theses)
     .leftJoin(instruments, eq(instruments.id, theses.instrumentId))
     .innerJoin(profiles, eq(profiles.userId, theses.userId))
     .where(and(...conds))
     .orderBy(desc(theses.updatedAt));
+  return withAuthorPictures(userId, rows);
 }
 
 /** Theses by other members that this viewer is allowed to read. Filtering happens in SQL, then re-checked. */
@@ -260,9 +262,10 @@ export async function listSharedTheses(viewer: Viewer, opts: { guildId?: string;
     .where(and(...conds))
     .orderBy(desc(theses.updatedAt))
     .limit(opts.limit ?? 50);
-  return rows
-    .filter((r) => canView(viewer, { ownerId: r.thesis.userId, audience: r.thesis.visibility as Audience, guildId: r.thesis.guildId }))
-    .map(withoutSchedule);
+  return withAuthorPictures(
+    viewer,
+    rows.filter((r) => canView(viewer, { ownerId: r.thesis.userId, audience: r.thesis.visibility as Audience, guildId: r.thesis.guildId })).map(withoutSchedule),
+  );
 }
 
 export async function getThesis(viewer: Viewer, thesisId: string) {
@@ -288,7 +291,8 @@ export async function getThesis(viewer: Viewer, thesisId: string) {
         .where(eq(thesisTransactionLinks.thesisId, thesisId))
         .orderBy(asc(transactions.tradeDate))
     : [];
-  return { ...(isOwner ? row : withoutSchedule(row)), isOwner, current: revisions[0], revisions, notes, links };
+  const [shown] = await withAuthorPictures(viewer, [isOwner ? row : withoutSchedule(row)]);
+  return { ...shown, isOwner, current: revisions[0], revisions, notes, links };
 }
 
 export async function addThesisNote(userId: string, thesisId: string, body: string) {

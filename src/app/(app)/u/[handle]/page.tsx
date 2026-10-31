@@ -5,12 +5,14 @@ import { FriendButton } from "@/app/(app)/feed/feed-client";
 import { AuthorTag } from "@/components/badges/author-tag";
 import { RelicRow } from "@/components/badges/relics-panel";
 import { ProfileBanner } from "@/components/profile/banner";
+import { PictureButton } from "@/components/profile/picture-button";
 import { ShareProfileButton } from "@/components/profile/share-button";
 import { Avatar } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { ButtonLink } from "@/components/ui/button";
 import { Markdown } from "@/components/ui/markdown";
 import { displayHost, LINK_KEYS, LINKS, SECTION_LABEL, type SectionKey } from "@/domain/profile-layout";
+import { pictureAddress } from "@/domain/profile-picture";
 import { topicLabel } from "@/domain/topics";
 import { cn } from "@/lib/cn";
 import { relativeTime } from "@/lib/format";
@@ -251,7 +253,7 @@ export default async function ProfilePage({ params, searchParams }: { params: Pr
         <Section id="comments" title={SECTION_LABEL.comments} aside={total ? String(total) : undefined}>
           {view.canComment ? (
             <div className="flex items-start gap-3">
-              <Avatar name={me.displayName} hue={me.avatarHue} size="md" className="hidden sm:inline-grid" />
+              <Avatar name={me.displayName} hue={me.avatarHue} src={me.picture ? pictureAddress(me.picture) : null} size="md" className="hidden sm:inline-grid" />
               <ProfileCommentForm profileUserId={p.userId} placeholder={mine ? "Write something on your profile…" : `Write something to ${first}…`} />
             </div>
           ) : (
@@ -264,7 +266,7 @@ export default async function ProfilePage({ params, searchParams }: { params: Pr
               {comments.map((c) => (
                 <li key={c.id} className="flex gap-3 border-t border-line py-3.5 first:border-t-0 sm:first:border-t">
                   <Link href={`/u/${c.author.handle}`} tabIndex={-1} aria-hidden>
-                    <Avatar name={c.author.displayName} hue={c.author.avatarHue} size="md" />
+                    <Avatar name={c.author.displayName} hue={c.author.avatarHue} src={c.author.pictureUrl} size="md" />
                   </Link>
                   <div className="min-w-0 flex-1">
                     <p className="text-sm">
@@ -299,7 +301,7 @@ export default async function ProfilePage({ params, searchParams }: { params: Pr
         {view.friends.map((f) => (
           <li key={f.userId}>
             <Link href={`/u/${f.handle}`} title={f.displayName} className="block rounded-full focus-visible:outline-2 focus-visible:outline-[var(--focus)]">
-              <Avatar name={f.displayName} hue={f.avatarHue} size="md" />
+              <Avatar name={f.displayName} hue={f.avatarHue} src={f.pictureUrl} size="md" />
               <span className="sr-only">{f.displayName}</span>
             </Link>
           </li>
@@ -329,12 +331,16 @@ export default async function ProfilePage({ params, searchParams }: { params: Pr
         {/* Who they are: on a computer the column on the left, on a phone the top of the page. */}
         <header className="min-w-0">
           <div className="flex items-end justify-between gap-3">
-            <Avatar
-              name={p.displayName}
-              hue={p.avatarHue}
-              size="xl"
-              className="relative z-10 -mt-12 size-24 text-[1.75rem] ring-4 ring-bg sm:-mt-14 sm:size-28 lg:-mt-[5.5rem] lg:size-36 lg:text-[2.75rem]"
-            />
+            <div className="relative z-10 -mt-12 shrink-0 sm:-mt-14 lg:-mt-[5.5rem]">
+              <Avatar
+                name={p.displayName}
+                hue={p.avatarHue}
+                src={p.pictureUrl}
+                size="xl"
+                className="size-24 text-[1.75rem] ring-4 ring-bg sm:size-28 lg:size-36 lg:text-[2.75rem]"
+              />
+              {mine ? <PictureButton hasPicture={!!p.pictureUrl} className="absolute right-0 bottom-0 lg:right-1.5 lg:bottom-1.5" /> : null}
+            </div>
             <div className="flex flex-wrap justify-end gap-2 pt-3 lg:hidden">{actions}</div>
           </div>
           <h1 className="mt-3 font-display text-[1.75rem] leading-tight font-bold tracking-[-0.02em] text-fg lg:text-[1.875rem]">{p.displayName}</h1>
