@@ -327,6 +327,13 @@
   select {
     caret-color: var(--accent);
   }
+  /* A select's open list is drawn by the system, which can't show the see-through field colour:
+     on Windows it fell back to white under light text. Options get a solid ground of their own. */
+  option,
+  optgroup {
+    background-color: var(--bg-elevated);
+    color: var(--fg);
+  }
   a {
     text-underline-offset: 0.2em;
     text-decoration-thickness: 1px;
